@@ -3,14 +3,19 @@ import os
 import json
 import logging
 
-from flask import Flask, redirect, request, render_template
+from flask import Flask, redirect, request, render_template, session, url_for, Blueprint
 
-import helpers
-from shopify_client import ShopifyStoreClient
+from app.views import helpers
+from app.views.shopify_client import ShopifyStoreClient
 
-from config import WEBHOOK_APP_UNINSTALL_URL
+from app.views.config import WEBHOOK_APP_UNINSTALL_URL
+from app.vida_xl import get_documents
+
+shopify_app_blueprint = Blueprint('main', __name__)
+
 
 app = Flask(__name__)
+app.register_blueprint(shopify_app_blueprint)
 
 
 ACCESS_TOKEN = None
@@ -26,7 +31,9 @@ def app_launched():
     global ACCESS_TOKEN, NONCE
 
     if ACCESS_TOKEN:
-        return render_template('index.html', shop=shop)
+        documents_list = get_documents()
+        # return render_template('welcome.html', shop=shop)
+        return documents_list
 
     # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed)
     #   https://en.wikipedia.org/wiki/Cryptographic_nonce
@@ -60,6 +67,15 @@ def app_installed():
 
     redirect_url = helpers.generate_post_install_redirect_url(shop=shop)
     return redirect(redirect_url, code=302)
+
+
+@app.route('/rendering_template', methods=['GET'])
+@helpers.redirect_render_url
+def rendering_template():
+    request
+    shop = request.args.get('shop')
+    return render_template('index.html', shop=shop)
+
 
 
 @app.route('/app_uninstalled', methods=['POST'])
