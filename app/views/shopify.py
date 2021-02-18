@@ -3,20 +3,20 @@ import os
 import json
 import logging
 
-from flask import Flask, redirect, request, render_template, session, url_for, Blueprint
+from flask import Flask, redirect, request, render_template, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
 
 from app.views.config import WEBHOOK_APP_UNINSTALL_URL
-from app.vida_xl import get_documents
+from app.vida_xl import get_products
 
-shopify_app_blueprint = Blueprint('main', __name__)
+import shopify
+
+shopify_app_blueprint = Blueprint('shopify', __name__)
 
 
-app = Flask(__name__)
-app.register_blueprint(shopify_app_blueprint)
-
+# app = Flask(__name__)
 
 ACCESS_TOKEN = None
 NONCE = None
@@ -24,16 +24,20 @@ ACCESS_MODE = []  # Defaults to offline access mode if left blank or omitted. ht
 SCOPES = ['write_script_tags']  # https://shopify.dev/docs/admin-api/access-scopes
 
 
-@app.route('/app_launched', methods=['GET'])
+@shopify_app_blueprint.route('/app_launched', methods=['GET'])
 @helpers.verify_web_call
 def app_launched():
     shop = request.args.get('shop')
     global ACCESS_TOKEN, NONCE
 
     if ACCESS_TOKEN:
-        documents_list = get_documents()
+        products = get_products()
+        # response = requests.get(
+        # "https://b2b.vidaxl.com/api_customer/products", auth=HTTPBasicAuth('jamilya.sars@gmail.com', 'ea5d924f-3531-4550-9e28-9ed5cf76d3f7')
+        # )
+        shop = shopify.Shop.current
         # return render_template('welcome.html', shop=shop)
-        return documents_list
+        return products
 
     # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed)
     #   https://en.wikipedia.org/wiki/Cryptographic_nonce
@@ -42,7 +46,7 @@ def app_launched():
     return redirect(redirect_url, code=302)
 
 
-@app.route('/app_installed', methods=['GET'])
+@shopify_app_blueprint.route('/app_installed', methods=['GET'])
 @helpers.verify_web_call
 def app_installed():
     state = request.args.get('state')
@@ -69,7 +73,7 @@ def app_installed():
     return redirect(redirect_url, code=302)
 
 
-@app.route('/rendering_template', methods=['GET'])
+@shopify_app_blueprint.route('/rendering_template', methods=['GET'])
 @helpers.redirect_render_url
 def rendering_template():
     request
@@ -77,8 +81,7 @@ def rendering_template():
     return render_template('index.html', shop=shop)
 
 
-
-@app.route('/app_uninstalled', methods=['POST'])
+@shopify_app_blueprint.route('/app_uninstalled', methods=['POST'])
 @helpers.verify_webhook_call
 def app_uninstalled():
     # https://shopify.dev/docs/admin-api/rest/reference/events/webhook?api[version]=2020-04
@@ -94,7 +97,7 @@ def app_uninstalled():
     return "OK"
 
 
-@app.route('/data_removal_request', methods=['POST'])
+@shopify_app_blueprint.route('/data_removal_request', methods=['POST'])
 @helpers.verify_webhook_call
 def data_removal_request():
     # https://shopify.dev/tutorials/add-gdpr-webhooks-to-your-app
@@ -102,7 +105,7 @@ def data_removal_request():
     return "OK"
 
 
-if __name__ == '__main__':
-    # Bind to PORT if defined, otherwise default to 5000.
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+# if __name__ == '__main__':
+#     # Bind to PORT if defined, otherwise default to 5000.
+#     port = int(os.environ.get('PORT', 5000))
+#     app.run(host='0.0.0.0', port=port)

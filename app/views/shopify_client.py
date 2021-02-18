@@ -5,7 +5,7 @@ import logging
 import requests
 from requests.exceptions import HTTPError
 
-from config import SHOPIFY_SECRET, SHOPIFY_API_KEY
+from app.views.config import SHOPIFY_SECRET, SHOPIFY_API_KEY
 
 
 SHOPIFY_API_VERSION = "2020-01"

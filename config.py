@@ -1,14 +1,24 @@
 import os
+from dotenv import load_dotenv
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(base_dir, ".env"))
 
 
 class BaseConfig(object):
     """Base configuration."""
 
-    APP_NAME = 'Flask App'
+    APP_NAME = 'Shopify_app'
     DEBUG_TB_ENABLED = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'Ensure you set a secret key, this is important!')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'e45f99e7dfa84f04939e041db0ee0771')
+    VIDAXL_API_BASE_URL = os.environ.get('AIDAXL_API_BASE_URL', 'https://b2b.vidaxl.com')
+    SHOPIFY_API_KEY = os.environ.get('SHOPIFY_API_KEY', '')
+    SHOPIFY_SECRET = os.environ.get('SHOPIFY_SECRET', '')
+
+    # VidaXL credentials
+    USER_NAME = os.environ.get('USER_NAME', '')
+    API_KEY = os.environ.get('API_KEY', '')
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
 

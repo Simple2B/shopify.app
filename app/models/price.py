@@ -2,9 +2,9 @@ from app import db
 from app.models.utils import ModelMixin
 
 
-class User(db.Model, ModelMixin):
+class Price(db.Model, ModelMixin):
 
-    __tablename__ = 'token'
+    __tablename__ = 'prices'
 
     id = db.Column(db.Integer, primary_key=True)
     price = db.Column(db.Float)

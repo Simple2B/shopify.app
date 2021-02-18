@@ -8,7 +8,7 @@ import base64
 import hashlib
 from flask import request, abort
 
-from config import SHOPIFY_SECRET, SHOPIFY_API_KEY, INSTALL_REDIRECT_URL, APP_NAME
+from app.views.config import SHOPIFY_SECRET, SHOPIFY_API_KEY, INSTALL_REDIRECT_URL, APP_NAME
 
 
 def generate_install_redirect_url(shop: str, scopes: List, nonce: str, access_mode: List):
@@ -38,6 +38,14 @@ def verify_web_call(f):
         if shop and not is_valid_shop(shop):
             logging.error(f"Shop name received is invalid: \n\tshop {shop}")
             abort(401)
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def redirect_render_url(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs) -> bool:
+        request
         return f(*args, **kwargs)
     return wrapper
 
