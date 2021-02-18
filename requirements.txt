@@ -14,3 +14,4 @@ python-dotenv
 SQLAlchemy
 Werkzeug
 WTForms
+requests==2.23.0
