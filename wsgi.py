@@ -25,6 +25,13 @@ def drop_db():
     """Drop the current database."""
     db.drop_all()
 
+@app.cli.command()
+def scrappy():
+    """Test scrap images from VidaXL"""
+    # db.drop_all()
+    from app.controllers import scrap
+    print(scrap.scrap_img(35653))
+
 
 if __name__ == '__main__':
     app.run()
