@@ -1,9 +1,10 @@
 import uuid
-import os
 import json
 import logging
+import requests
 
-from flask import Flask, redirect, request, render_template, Blueprint
+
+from flask import redirect, request, render_template, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
@@ -11,12 +12,10 @@ from app.views.shopify_client import ShopifyStoreClient
 from app.views.config import WEBHOOK_APP_UNINSTALL_URL
 from app.vida_xl import get_products
 
+
 import shopify
 
 shopify_app_blueprint = Blueprint('shopify', __name__)
-
-
-# app = Flask(__name__)
 
 ACCESS_TOKEN = None
 NONCE = None
@@ -68,6 +67,8 @@ def app_installed():
     # NOTE This webhook will call the #app_uninstalled function defined below
     shopify_client = ShopifyStoreClient(shop=shop, access_token=ACCESS_TOKEN)
     shopify_client.create_webook(address=WEBHOOK_APP_UNINSTALL_URL, topic="app/uninstalled")
+    url = shopify_client.get_products()
+    response = requests.get(url)
 
     redirect_url = helpers.generate_post_install_redirect_url(shop=shop)
     return redirect(redirect_url, code=302)

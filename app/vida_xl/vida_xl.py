@@ -3,6 +3,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from flask import current_app
+from app.logger import log
 
 
 def get_documents():
@@ -27,6 +28,16 @@ def get_documents():
 
 
 def get_products():
+    products = []
+    total_products = requests.get(
+        f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products?limit=0&offset=0",
+        auth=HTTPBasicAuth(
+            current_app.config["USER_NAME"], current_app.config["API_KEY"]
+        )
+    ).json()['pagination']['total']
+    if total_products:
+        log(log.DEBUG, 'Get total products: [%d]', total_products)
+        for product in range
     response = requests.get(
         f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products",
         auth=HTTPBasicAuth(

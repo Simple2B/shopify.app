@@ -1,12 +1,10 @@
 import json
 from typing import List
 import logging
-
 import requests
+
 from requests.exceptions import HTTPError
-
-from app.views.config import SHOPIFY_SECRET, SHOPIFY_API_KEY
-
+from flask import current_app
 
 SHOPIFY_API_VERSION = "2020-01"
 
@@ -29,8 +27,8 @@ class ShopifyStoreClient():
     def authenticate(shop: str, code: str) -> str:
         url = f"https://{shop}/admin/oauth/access_token"
         payload = {
-            "client_id": SHOPIFY_API_KEY,
-            "client_secret": SHOPIFY_SECRET,
+            "client_id": current_app.config['SHOPIFY_API_KEY'],
+            "client_secret": current_app.config['SHOPIFY_SECRET'],
             "code": code
         }
         try:
@@ -166,3 +164,7 @@ class ShopifyStoreClient():
         if not webhook_count_response:
             return None
         return webhook_count_response['count']
+
+    def get_products(self):
+        url = self.base_url + 'products.json'
+        return url
