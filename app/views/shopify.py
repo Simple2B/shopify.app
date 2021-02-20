@@ -4,7 +4,7 @@ import logging
 import requests
 
 
-from flask import redirect, request, render_template, Blueprint
+from flask import redirect, request, render_template, current_app, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
@@ -17,7 +17,7 @@ import shopify
 
 shopify_app_blueprint = Blueprint('shopify', __name__)
 
-ACCESS_TOKEN = None
+# ACCESS_TOKEN = None
 NONCE = None
 ACCESS_MODE = []  # Defaults to offline access mode if left blank or omitted. https://shopify.dev/concepts/about-apis/authentication#api-access-modes
 SCOPES = ['write_script_tags']  # https://shopify.dev/docs/admin-api/access-scopes
@@ -29,11 +29,8 @@ def app_launched():
     shop = request.args.get('shop')
     global ACCESS_TOKEN, NONCE
 
-    if ACCESS_TOKEN:
+    if current_app.config['ACCESS_TOKEN']:
         products = get_products()
-        # response = requests.get(
-        # "https://b2b.vidaxl.com/api_customer/products", auth=HTTPBasicAuth('jamilya.sars@gmail.com', 'ea5d924f-3531-4550-9e28-9ed5cf76d3f7')
-        # )
         shop = shopify.Shop.current
         # return render_template('welcome.html', shop=shop)
         return products

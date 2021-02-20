@@ -1,4 +1,5 @@
 import requests
+import json
 
 from requests.auth import HTTPBasicAuth
 
@@ -28,26 +29,34 @@ def get_documents():
 
 
 def get_products():
-    products = []
-    total_products = requests.get(
-        f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products?limit=0&offset=0",
-        auth=HTTPBasicAuth(
-            current_app.config["USER_NAME"], current_app.config["API_KEY"]
-        )
-    ).json()['pagination']['total']
+    url = f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products"
+    auth = HTTPBasicAuth(current_app.config["USER_NAME"], current_app.config["API_KEY"])
+    response = requests.get(f"{url}?offset=0", auth=auth).json()
+    total_products = response["pagination"]["total"]
     if total_products:
-        log(log.DEBUG, 'Get total products: [%d]', total_products)
-        for product in range
-    response = requests.get(
-        f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products",
-        auth=HTTPBasicAuth(
-            current_app.config["USER_NAME"], current_app.config["API_KEY"]
-        ),
-    )
-
-    if response.status_code == 200:
-        # return response.json()['data']
-        return response.json()
+        limit = response["pagination"]["limit"]
+        products_list = []
+        log(log.DEBUG, "Get total products: [%d]", total_products)
+        for product in response.get('data', ''):
+            if product['quantity'] == '0.0':
+                continue
+            else:
+                products_list += [product]
+        range_ = (total_products - limit) // limit
+        for i in range(range_ + 1 if (total_products % limit) != 0 else range_):
+            try:
+                products = requests.get(f"{url}?offset={limit*(i+1)}", auth=auth).json().get('data', '')
+            except Exception as err:
+                log.(log.ERROR, "[%s]", err)
+                raise Exception((f'Value of range: [{i}], range: [{range_}]'))
+            if products:
+                for product in products:
+                    if product['quantity'] == '0.0':
+                        continue
+                    else:
+                        products_list += [product]
+        log(log.DEBUG, "Retrive products(%d) which in stock", len(products_list))
+        return json.dumps(products_list)
     else:
-        return f"Statucs code: {response.status_code}"
-    # me_json = response.json()
+        log(log.DEBUG, "No products")
+        return "No products"
