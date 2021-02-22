@@ -11,18 +11,15 @@ def get_html(item_id: int):
 
 
 def scrap_img(item_id: int):
+    """Get images from VidaXL by item_id"""
     try:
         soup = BeautifulSoup(get_html(item_id), 'html.parser')
-    except urllib.error.HTTPError:
-        log(log.INFO, 'Invalid response')
+    except urllib.error.HTTPError as e:
+        log(log.ERROR, 'Invalid response: [%s]', e)
         return False
     gallery = soup.find('div', class_='media-gallery')
     img_container = gallery.findAll('a')
-    images = [i.attrs['href'] for i in img_container]
-    if 'missing_image' in images:
-        for img in images:
-            if 'missing_image' in img:
-                images.pop(img)
+    images = [i.attrs['href'] for i in img_container if 'missing_image' not in i]
     return {
         'item_id': item_id,
         'qty': len(images),
