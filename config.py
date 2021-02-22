@@ -14,6 +14,8 @@ class BaseConfig(object):
     VIDAXL_API_BASE_URL = os.environ.get('AIDAXL_API_BASE_URL', 'https://b2b.vidaxl.com')
     SHOPIFY_API_KEY = os.environ.get('SHOPIFY_API_KEY', '')
     SHOPIFY_SECRET = os.environ.get('SHOPIFY_SECRET', '')
+    VIDAXL_VERSION_API_URL = "/admin/api/2021-01"
+    DEBUG = False
 
     # VidaXL credentials
     USER_NAME = os.environ.get('USER_NAME', '')
