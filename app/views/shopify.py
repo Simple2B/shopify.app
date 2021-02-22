@@ -10,10 +10,9 @@ from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
 
 from app.views.config import WEBHOOK_APP_UNINSTALL_URL
-from app.vida_xl import get_products
+from app.controllers import update_products
 
-
-import shopify
+# import shopify
 
 shopify_app_blueprint = Blueprint('shopify', __name__)
 
@@ -27,15 +26,16 @@ SCOPES = ['write_script_tags']  # https://shopify.dev/docs/admin-api/access-scop
 @helpers.verify_web_call
 def app_launched():
     shop = request.args.get('shop')
-    global ACCESS_TOKEN, NONCE
+    global NONCE
 
-    if current_app.config['ACCESS_TOKEN']:
-        products = get_products()
-        shop = shopify.Shop.current
+    ACCESS_TOKEN = current_app.config['ACCESS_TOKEN']
+    if ACCESS_TOKEN:
+        # shop = shopify.Shop.current
         # return render_template('welcome.html', shop=shop)
-        return products
+        update_products(ACCESS_TOKEN, current_app.config['SHOPIFY_DOMAIN']) # You can also input [version_api] arg, default arg is "2021-01" # noqa 501
+        return "Memo app (admin)"
 
-    # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed)
+    # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed) # noqa 501
     #   https://en.wikipedia.org/wiki/Cryptographic_nonce
     NONCE = uuid.uuid4().hex
     redirect_url = helpers.generate_install_redirect_url(shop=shop, scopes=SCOPES, nonce=NONCE, access_mode=ACCESS_MODE)
@@ -64,8 +64,6 @@ def app_installed():
     # NOTE This webhook will call the #app_uninstalled function defined below
     shopify_client = ShopifyStoreClient(shop=shop, access_token=ACCESS_TOKEN)
     shopify_client.create_webook(address=WEBHOOK_APP_UNINSTALL_URL, topic="app/uninstalled")
-    url = shopify_client.get_products()
-    response = requests.get(url)
 
     redirect_url = helpers.generate_post_install_redirect_url(shop=shop)
     return redirect(redirect_url, code=302)

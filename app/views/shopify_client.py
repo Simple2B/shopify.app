@@ -164,7 +164,3 @@ class ShopifyStoreClient():
         if not webhook_count_response:
             return None
         return webhook_count_response['count']
-
-    def get_products(self):
-        url = self.base_url + 'products.json'
-        return url

@@ -8,23 +8,18 @@ import base64
 import hashlib
 from flask import request, abort, current_app
 
-from app.views.config import (
-    INSTALL_REDIRECT_URL,
-    APP_NAME,
-)
-
 
 def generate_install_redirect_url(
     shop: str, scopes: List, nonce: str, access_mode: List
 ):
     scopes_string = ",".join(scopes)
     access_mode_string = ",".join(access_mode)
-    redirect_url = f"https://{shop}/admin/oauth/authorize?client_id={current_app.config['SHOPIFY_API_KEY']}&scope={scopes_string}&redirect_uri={INSTALL_REDIRECT_URL}&state={nonce}&grant_options[]={access_mode_string}"
+    redirect_url = f"https://{shop}/admin/oauth/authorize?client_id={current_app.config['SHOPIFY_API_KEY']}&scope={scopes_string}&redirect_uri={current_app.config['INSTALL_REDIRECT_URL']}&state={nonce}&grant_options[]={access_mode_string}"
     return redirect_url
 
 
 def generate_post_install_redirect_url(shop: str):
-    redirect_url = f"https://{shop}/admin/apps/{APP_NAME}"
+    redirect_url = f"https://{shop}/admin/apps/{current_app.config['APP_NAME']}"
     return redirect_url
 
 
