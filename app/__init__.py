@@ -22,6 +22,8 @@ def create_app(environment='development'):
         User,
         AnonymousUser,
     )
+    from app.logger import log
+    log.set_level(log.DEBUG)
 
     # Instantiate app.
     app = Flask(__name__)
