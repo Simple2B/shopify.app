@@ -14,9 +14,10 @@ class BaseConfig(object):
     SHOPIFY_API_KEY = os.environ.get('SHOPIFY_API_KEY', '')
     SHOPIFY_SECRET = os.environ.get('SHOPIFY_SECRET', '')
     APP_NAME = os.environ.get('APP_NAME', '')
-    SERVER_BASE_URL = os.environ.get('SERVER_BASE_URL', '')
+    SHOPIFY_DOMAIN = os.environ.get('SHOPIFY_DOMAIN', '')
     WEBHOOK_APP_UNINSTALL_URL = os.environ.get('WEBHOOK_APP_UNINSTALL_URL', '')
     INSTALL_REDIRECT_URL = os.environ.get('INSTALL_REDIRECT_URL', '')
+    ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN', '')
 
     # VidaXL credentials
     VIDAXL_API_BASE_URL = os.environ.get('VIDAXL_API_BASE_URL', 'https://b2b.vidaxl.com')
