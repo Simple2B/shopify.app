@@ -26,5 +26,14 @@ def drop_db():
     db.drop_all()
 
 
+@app.cli.command()
+def scrappy():
+    """Test scrap images from VidaXL"""
+    # db.drop_all()
+    from app.controllers import scrap
+    from app.logger import log
+    log(log.INFO, scrap.scrap_img(35653))
+
+
 if __name__ == '__main__':
     app.run()
