@@ -1,7 +1,4 @@
 import pytest
-import requests
-
-from requests.auth import HTTPBasicAuth
 
 from flask import current_app
 from app import create_app
@@ -29,14 +26,10 @@ def test_upload_product(client):
             {
                 "product": {
                     "title": 'Test_product_2',
-                    # "body_html": "<strong>Good snowboard!</strong>",
-                    # "vendor": "Burton",
                     "variants": [
                         {
-                            # "option1": "First",
                             "inventory_quantity": int(float('1.0')),
                             "price": float('8.8'),
-                            # "sku": "123"
                             "presentment_prices": [
                                 {
                                     "price": {
@@ -46,7 +39,6 @@ def test_upload_product(client):
                                     "compare_at_price": None
                                 }
                             ],
-                            # "updated_at": product['updated_at']
                         }
                     ],
                     "images": [{'src': img_src} for img_src in images_src]
