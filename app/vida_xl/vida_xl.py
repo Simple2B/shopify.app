@@ -5,19 +5,13 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from flask import current_app
-from app.shopify_api import Product
-# from app.models import Product
-# from app import db
+from app.shopify_api import Product, Collection
+from app.controllers import update_product
 from app.logger import log
 
 
 def get_documents():
-    # headers = {"Authorization": "Basic " + "jamilya.sars@gmail.com" + "ea5d924f-3531-4550-9e28-9ed5cf76d3f7"}
-
-    # current_app.config["AIDAXL_API_BASE_URL"]
-    # test url
     sand_box_url = "https://sandbox.b2b.vidaxl.com/"
-    # end
     response = requests.get(
         f"{sand_box_url}api_customer/orders/documents",
         auth=HTTPBasicAuth(
@@ -32,104 +26,64 @@ def get_documents():
     # me_json = response.json()
 
 
-def update_products(access_token, shopify_url, version_api='2021-01'):
+def update_products():
     url = f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products"
     auth = HTTPBasicAuth(current_app.config["USER_NAME"], current_app.config["API_KEY"])
     response = requests.get(f"{url}?offset=0", auth=auth).json()
     total_products = response["pagination"]["total"]
 
     if total_products:
-        product_api = Product(access_token, shopify_url)
+        prod_api = Product()
+        collect_api = Collection()
         limit = response["pagination"]["limit"]
         products_in_stock = 0
         log(log.DEBUG, "Get total products: [%d]", total_products)
-        for product in response.get("data", ""):
-            if product["quantity"] == "0.0":
-                continue
-            else:
-                product_api.create_product(
-                            {
-                                "product": {
-                                    "title": product['name'],
-                                    # "body_html": "<strong>Good snowboard!</strong>",
-                                    # "vendor": "Burton",
-                                    "variants": [
-                                        {
-                                            # "option1": "First",
-                                            "inventory_quantity": product['quantity'],
-                                            "price": product['price'],
-                                            # "sku": "123"
-                                            "presentment_prices": [
-                                                {
-                                                    "price": {
-                                                        "currency_code": product['currency'],
-                                                        "amount": product['quantity']
-                                                    },
-                                                    "compare_at_price": None
-                                                }
-                                            ],
-                                            # "updated_at": product['updated_at']
-                                        }
-                                    ],
-                                    "images": [
-                                        {
-                                            "src": "http://example.com/rails_logo.gif"
-                                        }
-                                    ]
-                                },
-                                "status": "active"
-                            }
-                        )
-                # Product(product_id=product["id"]).save(commit=False)
+        products = response.get("data", "")
+        for product in products:
+            collection = product['category_path'].split('/')[0]
+            if products_in_stock >= 50:
+                break
+            update_product(
+                    prod_api=prod_api,
+                    collect_api=collect_api,
+                    prod_id=product['id'],
+                    collection=collection,
+                    title=product['name'],
+                    qty=int(float(product['quantity'])),
+                    price=float(product['price']),
+                    currency=product['currency']
+                )
+            products_in_stock += 1
+        if products_in_stock >= 50:  # this code for testing
+            return "Memo app (admin)"
         range_ = (total_products - limit) // limit
         for i in range(range_ + 1 if (total_products % limit) != 0 else range_):
             try:
-                products = (
-                    requests.get(f"{url}?offset={limit*(i+1)}", auth=auth)
-                    .json()
-                    .get("data", "")
-                )
+                response = requests.get(f"{url}?offset={limit*(i+1)}", auth=auth)
             except Exception as err:
-                log(log.ERROR, "[%s]", err)
-                return f"Value of range: [{i}], range: [{range_}], Exception: {err}"
-            if products:
-                for product in products:
-                    if product["quantity"] == "0.0":
-                        continue
-                    else:
-                        # Product(product_id=product["id"]).save(commit=False)
-                        product_api.create_product(
-                            {
-                                "product": {
-                                    "title": product['name'],
-                                    # "body_html": "<strong>Good snowboard!</strong>",
-                                    # "vendor": "Burton",
-                                    "variants": [
-                                        {
-                                            # "option1": "First",
-                                            "inventory_quantity": product['quantity'],
-                                            "price": product['price'],
-                                            # "sku": "123"
-                                            "presentment_prices": [
-                                                {
-                                                    "price": {
-                                                        "currency_code": product['currency'],
-                                                        "amount": product['quantity']
-                                                    },
-                                                    "compare_at_price": None
-                                                }
-                                            ],
-                                            # "updated_at": product['updated_at']
-                                        }
-                                    ]
-                                },
-                                "status": "active"
-                            }
-                        )
-                        products_in_stock += 1
+                log(log.ERROR, "Exception: [%s]", err)
+                while response.status_code != 200:
+                    response = requests.get(f"{url}?offset={limit*(i+1)}", auth=auth)
+                products = response.json().get("data", "")
+            for product in products:
+                collection = product['category_path'].split('/')[0]
+                if products_in_stock >= 50:
+                    break
+                update_product(
+                    prod_api=prod_api,
+                    prod_id=product['id'],
+                    collect_api=collect_api,
+                    collection=collection,
+                    title=product['name'],
+                    qty=int(float(product['quantity'])),
+                    price=float(product['price']),
+                    currency=product['currency']
+                )
+                products_in_stock += 1
+            if products_in_stock >= 50:  # this code for testing
+                return "Memo app (admin)"
         log(log.DEBUG, "Retrive products(%d) which in stock", len(products_in_stock))
         # return json.dumps(products_list)
-        # db.session.commit()
         return f"Products in stock: [{len(products_in_stock)}]"
     else:
         log(log.DEBUG, "No products")
