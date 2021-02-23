@@ -1,24 +1,21 @@
 import uuid
-import os
 import json
 import logging
+import requests
 
-from flask import Flask, redirect, request, render_template, Blueprint
+
+from flask import redirect, request, render_template, current_app, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
-
+from app.vida_xl import update_products
 from app.views.config import WEBHOOK_APP_UNINSTALL_URL
-from app.vida_xl import get_products
 
-import shopify
+# import shopify
 
 shopify_app_blueprint = Blueprint('shopify', __name__)
 
-
-# app = Flask(__name__)
-
-ACCESS_TOKEN = None
+# ACCESS_TOKEN = None
 NONCE = None
 ACCESS_MODE = []  # Defaults to offline access mode if left blank or omitted. https://shopify.dev/concepts/about-apis/authentication#api-access-modes
 SCOPES = ['write_script_tags']  # https://shopify.dev/docs/admin-api/access-scopes
@@ -28,18 +25,16 @@ SCOPES = ['write_script_tags']  # https://shopify.dev/docs/admin-api/access-scop
 @helpers.verify_web_call
 def app_launched():
     shop = request.args.get('shop')
-    global ACCESS_TOKEN, NONCE
+    global NONCE
 
+    ACCESS_TOKEN = current_app.config['ACCESS_TOKEN']
     if ACCESS_TOKEN:
-        products = get_products()
-        # response = requests.get(
-        # "https://b2b.vidaxl.com/api_customer/products", auth=HTTPBasicAuth('jamilya.sars@gmail.com', 'ea5d924f-3531-4550-9e28-9ed5cf76d3f7')
-        # )
-        shop = shopify.Shop.current
+        # shop = shopify.Shop.current
         # return render_template('welcome.html', shop=shop)
-        return products
+        update_products(ACCESS_TOKEN, current_app.config['SHOPIFY_DOMAIN']) # You can also input [version_api] arg, default arg is "2021-01" # noqa 501
+        return "Memo app (admin)"
 
-    # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed)
+    # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed) # noqa 501
     #   https://en.wikipedia.org/wiki/Cryptographic_nonce
     NONCE = uuid.uuid4().hex
     redirect_url = helpers.generate_install_redirect_url(shop=shop, scopes=SCOPES, nonce=NONCE, access_mode=ACCESS_MODE)
