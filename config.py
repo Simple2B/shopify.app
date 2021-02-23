@@ -19,6 +19,9 @@ class BaseConfig(object):
     INSTALL_REDIRECT_URL = os.environ.get('INSTALL_REDIRECT_URL', '')
     ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN', '')
 
+    # Private app
+    X_SHOPIFY_ACCESS_TOKEN = os.environ.get('X_SHOPIFY_ACCESS_TOKEN', '')
+
     # VidaXL credentials
     VIDAXL_API_BASE_URL = os.environ.get('VIDAXL_API_BASE_URL', 'https://b2b.vidaxl.com')
     USER_NAME = os.environ.get('USER_NAME', '')

@@ -16,24 +16,7 @@
             },
             "args": [
                 "run",
-                "-p", "8099",
-                "-h", "0.0.0.0"
-            ],
-            "jinja": true
-        },
-        {
-            "name": "Python: Test_Shopify",
-            "type": "python",
-            "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "app/views/server.py",
-                "FLASK_ENV": "development",
-                "FLASK_DEBUG": "1"
-            },
-            "args": [
-                "run",
-                "-p", "8099",
+                "-p", "8090",
                 "-h", "0.0.0.0"
             ],
             "jinja": true
