@@ -67,7 +67,13 @@ def update_products(access_token, shopify_url, version_api='2021-01'):
                                                     },
                                                     "compare_at_price": None
                                                 }
-                                            ]
+                                            ],
+                                            # "updated_at": product['updated_at']
+                                        }
+                                    ],
+                                    "images": [
+                                        {
+                                            "src": "http://example.com/rails_logo.gif"
                                         }
                                     ]
                                 },
@@ -112,7 +118,8 @@ def update_products(access_token, shopify_url, version_api='2021-01'):
                                                     },
                                                     "compare_at_price": None
                                                 }
-                                            ]
+                                            ],
+                                            # "updated_at": product['updated_at']
                                         }
                                     ]
                                 },
