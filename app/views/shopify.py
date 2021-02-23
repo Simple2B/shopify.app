@@ -8,9 +8,8 @@ from flask import redirect, request, render_template, current_app, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
-
+from app.vida_xl import update_products
 from app.views.config import WEBHOOK_APP_UNINSTALL_URL
-from app.controllers import update_products
 
 # import shopify
 
