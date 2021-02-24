@@ -1,6 +1,7 @@
 import urllib
 import time
 from urllib.request import Request, urlopen
+from flask import current_app
 from bs4 import BeautifulSoup
 from app.logger import log
 
@@ -28,16 +29,20 @@ def scrap_img(item_id: int):
     Returns:
         [JSON]: Item_id, images quantity, list of images urls
     """
-    soup = check_soup(item_id)
-    while not soup:
+    for i in range(int(current_app.config['NUMBER_OF_REPETITIONS'])):
         soup = check_soup(item_id)
+        if soup:
+            gallery = soup.find('div', class_='media-gallery')
+            img_container = gallery.findAll('a')
+            images = [i.attrs['href'] for i in img_container if 'missing_image' not in i]
+            return {
+                    'item_id': item_id,
+                    'qty': len(images),
+                    'images': images
+                    }
+        elif i == int(current_app.config['NUMBER_OF_REPETITIONS']) - 1:
+            log(log.EXCEPTION, 'Server is not available')
+            return False
         log(log.INFO, 'Invalid Response')
-        time.sleep(.5)
-    gallery = soup.find('div', class_='media-gallery')
-    img_container = gallery.findAll('a')
-    images = [i.attrs['href'] for i in img_container if 'missing_image' not in i]
-    return {
-        'item_id': item_id,
-        'qty': len(images),
-        'images': images
-    }
+        time.sleep(int(current_app.config['SLEEP_TIME']))
+
