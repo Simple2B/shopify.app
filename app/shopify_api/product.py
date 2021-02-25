@@ -5,10 +5,8 @@ from app.logger import log
 
 class Product(BaseObject):
     def get_all(self):
-        resp = requests.get(
-            self.base_url + f"/admin/api/{self.version_api}/products.json",
-            headers=self.headers,
-        )
+        URL = self.base_url + f"/admin/api/{self.version_api}/products.json"
+        resp = requests.get(URL, headers=self.headers)
         if resp.status_code == 200:
             return resp.json()
         else:
