@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 
 from flask import current_app
 from app.shopify_api import Product, Collection
-from app.controllers import update_product
+from app.controllers import upload_product, retry_get_request
 from app.logger import log
 
 
@@ -26,7 +26,7 @@ def get_documents():
     # me_json = response.json()
 
 
-def update_products():
+def update_product():
     url = f"{current_app.config['VIDAXL_API_BASE_URL']}/api_customer/products"
     auth = HTTPBasicAuth(current_app.config["USER_NAME"], current_app.config["API_KEY"])
     response = requests.get(f"{url}?offset=0", auth=auth).json()
@@ -41,46 +41,39 @@ def update_products():
         products = response.get("data", "")
         for product in products:
             collection = product['category_path'].split('/')[0]
-            if products_in_stock >= 50:
+            if products_in_stock >= 100:
                 break
-            update_product(
+            upload_product(
                     prod_api=prod_api,
                     collect_api=collect_api,
-                    prod_id=product['id'],
+                    product_id=product['id'],
                     collection=collection,
                     title=product['name'],
                     qty=int(float(product['quantity'])),
                     price=float(product['price']),
-                    currency=product['currency']
                 )
             products_in_stock += 1
-        if products_in_stock >= 50:  # this code for testing
+        if products_in_stock >= 100:  # this code for testing
             return "Memo app (admin)"
         range_ = (total_products - limit) // limit
         for i in range(range_ + 1 if (total_products % limit) != 0 else range_):
-            try:
-                response = requests.get(f"{url}?offset={limit*(i+1)}", auth=auth)
-            except Exception as err:
-                log(log.ERROR, "Exception: [%s]", err)
-                while response.status_code != 200:
-                    response = requests.get(f"{url}?offset={limit*(i+1)}", auth=auth)
-                products = response.json().get("data", "")
+            response = retry_get_request(f"{url}?offset={limit*(i+1)}", auth=auth)
+            products = response.json().get("data", "")
             for product in products:
                 collection = product['category_path'].split('/')[0]
-                if products_in_stock >= 50:
+                if products_in_stock >= 100:
                     break
-                update_product(
+                upload_product(
                     prod_api=prod_api,
-                    prod_id=product['id'],
+                    product_id=product['id'],
                     collect_api=collect_api,
                     collection=collection,
                     title=product['name'],
                     qty=int(float(product['quantity'])),
                     price=float(product['price']),
-                    currency=product['currency']
                 )
                 products_in_stock += 1
-            if products_in_stock >= 50:  # this code for testing
+            if products_in_stock >= 100:  # this code for testing
                 return "Memo app (admin)"
         log(log.DEBUG, "Retrive products(%d) which in stock", len(products_in_stock))
         # return json.dumps(products_list)
