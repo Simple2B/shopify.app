@@ -31,6 +31,10 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
 
+    # Retry policy
+    RETRY_ATTEMPTS_NUMBER = 5
+    RETRY_TIMEOUT = 1
+
     @staticmethod
     def configure(app):
         # Implement this method to do further configuration on your app.
