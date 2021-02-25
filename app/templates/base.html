@@ -18,46 +18,6 @@
 
 <body>
   <!-- Header -->
-  <header>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-sm navbar-light bg-light">
-      <div class="container">
-        <!-- Navbar Brand -->
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">{{ config.APP_NAME }}</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <!-- Main Navigation -->
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="#about">About</a>
-            </li>
-          </ul>
-          <!-- Login/Logout -->
-          <ul class="navbar-nav ml-auto">
-            {% if current_user.is_authenticated %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="userActions" data-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false">{{current_user.username | capitalize}}</a>
-              <div class="dropdown-menu" aria-labelledby="userActions">
-                <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a>
-              </div>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-      </div>
-    </nav>
-  </header>
   <!-- Flash Messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -73,43 +33,18 @@
   {% endif %}
   {% endwith %}
   <!-- Main Content -->
-  {% block content %}{% endblock %}
-  <!-- Footer-->
-  <footer>
-    <div class="container-fluid bg-light py-5">
-      <div class="row py-4">
-        <div class="col-lg-6 col-md-4 mb-4 mb-lg-0">
-          <h6 id='about' class="text-uppercase font-weight-bold mb-4">About</h6>
-          <p class="font-italic text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-            eiusmod tempor incididunt.</p>
-        </div>
-        <div class="col-lg-2 col-md-3 mb-4 mb-lg-0">
-          <h6 class="text-uppercase font-weight-bold mb-4">Quick Links</h6>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2"><a href="{{ url_for('auth.login') }}" class="text-muted">Login</a></li>
-            <li class="mb-2"><a href="{{ url_for('auth.register') }}" class="text-muted">Register</a></li>
-          </ul>
-        </div>
-        <div class="col-lg-2 col-md-3 mb-4 mb-lg-0">
-          <h6 class="text-uppercase font-weight-bold mb-4">Social Links</h6>
-          <ul class="list-unstyled mb-0">
-            <li class="list-item"><a href="https://facebook.com" target="_blank" title="facebook"><span
-                  class="fa fa-facebook">Facebook</span></a>
-            </li>
-            <li class="list-item"><a href="https://twitter.com" target="_blank" title="twitter"><span
-                  class="fa fa-twitter"></span>Twitter</a>
-            </li>
-            <li class="list-item"><a href="https://instagram.com" target="_blank" title="instagram"><span
-                  class="fa fa-instagram"></span>Instagram</a></li>
-          </ul>
+  <section class="section">
+    {% block content %}{% endblock %}
+    <!-- Footer-->
+    <footer>
+      <div class="container-fluid bg-light py-5">
+        <!-- Copyrights -->
+        <div class="text-center">
+          <p class="text-muted mb-0 py-2">&copy;2020 {{ config.APP_NAME }} | All rights reserved.</p>
         </div>
       </div>
-      <!-- Copyrights -->
-      <div class="text-center">
-        <p class="text-muted mb-0 py-2">&copy;2020 {{ config.APP_NAME }} | All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
+    </footer>
+  </section>
   <!-- scripts -->
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
     integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

@@ -2,3 +2,18 @@
 * {
     border-radius: 0 !important;
 }
+
+.section {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.show-form {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    margin-top: 1rem;
+}

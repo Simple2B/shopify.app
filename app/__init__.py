@@ -16,7 +16,8 @@ def create_app(environment='development'):
     from app.views import (
         main_blueprint,
         auth_blueprint,
-        shopify_app_blueprint
+        shopify_app_blueprint,
+        show_stock_bp
     )
     from app.models import (
         User,
@@ -39,6 +40,7 @@ def create_app(environment='development'):
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
     app.register_blueprint(shopify_app_blueprint)
+    app.register_blueprint(show_stock_bp)
 
     # Set up flask login.
     @login_manager.user_loader

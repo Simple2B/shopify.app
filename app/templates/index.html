@@ -1,6 +1,15 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block content %}
 <div class="container">
-  <h1>Welcome!</h1>
-  <hr>
-  <p>Add some content here!</p>
+  <div class="show-form">
+    <form method="POST">
+      {{ form.item_id }}
+      <label>{{ form.item_id.title}}</label>
+      {{ form.submit }}
+    </form>
+  </div>
+  <div>
+    {{ result }}
+  </div>
 </div>
+{% endblock %}
