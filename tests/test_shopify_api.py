@@ -67,7 +67,7 @@ def _test_create_product(client):
 
 
 # Collection
-def test_create_collection(client):
+def _test_create_collection(client):
     res = Collection().create_collection(title="Some Test Collection")
     assert res
     collection_id = res.get('custom_collection', '')['id']
@@ -84,6 +84,9 @@ def test_put_product_to_collection(client):
     if 235229774030 == collection_id:
         # res = collection.put_product(6053512642766, 260457595086)
         res = collection.put_product(6053512642766, 235229774030)
-        assert res
+        if res.status_code == 422:
+            assert b'product_id":["already exists in this collection' in res.content
+        else:
+            assert res
     else:
         log(log.WARNING, "Collection did not find")

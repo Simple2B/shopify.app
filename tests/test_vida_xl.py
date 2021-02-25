@@ -36,7 +36,7 @@ def test_get_products(client):
     assert data
 
 
-def test_retry_get_request(client):
+def _test_retry_get_request(client):
     for _ in range(100):
         response = retry_get_request(URL, auth=AUTH)
         print(_)
