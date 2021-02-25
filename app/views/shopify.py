@@ -1,13 +1,13 @@
+# flake8: noqa E501
 import uuid
 import json
 import logging
-
 
 from flask import redirect, request, render_template, current_app, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
-from app.vida_xl import update_products
+from app.vida_xl import update_product
 from app.views.config import WEBHOOK_APP_UNINSTALL_URL
 
 # import shopify
@@ -29,7 +29,7 @@ def app_launched():
     if current_app.config['ACCESS_TOKEN']:
         # shop = shopify.Shop.current
         # return render_template('welcome.html', shop=shop)
-        update_products() # You can also input [version_api] arg, default arg is "2021-01" # noqa 501
+        update_product() # You can also input [version_api] arg, default arg is "2021-01" # noqa 501
         return "Memo app (admin)"
 
     # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed) # noqa 501
