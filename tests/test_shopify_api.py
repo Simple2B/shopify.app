@@ -1,9 +1,9 @@
 import pytest
 
-from flask import current_app
 from app import create_app
-from app.shopify_api import Product
+from app.shopify_api import Product, Collection
 from app.controllers import scrap_img
+from app.logger import log
 
 
 @pytest.fixture
@@ -18,10 +18,27 @@ def client():
         app_ctx.pop()
 
 
-def test_upload_product(client):
+# Product
+def test_get_products(client):
+    products = Product().get_all()
+    assert products
+    assert products['products'][0]
+
+
+def test_get_product(client):
+    res = Product().get_product(6053512642766)
+    assert res
+
+
+def test_set_quantity_to_product(client):
+    json_data = Product().set_quantity(inventory_item_id=39525202821326, quantity=15)
+    assert json_data
+
+
+def _test_create_product(client):
     images_src = scrap_img(8).get('images', '')
     assert images_src
-    product_api = Product(current_app.config['X_SHOPIFY_ACCESS_TOKEN'], current_app.config['SHOPIFY_DOMAIN'])
+    product_api = Product()
     response = product_api.create_product(
             {
                 "product": {
@@ -47,3 +64,26 @@ def test_upload_product(client):
             }
         )
     assert response
+
+
+# Collection
+def test_create_collection(client):
+    res = Collection().create_collection(title="Some Test Collection")
+    assert res
+    collection_id = res.get('custom_collection', '')['id']
+    assert collection_id
+
+
+def test_put_product_to_collection(client):
+    collection = Collection()
+    # res = collection.get_specific_custom_collections(260457595086)
+    res = collection.get_specific_custom_collections(235229774030)
+    assert res
+    collection_id = res[0]['id']
+    assert collection_id
+    if 235229774030 == collection_id:
+        # res = collection.put_product(6053512642766, 260457595086)
+        res = collection.put_product(6053512642766, 235229774030)
+        assert res
+    else:
+        log(log.WARNING, "Collection did not find")
