@@ -39,5 +39,8 @@ class Collection(BaseObject):
         )
         if resp.status_code == 201:
             return resp.json()
+        elif resp.status_code == 422:
+            log(log.DEBUG, "Product [id:%d] already exists in this collection", product_id)
+            return resp
         else:
             log(log.ERROR, "Invalid response, status code: [%s]", resp.status_code)
