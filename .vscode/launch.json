@@ -17,7 +17,7 @@
             "args": [
                 "run",
                 "-p", "8090",
-                "-h", "0.0.0.0"
+                "-h", "localhost"
             ],
             "jinja": true
         }
