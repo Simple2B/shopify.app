@@ -24,11 +24,13 @@ def client():
         app_ctx.pop()
 
 
-def _test_upload_products(client):
+@pytest.mark.skip
+def test_upload_products(client):
     res = upload_product()
     assert res
 
 
+@pytest.mark.skip
 def test_get_products(client):
     response = requests.get(f"{URL}?offset=0", auth=AUTH)
     assert response.status_code == 200
@@ -36,7 +38,8 @@ def test_get_products(client):
     assert data
 
 
-def _test_retry_get_request(client):
+@pytest.mark.skip
+def test_retry_get_request(client):
     for _ in range(100):
         response = retry_get_request(URL, auth=AUTH)
         print(_)

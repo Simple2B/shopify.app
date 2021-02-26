@@ -19,23 +19,27 @@ def client():
 
 
 # Product
+@pytest.mark.skip
 def test_get_products(client):
     products = Product().get_all()
     assert products
     assert products['products'][0]
 
 
+@pytest.mark.skip
 def test_get_product(client):
     res = Product().get_product(6053512642766)
     assert res
 
 
+@pytest.mark.skip
 def test_set_quantity_to_product(client):
     json_data = Product().set_quantity(inventory_item_id=39525202821326, quantity=15)
     assert json_data
 
 
-def _test_create_product(client):
+@pytest.mark.skip
+def test_create_product(client):
     images_src = scrap_img(8).get('images', '')
     assert images_src
     product_api = Product()
@@ -67,13 +71,15 @@ def _test_create_product(client):
 
 
 # Collection
-def _test_create_collection(client):
+@pytest.mark.skip
+def test_create_collection(client):
     res = Collection().create_collection(title="Some Test Collection")
     assert res
     collection_id = res.get('custom_collection', '')['id']
     assert collection_id
 
 
+@pytest.mark.skip
 def test_put_product_to_collection(client):
     collection = Collection()
     # res = collection.get_specific_custom_collections(260457595086)
