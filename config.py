@@ -18,6 +18,8 @@ class BaseConfig(object):
     WEBHOOK_APP_UNINSTALL_URL = os.environ.get('WEBHOOK_APP_UNINSTALL_URL', '')
     INSTALL_REDIRECT_URL = os.environ.get('INSTALL_REDIRECT_URL', '')
     ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN', '')
+    NUMBER_OF_REPETITIONS = os.environ.get('NUMBER_OF_REPETITIONS', '10')
+    SLEEP_TIME = os.environ.get('SLEEP_TIME', '.5')
 
     # Private app
     X_SHOPIFY_ACCESS_TOKEN = os.environ.get('X_SHOPIFY_ACCESS_TOKEN', '')
