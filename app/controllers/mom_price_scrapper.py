@@ -13,7 +13,7 @@ def get_html(item_id: int):
     return html
 
 
-def scrap_img(item_id: int):
+def scrap_price(item_id: int):
     """Get price from Mall of Master NL
 
     Args:
