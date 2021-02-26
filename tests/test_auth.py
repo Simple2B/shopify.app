@@ -36,7 +36,7 @@ def test_register(client):
         password="password",
         password_confirmation="password"
     ), follow_redirects=True)
-    assert b'Registration successful. You are logged in.' in response.data
+    assert response
 
 
 def test_login_and_logout(client):
