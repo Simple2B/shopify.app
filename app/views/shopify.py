@@ -1,15 +1,13 @@
+# flake8: noqa E501
 import uuid
 import json
 import logging
-import requests
-
 
 from flask import redirect, request, render_template, current_app, Blueprint
 
 from app.views import helpers
 from app.views.shopify_client import ShopifyStoreClient
-from app.vida_xl import update_products
-from app.views.config import WEBHOOK_APP_UNINSTALL_URL
+from app.vida_xl import update_product
 
 # import shopify
 
@@ -25,14 +23,14 @@ SCOPES = ['write_script_tags']  # https://shopify.dev/docs/admin-api/access-scop
 @helpers.verify_web_call
 def app_launched():
     shop = request.args.get('shop')
-    global NONCE
+    global ACCESS_TOKEN, NONCE
 
-    ACCESS_TOKEN = current_app.config['ACCESS_TOKEN']
-    if ACCESS_TOKEN:
+    if current_app.config['ACCESS_TOKEN']:
+    # if ACCESS_TOKEN:
         # shop = shopify.Shop.current
-        # return render_template('welcome.html', shop=shop)
-        update_products(ACCESS_TOKEN, current_app.config['SHOPIFY_DOMAIN']) # You can also input [version_api] arg, default arg is "2021-01" # noqa 501
-        return "Memo app (admin)"
+        return render_template('welcome.html', shop=shop)
+        # update_product() # You can also input [version_api] arg, default arg is "2021-01" # noqa 501
+        # return "Memo app (admin)"
 
     # The NONCE is a single-use random value we send to Shopify so we know the next call from Shopify is valid (see #app_installed) # noqa 501
     #   https://en.wikipedia.org/wiki/Cryptographic_nonce
@@ -68,12 +66,12 @@ def app_installed():
     return redirect(redirect_url, code=302)
 
 
-@shopify_app_blueprint.route('/rendering_template', methods=['GET'])
-@helpers.redirect_render_url
-def rendering_template():
-    request
-    shop = request.args.get('shop')
-    return render_template('index.html', shop=shop)
+# @shopify_app_blueprint.route('/rendering_template', methods=['GET'])
+# @helpers.redirect_render_url
+# def rendering_template():
+#     request
+#     shop = request.args.get('shop')
+#     return render_template('index.html', shop=shop)
 
 
 @shopify_app_blueprint.route('/app_uninstalled', methods=['POST'])
