@@ -1,3 +1,4 @@
+# flake8: noqa E501
 from functools import wraps
 from typing import List
 import logging
@@ -14,7 +15,7 @@ def generate_install_redirect_url(
 ):
     scopes_string = ",".join(scopes)
     access_mode_string = ",".join(access_mode)
-    redirect_url = f"https://{shop}/admin/oauth/authorize?client_id={current_app.config['SHOPIFY_API_KEY']}&scope={scopes_string}&redirect_uri={current_app.config['INSTALL_REDIRECT_URL']}&state={nonce}&grant_options[]={access_mode_string}"
+    redirect_url = f"https://{shop}/admin/oauth/authorize?client_id={current_app.config['SHOPIFY_API_KEY']}&scope={scopes_string}&redirect_uri={current_app.config['INSTALL_REDIRECT_URL']}&state={nonce}&grant_options[]={access_mode_string}" 
     return redirect_url
 
 
@@ -70,7 +71,9 @@ def verify_webhook_call(f):
 
 
 def verify_hmac(data: bytes, orig_hmac: str):
-    new_hmac = hmac.new(current_app.config['SHOPIFY_SECRET'].encode("utf-8"), data, hashlib.sha256)
+    new_hmac = hmac.new(
+        current_app.config["SHOPIFY_SECRET"].encode("utf-8"), data, hashlib.sha256
+    )
     return new_hmac.hexdigest() == orig_hmac
 
 
