@@ -8,8 +8,6 @@ class Configuration(db.Model, ModelMixin):
     __tablename__ = "configurations"
 
     id = db.Column(db.Integer, primary_key=True)
-    # prefix_vidaxl = db.Column(db.Boolean, default=False)
-    # price = db.Column(db.Float, nullable=False, default=0.0)
     shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=False)
     name = db.Column(db.String, default="unknown name")
     value = db.Column(db.String, default="")
