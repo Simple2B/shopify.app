@@ -2,7 +2,6 @@
 import click
 
 from app import create_app, db, models, forms
-from app.models import Configuration
 
 app = create_app()
 
@@ -20,7 +19,6 @@ def reset_db():
     """Resebase the current database."""
     db.drop_all()
     db.create_all()
-    Configuration().save()
 
 
 @app.cli.command()
