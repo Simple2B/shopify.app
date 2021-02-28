@@ -1,2 +1,3 @@
-from .auth import LoginForm, RegistrationForm  # noqa f401
-from .show_stock import ShowForm  # noqa f401
+# flake8: noqa f401
+from .show_stock import CheckProductForm
+from .configuration import ConfigurationForm
