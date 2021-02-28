@@ -1,4 +1,5 @@
-from .user import User, AnonymousUser  # noqa f401
-from .token import Token  # noqa f401
-from .price import Price  # noqa f401
-from .product import Product  # noqa f401
+# flake8: noqa f401
+from .user import User, AnonymousUser
+from .token import Token
+from .product import Product
+from .configuration import Configuration

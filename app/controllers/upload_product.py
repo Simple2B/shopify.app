@@ -1,3 +1,4 @@
+from app.models import Configuration
 from app.controllers import scrap_img
 from app.logger import log
 
@@ -11,12 +12,13 @@ def upload_product(
     price,
     collection,
 ):
-    if qty == 0:
+    if not qty:
         pass
     else:
         images_src = scrap_img(product_id).get("images", "")
-        if title.startswith("vidaXL "):
-            title = title.replace("vidaXL ", "")
+        if not Configuration.prefix_vidaxl:
+            if title.startswith("vidaXL "):
+                title = title.replace("vidaXL ", "")
         collection_id = collect_api.create_collection(
             {"custom_collection": {"title": collection}}
         )

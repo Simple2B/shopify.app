@@ -2,6 +2,7 @@
 import click
 
 from app import create_app, db, models, forms
+from app.models import Configuration
 
 app = create_app()
 
@@ -10,20 +11,16 @@ app = create_app()
 @app.shell_context_processor
 def get_context():
     """Objects exposed here will be automatically available from the shell."""
-    return dict(app=app, db=db, models=models, forms=forms)
+    return dict(app=app, db=db, m=models, forms=forms)
 
 
 @app.cli.command()
-def create_db():
-    """Create the configured database."""
-    db.create_all()
-
-
-@app.cli.command()
-@click.confirmation_option(prompt='Drop all database tables?')
-def drop_db():
-    """Drop the current database."""
+@click.confirmation_option(prompt="Drop all database tables?")
+def reset_db():
+    """Resebase the current database."""
     db.drop_all()
+    db.create_all()
+    Configuration().save()
 
 
 @app.cli.command()
