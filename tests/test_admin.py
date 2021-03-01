@@ -1,6 +1,7 @@
 import pytest
 
 from app import db, create_app
+from app.models import Shop, Configuration
 
 
 @pytest.fixture
@@ -19,7 +20,16 @@ def client():
         app_ctx.pop()
 
 
-def test_remove_vidaxl_text(client):
-    resp = client.post('/remove_vidaxl_text', data={'check_box': True})
+def test_admin(client):
+    Shop(
+            name="Test shop name",
+            access_token="shpat_5e170as4aeb9dec191c0125caa3a4077",
+        ).save()
+    configuration = Configuration(
+        shop_id=1,
+        name='Test conf name',
+        value='Some value'
+    ).save()
+    resp = client.post('/admin/1', data={configuration.name: configuration.value})
     assert resp
-    assert b'checked' in resp.data
+    assert b'Admin panel' in resp.data
