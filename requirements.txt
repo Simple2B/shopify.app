@@ -1,19 +1,19 @@
-black
 click
-email-validator
-flake8
 Flask
-Flask-Login
 Flask-SQLAlchemy
+Flask-Migrate
 Flask-WTF
-itsdangerous
 Jinja2
 MarkupSafe
-pytest
 python-dotenv
 SQLAlchemy
 Werkzeug
 WTForms
-requests==2.23.0
+# requests==2.23.0
+requests
 beautifulsoup4
 shopifyapi
+
+flake8
+black
+pytest

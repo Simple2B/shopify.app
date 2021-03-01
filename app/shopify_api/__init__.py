@@ -1,2 +1,3 @@
-from .product import Product  # noqa f401
-from .collection import Collection  # noqa f401
+# flake8: noqa f401
+from .product import Product
+from .collection import Collection

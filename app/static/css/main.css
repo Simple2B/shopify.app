@@ -10,10 +10,45 @@
     justify-content: space-between;
 }
 
-.show-form {
+.header_container {
+    display: flex;
+    justify-content: space-around;
+    align-items: baseline;
+}
+
+.check_product {
     margin-bottom: 1rem;
     display: flex;
     justify-content: center;
-    justify-items: center;
     margin-top: 1rem;
+}
+.check_product .title {
+    margin-bottom: 1rem;
+}
+
+.prefix_vidaxl{
+    display: flex;
+    flex-flow: column wrap;
+}
+
+.prefix_vidaxl > :last-child {
+    margin-top: 1rem;
+}
+
+.prefix_checkbox {
+    vertical-align: middle;
+    margin-left: .5rem;
+}
+
+.vidaxl_prefix_on {
+    color: lightgreen;
+    font-weight: 700;
+}
+
+.vidaxl_prefix_off {
+    color: grey;
+}
+
+span.vidaxl_prefix_off, span.vidaxl_prefix_on {
+    margin-left: .5rem;
 }

@@ -4,6 +4,6 @@ from wtforms.fields.simple import SubmitField
 from wtforms.validators import DataRequired
 
 
-class ShowForm(FlaskForm):
+class CheckProductForm(FlaskForm):
     item_id = StringField('Item_ID', validators=[DataRequired()])
     submit = SubmitField('Check')
