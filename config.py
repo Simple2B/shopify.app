@@ -29,8 +29,8 @@ class BaseConfig(object):
     VIDAXL_API_BASE_URL = os.environ.get(
         "VIDAXL_API_BASE_URL", "https://b2b.vidaxl.com"
     )
-    USER_NAME = os.environ.get("USER_NAME", "")
-    API_KEY = os.environ.get("API_KEY", "")
+    VIDAXL_USER_NAME = os.environ.get("VIDAXL_USER_NAME", "")
+    VIDAXL_API_KEY = os.environ.get("VIDAXL_API_KEY", "")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False

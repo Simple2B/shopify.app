@@ -1,9 +1,12 @@
 import pytest
-import requests
 
 from requests.auth import HTTPBasicAuth
-from app.controllers import upload_product, retry_get_request
-from app import create_app
+from app.controllers import upload_product, download_products
+from app import create_app, db
+from app.vida_xl import VidaXl
+from app.vida_xl.vida_xl import retry_get_request
+from app.models import Product
+from .utils import fill_db_by_test_data
 
 from config import TestingConfig as conf
 
@@ -20,7 +23,12 @@ def client():
     with app.test_client() as client:
         app_ctx = app.app_context()
         app_ctx.push()
+        db.drop_all()
+        db.create_all()
+        fill_db_by_test_data()
         yield client
+        db.session.remove()
+        db.drop_all()
         app_ctx.pop()
 
 
@@ -30,12 +38,13 @@ def test_upload_products(client):
     assert res
 
 
-@pytest.mark.skip
+@pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
 def test_get_products(client):
-    response = requests.get(f"{URL}?offset=0", auth=AUTH)
-    assert response.status_code == 200
-    data = response.json().get('data', '')
-    assert data
+    vida = VidaXl()
+    for i, prod in enumerate(vida.products):
+        assert prod
+        if i > 1111:
+            break
 
 
 @pytest.mark.skip
@@ -44,3 +53,21 @@ def test_retry_get_request(client):
         response = retry_get_request(URL, auth=AUTH)
         print(_)
         assert response
+
+
+@pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
+def test_download_products(client):
+    LIMIT = 123
+    download_products(LIMIT)
+    products = Product.query.all()
+    assert products
+    assert len(products) == LIMIT
+    for prod in products:
+        assert prod.is_new
+        prod.is_new = False
+        prod.save(False)
+    products[0].save()
+    download_products(LIMIT+LIMIT)
+    new_products = Product.query.filter(Product.is_new == True).all()
+    assert new_products
+    assert len(new_products) == LIMIT
