@@ -12,8 +12,8 @@ def retry_get_request(url, auth=None):
         try:
             res = requests.get(url, auth=auth)
             if not res.ok:
-                time.sleep(conf.RETRY_TIMEOUT)
                 log(log.DEBUG, "!> Retry attempt:%d request: [%s]", attempt_no, url)
+                time.sleep(conf.RETRY_TIMEOUT)
                 continue
             return res
         except Exception as err:
