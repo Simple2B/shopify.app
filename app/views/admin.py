@@ -5,6 +5,7 @@ from flask import (
     session,
     Blueprint,
     flash,
+    request
 )
 from app.forms import CheckProductForm, ConfigurationForm
 from app.models import Configuration
@@ -30,7 +31,7 @@ def show_stock():
 
 @admin_blueprint.route("/<int:shop_id>", methods=["GET", "POST"])
 def admin(shop_id):
-    form = ConfigurationForm()
+    form = ConfigurationForm(request.form)
     form.shop_id = shop_id
     if form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
