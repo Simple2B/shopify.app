@@ -45,4 +45,3 @@ def scrap_img(item_id: int):
             return False
         log(log.INFO, 'Invalid Response')
         time.sleep(int(current_app.config['SLEEP_TIME']))
-

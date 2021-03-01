@@ -4,11 +4,10 @@ from flask import (
     render_template,
     session,
     Blueprint,
-    current_app,
     flash,
 )
 from app.forms import CheckProductForm, ConfigurationForm
-from app.models import Shop, Configuration
+from app.models import Configuration
 from app.vida_xl import VidaXl
 from app.logger import log
 
