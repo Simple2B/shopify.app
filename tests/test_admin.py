@@ -10,7 +10,7 @@ from .utils import fill_db_by_test_data
 def client():
     app = create_app(environment="testing")
     app.config["TESTING"] = True
-    app.config["SERVER_NAME"] = "localhost"
+    app.config["SERVER_NAME"] = "localhost.localdomain"
 
     with app.test_client() as client:
         app_ctx = app.app_context()

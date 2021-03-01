@@ -29,15 +29,15 @@ class BaseConfig(object):
     VIDAXL_API_BASE_URL = os.environ.get(
         "VIDAXL_API_BASE_URL", "https://b2b.vidaxl.com"
     )
-    USER_NAME = os.environ.get("USER_NAME", "")
-    API_KEY = os.environ.get("API_KEY", "")
+    VIDAXL_USER_NAME = os.environ.get("VIDAXL_USER_NAME", "")
+    VIDAXL_API_KEY = os.environ.get("VIDAXL_API_KEY", "")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
 
     # Retry policy
     RETRY_ATTEMPTS_NUMBER = 5
-    RETRY_TIMEOUT = 1
+    RETRY_TIMEOUT = 10
 
     # Configuration parameters
     ADMIN_LEAVE_VIDAXL_PREFIX = os.environ.get("LEAVE_VIDAXL_PREFIX", "Y") in (
