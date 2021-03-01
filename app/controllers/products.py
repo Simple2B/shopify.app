@@ -95,7 +95,10 @@ def download_products(limit=None):
             if quantity != product.qty:
                 product.qty = quantity
                 product.is_changed = True
+            if product.is_deleted:
+                product.is_changed = True
             product.updated = update_date
+            product.is_deleted = False
             product.save(updated_product_count % 100 == 0)
         else:
             Product(
