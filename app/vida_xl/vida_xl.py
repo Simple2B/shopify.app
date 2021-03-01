@@ -12,12 +12,12 @@ def retry_get_request(url, auth=None):
         try:
             res = requests.get(url, auth=auth)
             if not res.ok:
-                log(log.DEBUG, "!> Retry attempt:%d request: [%s]", attempt_no, url)
+                log(log.DEBUG, "!> Retry attempt:%d request: [%s]", attempt_no + 1, url)
                 time.sleep(conf.RETRY_TIMEOUT)
                 continue
             return res
         except Exception as err:
-            log(log.WARNING, "Get request error: [%s] attempt: %d", err, attempt_no)
+            log(log.WARNING, "Get request error: [%s] attempt: %d", err, attempt_no + 1)
             time.sleep(conf.RETRY_TIMEOUT)
     log(log.ERROR, "Get request error")
     return None
@@ -40,7 +40,9 @@ class VidaXl(object):
             return f"Statucs code: {response.status_code}"
 
     def get_product(self, item_id):
-        resp = retry_get_request(f"{self.base_url}?code_eq={item_id}", auth=self.basic_auth)
+        resp = retry_get_request(
+            f"{self.base_url}?code_eq={item_id}", auth=self.basic_auth
+        )
         if not resp.status_code == 200:
             log(log.ERROR, "Invalid response, status code: [%s]", resp.stack_code)
         log(log.DEBUG, f"Response: {resp}")
@@ -107,7 +109,7 @@ class VidaXl(object):
 
     @property
     def products(self):
-        LIMIT = 100
+        LIMIT = 500
         offset = 0
         response = retry_get_request(
             f"{self.base_url}?offset={offset}&limit={LIMIT}", auth=self.basic_auth
@@ -117,6 +119,7 @@ class VidaXl(object):
             return None
         data = response.json()
         total_products = data["pagination"]["total"]
+        LIMIT = min(LIMIT, data["pagination"]["limit"])
         log(log.INFO, "Get total products: [%d]", total_products)
         products = data["data"]
         for product in products:
@@ -129,7 +132,11 @@ class VidaXl(object):
                     auth=self.basic_auth,
                 )
                 if not response or not response.status_code == 200:
-                    log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
+                    log(
+                        log.ERROR,
+                        "Invalid response, status code: [%s]",
+                        response.status_code,
+                    )
                     return None
                 data = response.json()
                 products = data["data"]

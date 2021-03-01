@@ -68,6 +68,6 @@ def test_download_products(client):
         prod.save(False)
     products[0].save()
     download_products(LIMIT+LIMIT)
-    new_products = Product.query.filter(Product.is_new == True).all()
+    new_products = Product.query.filter(Product.is_new == True).all()  # noqa E712
     assert new_products
     assert len(new_products) == LIMIT

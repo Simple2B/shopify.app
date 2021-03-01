@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from sqlalchemy.orm import query_expression
 from app.models import Configuration
 from app.controllers import scrap_img
 from app.logger import log
 from app.vida_xl import VidaXl
 from app.models import Product
+from app import db
 
 
 def upload_product(
@@ -70,10 +70,16 @@ def download_products(limit=None):
         quantity = float(prod["quantity"])
         currency = prod["currency"]
         if currency != "EUR":
-            log(log.WARNING, "Product code: [%s] currency: [%s]", code, currency)
+            log(
+                log.WARNING,
+                "Product code: [%s] skipped - currency: [%s]",
+                code,
+                currency,
+            )
+            continue
         category_path = prod["category_path"]
         if quantity == 0.0:
-            log(log.DEBUG, "Product code:[%s] has zero qty", code)
+            # log(log.DEBUG, "Product code:[%s] has zero qty", code)
             continue
         product = Product.query.filter(Product.sku == code).first()
         if product:
@@ -90,7 +96,7 @@ def download_products(limit=None):
                 product.qty = quantity
                 product.is_changed = True
             product.updated = update_date
-            product.save()
+            product.save(updated_product_count % 100 == 0)
         else:
             Product(
                 sku=code,
@@ -102,6 +108,17 @@ def download_products(limit=None):
         updated_product_count += 1
         if limit is not None and updated_product_count >= limit:
             break
+    db.session.commit()
+    for product in (
+        Product.query.filter(Product.updated < update_date)
+        .filter(Product.is_deleted == False)  # noqa E712
+        .all()
+    ):
+        product.is_deleted = True
+        product.is_changed = True
+        product.save(False)
+        log(log.DEBUG, "Product code:[%s] deleted...", product.sku)
+    db.session.commit()
     log(
         log.INFO,
         "Updated %d products in %d seconds",
