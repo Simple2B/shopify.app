@@ -58,6 +58,8 @@ def test_retry_get_request(client):
 @pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
 def test_download_products(client):
     LIMIT = 123
+    for product in Product.query.all():
+        product.delete()
     download_products(LIMIT)
     products = Product.query.all()
     assert products

@@ -36,3 +36,9 @@ def test_admin(client):
     response = client.post(url_for("admin.admin", shop_id=shop.id), data={})
     assert response.status_code == 302
     assert not Configuration.get_value(shop.id, "LEAVE_VIDAXL_PREFIX")
+
+
+def test_all_categories(client):
+    response = client.get(url_for("admin.all_categories"))
+    assert response.status_code == 200
+    assert response.data

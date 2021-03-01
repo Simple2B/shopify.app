@@ -1,3 +1,6 @@
+import io
+from datetime import datetime
+
 from flask import (
     redirect,
     url_for,
@@ -5,10 +8,11 @@ from flask import (
     session,
     Blueprint,
     flash,
-    request
+    request,
+    send_file,
 )
 from app.forms import CheckProductForm, ConfigurationForm
-from app.models import Configuration
+from app.models import Configuration, Product
 from app.vida_xl import VidaXl
 from app.logger import log
 
@@ -35,7 +39,9 @@ def admin(shop_id):
     form.shop_id = shop_id
     if form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
-        Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data)
+        Configuration.set_value(
+            shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data
+        )
         return redirect(url_for("admin.admin", shop_id=shop_id))
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
@@ -43,5 +49,33 @@ def admin(shop_id):
             for msg in form.errors[error]:
                 flash(msg, "warning")
 
-    form.leave_vidaxl_prefix.data = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
+    form.leave_vidaxl_prefix.data = Configuration.get_value(
+        shop_id, "LEAVE_VIDAXL_PREFIX"
+    )
     return render_template("index.html", form=form)
+
+
+@admin_blueprint.route("/all_categories", methods=["GET"])
+def all_categories():
+    mem = io.BytesIO()
+
+    with io.StringIO() as stream:
+        data = (
+            Product.query.filter(Product.is_deleted == False)  # noqa E712
+            .with_entities(Product.category_path)
+            .distinct()
+            .all()
+        )
+        categories = (r.category_path + "\n" for r in data)
+        stream.writelines(categories)
+        mem.write(stream.getvalue().encode("utf-8"))
+    mem.seek(0)
+
+    return send_file(
+        mem,
+        as_attachment=True,
+        attachment_filename="all_categories.txt",
+        mimetype="text/txt",
+        cache_timeout=0,
+        last_modified=datetime.now(),
+    )
