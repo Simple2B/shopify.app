@@ -12,7 +12,7 @@ from config import TestingConfig as conf
 
 
 URL = f"{conf.VIDAXL_API_BASE_URL}/api_customer/products"
-AUTH = HTTPBasicAuth(conf.USER_NAME, conf.API_KEY)
+AUTH = HTTPBasicAuth(conf.VIDAXL_USER_NAME, conf.VIDAXL_API_KEY)
 
 
 @pytest.fixture
