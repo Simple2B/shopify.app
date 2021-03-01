@@ -46,7 +46,7 @@ class BaseConfig(object):
         "true",
         "True",
     )
-    ADMIN_VIDAXL_DISCOUNT = float(os.environ.get("VIDAXL_DISCOUNT", "0.95"))
+    # ADMIN_VIDAXL_DISCOUNT = float(os.environ.get("VIDAXL_DISCOUNT", "0.95"))
 
     @staticmethod
     def configure(app):
