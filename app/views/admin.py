@@ -46,7 +46,8 @@ def admin(shop_id):
     # log(log.DEBUG, 'Next URL : [%s]', next_url)
     if form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
-        return redirect(url_for("admin.admin", shop_id=shop_id))
+        # return redirect(url_for("admin.admin", shop_id=shop_id))
+        return render_template("index.html", form=form)
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
         for error in form.errors:

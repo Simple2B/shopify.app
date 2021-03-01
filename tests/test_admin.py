@@ -35,3 +35,18 @@ def test_admin2(client):
     conf = Configuration.query.filter(Configuration.name == "LEAVE_VIDAXL_PREFIX").first()
     assert conf
     assert conf.value == "True"
+
+
+def test_admin(client):
+    Shop(
+            name="Test shop name",
+            access_token="shpat_5e170as4aeb9dec191c0125caa3a4077",
+        ).save()
+    configuration = Configuration(
+        shop_id=1,
+        name='Test conf name',
+        value='Some value'
+    ).save()
+    resp = client.post('/admin/1', data={configuration.name: configuration.value})
+    assert resp
+    assert b'Admin panel' in resp.data
