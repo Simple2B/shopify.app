@@ -47,7 +47,12 @@ def upload_product(
             }
         )
         collect_api.put_product(
-            {"collect": {"product_id": res['product']['id'], "collection_id": collection_id}}
+            {
+                "collect": {
+                    "product_id": res["product"]["id"],
+                    "collection_id": collection_id,
+                }
+            }
         )
         prod_api.set_quantity(inventory_item_id=product_id, quantity=qty)
         log(log.DEBUG, "Product created. Product id: [%d]", product_id)
@@ -56,6 +61,7 @@ def upload_product(
 def download_products(limit=None):
     vida = VidaXl()
     update_date = datetime.now()
+    updated_product_count = 0
     for prod in vida.products:
         # add product into DB
         name = prod["name"]
@@ -64,7 +70,7 @@ def download_products(limit=None):
         quantity = float(prod["quantity"])
         currency = prod["currency"]
         if currency != "EUR":
-            log(log.WARNING, "Product code: [%s] currency: [%s]", code , currency)
+            log(log.WARNING, "Product code: [%s] currency: [%s]", code, currency)
         category_path = prod["category_path"]
         if quantity == 0.0:
             log(log.DEBUG, "Product code:[%s] has zero qty", code)
@@ -93,7 +99,12 @@ def download_products(limit=None):
                 price=price,
                 qty=quantity,
             ).save()
-        if limit is not None:
-            if limit <= 1:
-                break
-            limit -= 1
+        updated_product_count += 1
+        if limit is not None and updated_product_count >= limit:
+            break
+    log(
+        log.INFO,
+        "Updated %d products in %d seconds",
+        updated_product_count,
+        (datetime.now() - update_date).seconds,
+    )

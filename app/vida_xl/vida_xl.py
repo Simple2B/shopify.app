@@ -13,6 +13,7 @@ def retry_get_request(url, auth=None):
             res = requests.get(url, auth=auth)
             if not res.ok:
                 time.sleep(conf.RETRY_TIMEOUT)
+                log(log.DEBUG, "!> Retry attempt:%d request: [%s]", attempt_no, url)
                 continue
             return res
         except Exception as err:
@@ -111,7 +112,7 @@ class VidaXl(object):
         response = retry_get_request(
             f"{self.base_url}?offset={offset}&limit={LIMIT}", auth=self.basic_auth
         )
-        if not response.status_code == 200:
+        if not response or not response.status_code == 200:
             log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
             return None
         data = response.json()
@@ -127,6 +128,9 @@ class VidaXl(object):
                     f"{self.base_url}?offset={LIMIT*(i+1)}&limit={LIMIT}",
                     auth=self.basic_auth,
                 )
+                if not response or not response.status_code == 200:
+                    log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
+                    return None
                 data = response.json()
                 products = data["data"]
                 for product in products:
