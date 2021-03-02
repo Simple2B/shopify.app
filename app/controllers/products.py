@@ -1,14 +1,13 @@
 from datetime import datetime
 
-from app.models import Configuration
+from app.models import Configuration, Category, Product
 from app.controllers import scrap_img
 from app.logger import log
 from app.vida_xl import VidaXl
-from app.models import Product
 from app import db
 
 
-def upload_product(
+def upload_product_old(
     prod_api,
     collect_api,
     product_id,
@@ -130,3 +129,26 @@ def download_products(limit=None):
         updated_product_count,
         (datetime.now() - update_date).seconds,
     )
+
+
+def upload_product(shop_id: int):
+    rows = Category.query.filter(Category.shop_id == shop_id).with_entities(Category.path).all()
+    selected_categories = [r.path.split("/") for r in rows]
+
+    def in_selected_category(category_path):
+        path = category_path.split("/")
+        for rule in selected_categories:
+            rule_len = len(rule)
+            if rule_len > len(path):
+                continue
+            if all(map(lambda x: x[0] == x[1], zip(rule, path[:rule_len]))):
+                # this product in selected category
+                return True
+        return False
+
+    products = Product.query.filter(Product.is_new == True).all()  # noqa E712
+    for product in products:
+        if in_selected_category(product.category_path):
+            # Check if product in selected category
+            collection_name = product.category_path.split("/")[0]  # TODO: Vitaly try improve
+            

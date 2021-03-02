@@ -32,12 +32,6 @@ def client():
         app_ctx.pop()
 
 
-@pytest.mark.skip
-def test_upload_products(client):
-    res = upload_product()
-    assert res
-
-
 @pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
 def test_get_products(client):
     vida = VidaXl()
@@ -73,3 +67,7 @@ def test_download_products(client):
     new_products = Product.query.filter(Product.is_new == True).all()  # noqa E712
     assert new_products
     assert len(new_products) == LIMIT
+
+
+def test_upload_products(client):
+    upload_product()
