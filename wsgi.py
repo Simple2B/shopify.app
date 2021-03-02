@@ -30,5 +30,13 @@ def scrappy():
     log(log.INFO, scrap.scrap_img(35653))
 
 
+@app.cli.command()
+def update_vidaxl_products():
+    """Update all products from VidaXl
+    """
+    from app.controllers import download_products
+    download_products()
+
+
 if __name__ == '__main__':
     app.run()

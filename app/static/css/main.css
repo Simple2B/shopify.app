@@ -52,3 +52,8 @@
 span.vidaxl_prefix_off, span.vidaxl_prefix_on {
     margin-left: .5rem;
 }
+
+.flex {
+    display: flex;
+    align-items: baseline;
+}

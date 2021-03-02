@@ -8,4 +8,4 @@ env/
 .flaskenv
 .env
 *.pyc
-/*.sqlite3
+/*.sqlite3*
