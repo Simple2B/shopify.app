@@ -1,4 +1,9 @@
+import os
 from app.models import Shop, Product
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FOLDER = os.path.join(BASE_DIR, "data")
+CATEGORIES_FILE = os.path.join(DATA_FOLDER, "categories.txt")
 
 
 def fill_db_by_test_data():

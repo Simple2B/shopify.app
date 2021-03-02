@@ -12,6 +12,9 @@
           {{form.leave_vidaxl_prefix(class='form-control col-sm-1')}}
         </div>
         <div class="form-group row flex">
+          <a href="{{ url_for('admin.all_categories') }}">All Categories in VidaXl</a>
+        </div>
+        <div class="form-group row flex">
           {{form.category_rules_file.label(class='col-sm-4')}}
           {{form.category_rules_file(class='form-control col-sm-7')}}
         </div>
