@@ -11,6 +11,7 @@ from app.forms import CheckProductForm, ConfigurationForm
 from app.models import Shop
 from app.vida_xl import VidaXl
 from app.logger import log
+from app.controllers import shopify_auth_required
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -30,6 +31,7 @@ def show_stock():
 
 
 @admin_blueprint.route("/<int:shop_id>", methods=["GET", "POST"])
+@shopify_auth_required
 def admin(shop_id):
     form = ConfigurationForm()
     form.shop_id = shop_id
