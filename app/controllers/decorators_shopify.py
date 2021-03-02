@@ -1,5 +1,5 @@
-import shopify
 from functools import wraps
+import shopify
 from flask import session, redirect, url_for, request, current_app
 
 from app.models import Shop
@@ -17,7 +17,7 @@ def shopify_auth_required(f):
                 secret=current_app.config["SHOPIFY_SECRET"],
             )
             if not shopify.Session.validate_params(request.args):
-                log(log.ERROR, "We have a problem")
+                log(log.ERROR, "Wrong arguments in the request")
                 return redirect(url_for("shopify_bp.install", **request.args))
             shop = Shop.query.filter_by(name=shop_url).first()
             if not shop:

@@ -62,4 +62,4 @@ def finalize():
     session["shopify_token"] = token
     session["shopify_id"] = shop.id
 
-    return redirect(url_for("admin.admin", shop_id=shop.id))
+    return redirect(url_for("admin.admin", shop_id=shop.id, shop=shop_url))
