@@ -6,7 +6,7 @@
       <h4 class="card-title">Admin panel</h4>
     </div>
     <div class="card-body">
-      <form class="form" role="form" action="{{ url_for('admin.admin', shop_id=form.shop_id) }}" method="post">
+      <form class="form" role="form" action="{{ url_for('admin.admin', shop_id=form.shop_id) }}" method="post" enctype="multipart/form-data">
         <div class="form-group row flex">
           {{form.leave_vidaxl_prefix.label(class='col-sm-4')}}
           {{form.leave_vidaxl_prefix(class='form-control col-sm-1')}}

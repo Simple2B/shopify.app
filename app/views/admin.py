@@ -67,6 +67,7 @@ def all_categories():
             Product.query.filter(Product.is_deleted == False)  # noqa E712
             .with_entities(Product.category_path)
             .distinct()
+            .order_by(Product.category_path)
             .all()
         )
         categories = (r.category_path + "\n" for r in data)
