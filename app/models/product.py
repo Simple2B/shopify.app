@@ -1,6 +1,7 @@
 from datetime import datetime
 from app import db
 from app.models.utils import ModelMixin
+from sqlalchemy.orm import relationship
 
 
 class Product(db.Model, ModelMixin):
@@ -19,6 +20,8 @@ class Product(db.Model, ModelMixin):
     price = db.Column(db.Float, default=0.0)
     qty = db.Column(db.Integer, default=-1)
     updated = db.Column(db.DateTime, default=datetime.now)
+
+    shop_products = relationship("ShopProduct")
 
     def __repr__(self) -> str:
         return self.__str__()

@@ -2,13 +2,13 @@ import pytest
 
 from app import create_app
 from app.shopify_api import Product, Collection
-from app.controllers import scrap_img
+from app.controllers import scrap_img, upload_product
 from app.logger import log
 
 
 @pytest.fixture
 def client():
-    app = create_app(environment="testing")
+    app = create_app(environment="development")
     app.config["TESTING"] = True
 
     with app.test_client() as client:
@@ -96,3 +96,7 @@ def test_put_product_to_collection(client):
             assert res
     else:
         log(log.WARNING, "Collection did not find")
+
+
+def test_upload_products(client):
+    upload_product(1)

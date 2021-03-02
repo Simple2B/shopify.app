@@ -1,10 +1,13 @@
 from datetime import datetime
 
-from app.models import Configuration, Category, Product
-from app.controllers import scrap_img
+import shopify
+from app.models import Configuration, Category, Product, Shop, ShopProduct
+from .price import get_price
+from .scrap import scrap_img
 from app.logger import log
 from app.vida_xl import VidaXl
 from app import db
+from config import BaseConfig as conf
 
 
 def upload_product_old(
@@ -68,7 +71,7 @@ def download_products(limit=None):
         price = float(prod["price"])
         quantity = float(prod["quantity"])
         currency = prod["currency"]
-        vidaxl_id = prod['id']
+        vidaxl_id = prod["id"]
         if currency != "EUR":
             log(
                 log.WARNING,
@@ -132,7 +135,7 @@ def download_products(limit=None):
 
 
 def upload_product(shop_id: int):
-    rows = Category.query.filter(Category.shop_id == shop_id).with_entities(Category.path).all()
+    rows = Category.query.filter(Category.shop_id == shop_id).all()
     selected_categories = [r.path.split("/") for r in rows]
 
     def in_selected_category(category_path):
@@ -146,9 +149,72 @@ def upload_product(shop_id: int):
                 return True
         return False
 
-    products = Product.query.filter(Product.is_new == True).all()  # noqa E712
-    for product in products:
-        if in_selected_category(product.category_path):
-            # Check if product in selected category
-            collection_name = product.category_path.split("/")[0]  # TODO: Vitaly try improve
-            
+    shop = Shop.query.get(shop_id)
+    log(log.INFO, "Update shop: %s", shop.name)
+    begin_time = datetime.now()
+    updated_product_count = 0
+    with shopify.Session.temp(shop.name, conf.VERSION_API, shop.access_token):
+        collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
+        products = Product.query.filter(Product.is_new == True).all()  # noqa E712
+        for product in products:
+            if in_selected_category(product.category_path):
+                # check if product already created in the shop
+                # ShopProduct.query.filter(ShopProduct.shop_id == shop_id).filter(ShopProduct.product_id)
+                shop_products = [
+                    sp for sp in product.shop_products if sp.shop_id == shop_id
+                ]
+                if not shop_products:
+                    collection_name = product.category_path.split("/")[
+                        0
+                    ]  # TODO: Vitaly try improve
+                    log(log.INFO, "New product [%s] --> [%s]", product.title, collection_name)
+                    if collection_name not in collection_names:
+                        collection = shopify.CustomCollection.create(
+                            dict(title=collection_name)
+                        )
+                        collection_names[collection_name] = collection.id
+                    collection_id = collection_names[collection_name]
+
+                    log(log.DEBUG, "price: %s", product.price)
+                    shop_prod = shopify.Product.create(
+                        dict(
+                            title=product.title,
+                            variants=[dict(price=get_price(product), sku=product.sku)],
+                            images=[
+                                {"src": img}
+                                for img in scrap_img(product.vidaxl_id).get(
+                                    "images", []
+                                )
+                            ],
+                        )
+                    )
+                    assert shop_prod
+                    ShopProduct(
+                        shop_product_id=shop_prod.id,
+                        shop_id=shop_id,
+                        product_id=product.id,
+                    ).save()
+                    collect = shopify.Collect.create(
+                        dict(product_id=shop_prod.id, collection_id=collection_id)
+                    )
+                    assert collect
+                    inventory_item_id = shop_prod.variants[0].inventory_item_id
+                    inv_levels = shopify.InventoryLevel.find(inventory_item_ids=inventory_item_id)
+                    if inv_levels:
+                        items = shopify.InventoryItem.find(ids=inventory_item_id)
+                        for item in items:
+                            item.tracked = True
+                            item.save()
+                        for inv_level in inv_levels:
+                            location_id = inv_level.location_id
+                            inv_level.available = product.qty
+                            shopify.InventoryLevel.set(location_id, inventory_item_id, product.qty)
+                    product.is_new = False
+                    product.save()
+                    updated_product_count += 1
+    log(
+        log.INFO,
+        "Updated %d products in %d seconds",
+        updated_product_count,
+        (datetime.now() - begin_time).seconds,
+    )

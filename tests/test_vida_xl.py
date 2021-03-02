@@ -68,6 +68,3 @@ def test_download_products(client):
     assert new_products
     assert len(new_products) == LIMIT
 
-
-def test_upload_products(client):
-    upload_product()

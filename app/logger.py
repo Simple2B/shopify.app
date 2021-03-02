@@ -1,7 +1,7 @@
 import logging
 import sys
 
-LOGGER_NAME = "FloraAppLog"
+LOGGER_NAME = "ShopifyApp"
 
 
 class Logger(object):

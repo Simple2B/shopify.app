@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, FileField
+from wtforms import BooleanField, FileField, StringField
 from wtforms.fields.simple import SubmitField
 
 
@@ -9,5 +9,6 @@ class ConfigurationForm(FlaskForm):
         default=False,
     )
     category_rules_file = FileField("Category rule")
+    access_token = StringField("Access Token", default="")
     # TODO: add others configuration parameters
     submit = SubmitField("Save")

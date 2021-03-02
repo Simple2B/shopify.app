@@ -14,7 +14,7 @@ from flask import (
 from app.forms import CheckProductForm, ConfigurationForm
 from app.models import Configuration, Product
 from app.vida_xl import VidaXl
-from app.controllers import update_categories
+from app.controllers import update_categories, update_access_token
 from app.logger import log
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -45,6 +45,8 @@ def admin(shop_id):
         )
         if "category_rules_file" in request.files:
             update_categories(shop_id, request.files["category_rules_file"])
+        if form.access_token.data:
+            update_access_token(shop_id, form.access_token.data)
         return redirect(url_for("admin.admin", shop_id=shop_id))
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
