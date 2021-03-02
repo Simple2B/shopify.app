@@ -2,6 +2,7 @@ import pytest
 
 from app import db, create_app
 from flask import url_for
+import shopify
 from app.models import Shop, Configuration, Category
 from .utils import fill_db_by_test_data, CATEGORIES_FILE
 
@@ -24,10 +25,14 @@ def client():
         app_ctx.pop()
 
 
-def test_admin(client):
+def test_admin(client, monkeypatch):
+
+    def mockreturn(*args, **kwargs):
+        return True
+    monkeypatch.setattr(shopify.Session, "validate_params", mockreturn)
     shop = Shop.query.first()
     assert shop, "At least one shop must be in the DB"
-    response = client.get(url_for("admin.admin", shop_id=shop.id))
+    response = client.get(url_for("admin.admin", shop_id=shop.id, shop=shop.name))
     assert response
     assert response.status_code == 200
     response = client.post(url_for("admin.admin", shop_id=shop.id), data={"leave_vidaxl_prefix": True})
