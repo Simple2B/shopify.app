@@ -14,6 +14,7 @@ from flask import (
 from app.forms import CheckProductForm, ConfigurationForm
 from app.models import Configuration, Product
 from app.vida_xl import VidaXl
+from app.controllers import update_categories
 from app.logger import log
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -42,6 +43,8 @@ def admin(shop_id):
         Configuration.set_value(
             shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data
         )
+        if "category_rules_file" in request.files:
+            update_categories(shop_id, request.files["category_rules_file"])
         return redirect(url_for("admin.admin", shop_id=shop_id))
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
