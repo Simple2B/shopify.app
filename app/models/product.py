@@ -10,6 +10,7 @@ class Product(db.Model, ModelMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     sku = db.Column(db.String, unique=True)
+    vidaxl_id = db.Column(db.Integer, unique=True)
     is_new = db.Column(db.Boolean, default=True)
     is_changed = db.Column(db.Boolean, default=False)
     is_deleted = db.Column(db.Boolean, default=False)

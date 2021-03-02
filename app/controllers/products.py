@@ -69,6 +69,7 @@ def download_products(limit=None):
         price = float(prod["price"])
         quantity = float(prod["quantity"])
         currency = prod["currency"]
+        vidaxl_id = prod['id']
         if currency != "EUR":
             log(
                 log.WARNING,
@@ -103,6 +104,7 @@ def download_products(limit=None):
         else:
             Product(
                 sku=code,
+                vidaxl_id=vidaxl_id,
                 title=name,
                 category_path=category_path,
                 price=price,
