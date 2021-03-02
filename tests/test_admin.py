@@ -7,7 +7,6 @@ from app.models import Shop, Configuration
 from .utils import fill_db_by_test_data
 
 
-
 @pytest.fixture
 def client():
     app = create_app(environment="testing")

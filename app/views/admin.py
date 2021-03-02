@@ -2,7 +2,6 @@ from flask import (
     redirect,
     url_for,
     render_template,
-    session,
     Blueprint,
     flash,
     request
