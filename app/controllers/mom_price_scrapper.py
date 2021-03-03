@@ -35,10 +35,10 @@ def price_generator(purchase_price, margin,  mom=None, round_to=None):
     """Generate new price
 
     Args:
-        purchase_price (str or int): Purchase price
-        margin (str or int): Margin procent. Defaults to None.
+        purchase_price (str or int): Purchase price.
+        margin (str or int): Margin procent. (e.g. 20, 10, 15, 50, 100)
         mom (str or int, optional): Price at Mall of Master. Defaults to None.
-        round_to (str or int, optional): Round to (e.g. xx.99) Defaults to None.
+        round_to (str or int, optional): Round to (e.g. 99, 95, 50) Defaults to None.
 
     Returns:
         [str]: Price
