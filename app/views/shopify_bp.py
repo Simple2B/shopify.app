@@ -31,8 +31,11 @@ def install():
     session = shopify.Session(shop_url, version=current_app.config["VERSION_API"])
     log(log.DEBUG, "session: [%s]", session)
     scope = ["write_products", "read_products", "read_script_tags", "write_script_tags"]
+    # permission_url = session.create_permission_url(
+    #     scope, url_for("shopify_bp.finalize", _external=True)
+    # )
     permission_url = session.create_permission_url(
-        scope, url_for("shopify_bp.finalize", _external=True)
+        scope, f"https://{current_app.config['HOST_NAME']}/shopify/finalize"
     )
     log(log.DEBUG, "permission_url: [%s]", permission_url)
     return render_template("shopify_bp/install.html", permission_url=permission_url)

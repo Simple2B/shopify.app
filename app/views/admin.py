@@ -14,7 +14,6 @@ from app.forms import ConfigurationForm
 from app.models import Configuration, Product
 from app.logger import log
 from app.controllers import (
-    shopify_auth_required,
     update_categories,
     update_access_token,
 )
@@ -23,7 +22,7 @@ admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
 
 
 @admin_blueprint.route("/<int:shop_id>", methods=["GET", "POST"])
-@shopify_auth_required
+# @shopify_auth_required
 def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
@@ -34,8 +33,8 @@ def admin(shop_id):
         )
         if "category_rules_file" in request.files:
             update_categories(shop_id, request.files["category_rules_file"])
-        if form.access_token.data:
-            update_access_token(shop_id, form.access_token.data)
+        if form.private_app_access_token.data:
+            update_access_token(shop_id, form.private_app_access_token.data)
         return redirect(url_for("admin.admin", shop_id=shop_id))
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)

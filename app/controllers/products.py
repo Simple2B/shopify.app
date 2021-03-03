@@ -66,7 +66,14 @@ def download_products(limit=None):
     updated_product_count = 0
     for prod in vida.products:
         # add product into DB
-        name = prod["name"]
+        title = prod["name"]
+        if not Configuration.prefix_vidaxl:
+            name = title
+        else:
+            if title.startswith("vidaXL "):
+                name = title.replace("vidaXL ", "")
+            else:
+                name = title
         code = prod["code"]
         price = float(prod["price"])
         quantity = float(prod["quantity"])
@@ -153,7 +160,7 @@ def upload_product(shop_id: int):
     log(log.INFO, "Update shop: %s", shop.name)
     begin_time = datetime.now()
     updated_product_count = 0
-    with shopify.Session.temp(shop.name, conf.VERSION_API, shop.access_token):
+    with shopify.Session.temp(shop.name, conf.VERSION_API, shop.private_app_access_token):
         collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
         products = Product.query.filter(Product.is_new == True).all()  # noqa E712
         for product in products:
