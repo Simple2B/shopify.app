@@ -31,13 +31,13 @@ def scrap_price(item_id: int):
     return int(price.string[2:])
 
 
-def price_generator(purchase_price, mom=None, margin=0, round_to=None):
+def price_generator(purchase_price, margin,  mom=None, round_to=None):
     """Generate new price
 
     Args:
         purchase_price (str or int): Purchase price
+        margin (str or int): Margin procent. Defaults to None.
         mom (str or int, optional): Price at Mall of Master. Defaults to None.
-        margin (str or int, optional): Margin procent. Defaults to None.
         round_to (str or int, optional): Round to (e.g. xx.99) Defaults to None.
 
     Returns:
