@@ -3,8 +3,8 @@ import pytest
 from app import db, create_app
 from flask import url_for
 import shopify
-from app.models import Shop, Configuration
-from .utils import fill_db_by_test_data
+from app.models import Shop, Configuration, Category
+from .utils import fill_db_by_test_data, CATEGORIES_FILE
 
 
 @pytest.fixture
@@ -41,3 +41,14 @@ def test_admin(client, monkeypatch):
     response = client.post(url_for("admin.admin", shop_id=shop.id), data={})
     assert response.status_code == 302
     assert not Configuration.get_value(shop.id, "LEAVE_VIDAXL_PREFIX")
+    with open(CATEGORIES_FILE, "rb") as file:
+        response = client.post(url_for("admin.admin", shop_id=shop.id), data=dict(category_rules_file=file))
+        assert response.status_code == 302
+    categories = Category.query.all()
+    assert len(categories) == 3
+
+
+def test_all_categories(client):
+    response = client.get(url_for("admin.all_categories"))
+    assert response.status_code == 200
+    assert response.data

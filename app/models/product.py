@@ -19,5 +19,8 @@ class Product(db.Model, ModelMixin):
     qty = db.Column(db.Integer, default=-1)
     updated = db.Column(db.DateTime, default=datetime.now)
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def __str__(self):
-        return f"<title: {self.title}>"
+        return f"<{self.title}({self.sku})>"
