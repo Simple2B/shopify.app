@@ -14,8 +14,8 @@ class Collection(ShopifyBase):
     def get_specific_custom_collections(self, *collection_ids: int) -> list:
         collection_ids = ','.join([str(arg) for arg in collection_ids])
         resp = requests.get(
-            cls.BASE_URL + f"/admin/api/{cls.VERSION_API}/custom_collections.json?ids={collection_ids}",
-            headers=cls.headers(self.shop_id)
+            self.BASE_URL + f"/admin/api/{self.VERSION_API}/custom_collections.json?ids={collection_ids}",
+            headers=self.headers(self.shop_id)
         )
         if resp.status_code == 200:
             custom_collections = resp.json().get("custom_collections", "")
@@ -30,7 +30,7 @@ class Collection(ShopifyBase):
     def create(cls, title: str, shop_id: int):
         resp = requests.post(
             cls.BASE_URL + f"/admin/api/{cls.VERSION_API}/custom_collections.json",
-            headers=cls.headers(self.shop_id),
+            headers=cls.headers(cls.shop_id),
             json={"custom_collection": {"title": title}}
         )
         if resp.status_code != 201:

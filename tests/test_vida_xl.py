@@ -1,7 +1,7 @@
 import pytest
 
 from requests.auth import HTTPBasicAuth
-from app.controllers import upload_product, download_products
+from app.controllers import download_products
 from app import create_app, db
 from app.vida_xl import VidaXl
 from app.vida_xl.vida_xl import retry_get_request
@@ -67,4 +67,3 @@ def test_download_products(client):
     new_products = Product.query.filter(Product.is_new == True).all()  # noqa E712
     assert new_products
     assert len(new_products) == LIMIT
-

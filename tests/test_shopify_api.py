@@ -2,7 +2,7 @@ import pytest
 
 from app import create_app
 from app.shopify_api import Product, Collection
-from app.controllers import scrap_img, upload_product
+from app.controllers import scrap_img
 from app.logger import log
 
 

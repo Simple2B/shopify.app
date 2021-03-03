@@ -15,8 +15,8 @@ def create_app(environment='development'):
 
     from config import config
     from app.views import (
-        shopify_app_blueprint,
-        admin_blueprint
+        admin_blueprint,
+        shopify_bp
     )
 
     # Instantiate app.
@@ -32,8 +32,8 @@ def create_app(environment='development'):
     migrate.init_app(app, db)
 
     # Register blueprints.
-    app.register_blueprint(shopify_app_blueprint)
     app.register_blueprint(admin_blueprint)
+    app.register_blueprint(shopify_bp)
 
     # Error handlers.
     @app.errorhandler(HTTPException)
