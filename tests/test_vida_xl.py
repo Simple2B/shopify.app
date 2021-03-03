@@ -5,7 +5,7 @@ from app.controllers import download_products
 from app import create_app, db
 from app.vida_xl import VidaXl
 from app.vida_xl.vida_xl import retry_get_request
-from app.models import Product
+from app.models import Product, Configuration
 from .utils import fill_db_by_test_data
 
 from config import TestingConfig as conf
@@ -37,6 +37,17 @@ def test_get_products(client):
     vida = VidaXl()
     for i, prod in enumerate(vida.products):
         assert prod
+        title = prod["name"]
+        if not Configuration.get_value(
+            1, "LEAVE_VIDAXL_PREFIX"
+        ):
+            name = title
+        else:
+            if title.startswith("vidaXL "):
+                name = title.replace("vidaXL ", "")
+            else:
+                name = title
+        assert name
         if i > 1111:
             break
 
