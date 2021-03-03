@@ -7,7 +7,7 @@ CATEGORIES_FILE = os.path.join(DATA_FOLDER, "categories.txt")
 
 
 def fill_db_by_test_data():
-    Shop(name="memo-s2b-store.myshopify.com", access_token='bubu').save()
+    Shop(name="Test Shop").save()
     categories = [
         "Toys & Games/Toys/Kids Riding Vehicles/Push & Pedal Riding Vehicles",
         "Toys & Games/Toys/Kids Riding Vehicles/Push & Pedal Riding Vehicles",
