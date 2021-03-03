@@ -96,7 +96,3 @@ def test_put_product_to_collection(client):
             assert res
     else:
         log(log.WARNING, "Collection did not find")
-
-
-def test_upload_products(client):
-    upload_product(1)
