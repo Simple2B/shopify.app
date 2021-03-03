@@ -1,8 +1,9 @@
 import pytest
 
+import shopify
+
 from app import db, create_app
 from flask import url_for
-import shopify
 from app.models import Shop, Configuration, Category
 from .utils import fill_db_by_test_data, CATEGORIES_FILE
 

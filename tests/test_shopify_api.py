@@ -8,7 +8,7 @@ from app.logger import log
 
 @pytest.fixture
 def client():
-    app = create_app(environment="testing")
+    app = create_app(environment="development")
     app.config["TESTING"] = True
 
     with app.test_client() as client:

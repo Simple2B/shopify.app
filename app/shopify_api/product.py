@@ -1,9 +1,9 @@
 import requests
-from app.shopify_api.base_object import BaseObject
+from app.shopify_api.base_object import ShopifyBase
 from app.logger import log
 
 
-class Product(BaseObject):
+class Product(ShopifyBase):
     def get_all(self):
         URL = self.base_url + f"/admin/api/{self.version_api}/products.json"
         resp = requests.get(URL, headers=self.headers)

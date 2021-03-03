@@ -12,9 +12,12 @@ from flask import (
 )
 from app.forms import ConfigurationForm
 from app.models import Configuration, Product
-from app.controllers import update_categories
 from app.logger import log
-from app.controllers import shopify_auth_required
+from app.controllers import (
+    shopify_auth_required,
+    update_categories,
+    update_access_token,
+)
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -31,6 +34,8 @@ def admin(shop_id):
         )
         if "category_rules_file" in request.files:
             update_categories(shop_id, request.files["category_rules_file"])
+        if form.access_token.data:
+            update_access_token(shop_id, form.access_token.data)
         return redirect(url_for("admin.admin", shop_id=shop_id))
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
@@ -53,6 +58,7 @@ def all_categories():
             Product.query.filter(Product.is_deleted == False)  # noqa E712
             .with_entities(Product.category_path)
             .distinct()
+            .order_by(Product.category_path)
             .all()
         )
         categories = (r.category_path + "\n" for r in data)

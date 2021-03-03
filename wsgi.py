@@ -38,5 +38,20 @@ def update_vidaxl_products():
     download_products()
 
 
+@app.cli.command()
+def update_shop_products():
+    """Update all products from VidaXl
+    """
+    from app.controllers import upload_product
+    from app.models import Shop
+    from app.logger import log
+    for shop in Shop.query.all():
+        try:
+            upload_product(shop.id)
+        except Exception as e:
+            log(log.ERROR, "%s", e)
+            log(log.CRITICAL, "Error update products in: %s", shop)
+
+
 if __name__ == '__main__':
     app.run()

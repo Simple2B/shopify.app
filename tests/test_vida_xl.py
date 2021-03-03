@@ -1,7 +1,7 @@
 import pytest
 
 from requests.auth import HTTPBasicAuth
-from app.controllers import upload_product, download_products
+from app.controllers import download_products
 from app import create_app, db
 from app.vida_xl import VidaXl
 from app.vida_xl.vida_xl import retry_get_request
@@ -30,12 +30,6 @@ def client():
         db.session.remove()
         db.drop_all()
         app_ctx.pop()
-
-
-@pytest.mark.skip
-def test_upload_products(client):
-    res = upload_product()
-    assert res
 
 
 @pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")

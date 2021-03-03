@@ -1,8 +1,12 @@
-from flask import current_app
+from app.models import Shop
+from config import BaseConfig as conf
 
 
-class BaseObject(object):
-    def __init__(self):
-        self.headers = {"X-Shopify-Access-Token": current_app.config['X_SHOPIFY_ACCESS_TOKEN']}
-        self.base_url = current_app.config['SHOPIFY_DOMAIN']
-        self.version_api = current_app.config['VERSION_API']
+class ShopifyBase(object):
+    BASE_URL = conf.SHOPIFY_DOMAIN
+    VERSION_API = conf.VERSION_API
+
+    @staticmethod
+    def headers(shop_id: int) -> dict:
+        shop = Shop.query.get(shop_id)
+        return {"X-Shopify-Access-Token": shop.access_token}

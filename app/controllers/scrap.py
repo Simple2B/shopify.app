@@ -43,5 +43,5 @@ def scrap_img(item_id: int):
         elif i == int(current_app.config['NUMBER_OF_REPETITIONS']) - 1:
             log(log.EXCEPTION, 'Server is not available')
             return False
-        log(log.INFO, 'Invalid Response')
-        time.sleep(int(current_app.config['SLEEP_TIME']))
+        log(log.DEBUG, 'Scraping pictures: Invalid Response. Try again...')
+        time.sleep(current_app.config['SLEEP_TIME'])
