@@ -49,7 +49,7 @@ def price_generator(purchase_price, mom=None, margin=0, round_to=None):
             new_price = float(purchase_price) * (float(margin)/100+1)
         else:
             if mom > 1:
-                new_price = str(mom-1)[:-2] + '.' + str(round_to)
+                new_price = str(mom-1)[:-2] + str(round_to)
             else:
                 new_price = float(purchase_price) * (float(margin)/100+1)
     else:
