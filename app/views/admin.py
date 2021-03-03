@@ -12,7 +12,6 @@ from flask import (
 )
 from app.forms import ConfigurationForm
 from app.models import Configuration, Product
-from app.controllers import update_categories
 from app.logger import log
 from app.controllers import (
     shopify_auth_required,
