@@ -9,6 +9,7 @@ class Shop(db.Model, ModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, default="")
     access_token = db.Column(db.String, default="")
+    private_app_access_token = db.Column(db.String, default="")
 
     configurations = relationship("Configuration")
 
