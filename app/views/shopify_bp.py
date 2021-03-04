@@ -5,8 +5,8 @@ from flask import (
     current_app,
     request,
     redirect,
-    session
-    url_for,
+    session,
+    url_for
 )
 
 from app.models import Shop
