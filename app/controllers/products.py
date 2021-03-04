@@ -153,7 +153,7 @@ def upload_product(shop_id: int):
     log(log.INFO, "Update shop: %s", shop.name)
     begin_time = datetime.now()
     updated_product_count = 0
-    with shopify.Session.temp(shop.name, conf.VERSION_API, shop.access_token):
+    with shopify.Session.temp(shop.name, conf.VERSION_API, conf.SHOPIFY_PRIVATE_APP_PASSWORD):
         collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
         products = Product.query.filter(Product.is_new == True).all()  # noqa E712
         for product in products:
@@ -176,10 +176,11 @@ def upload_product(shop_id: int):
                     collection_id = collection_names[collection_name]
 
                     log(log.DEBUG, "price: %s", product.price)
+                    price = get_price(product)
                     shop_prod = shopify.Product.create(
                         dict(
                             title=product.title,
-                            variants=[dict(price=get_price(product), sku=product.sku)],
+                            variants=[dict(price=price, sku=product.sku)],
                             images=[
                                 {"src": img}
                                 for img in scrap_img(product.vidaxl_id).get(
@@ -193,6 +194,7 @@ def upload_product(shop_id: int):
                         shop_product_id=shop_prod.id,
                         shop_id=shop_id,
                         product_id=product.id,
+                        price=price
                     ).save()
                     collect = shopify.Collect.create(
                         dict(product_id=shop_prod.id, collection_id=collection_id)
