@@ -14,10 +14,10 @@ from app import db
 from app.logger import log
 
 
-shopify_bp = Blueprint("shopify_bp", __name__, url_prefix="/shopify")
+shopify_blueprint = Blueprint("shopify", __name__, url_prefix="/shopify")
 
 
-@shopify_bp.route("/install")
+@shopify_blueprint.route("/install")
 def install():
     """Redirect user to permission authorization page."""
 
@@ -38,7 +38,7 @@ def install():
     return render_template("shopify_bp/install.html", permission_url=permission_url)
 
 
-@shopify_bp.route("/finalize")
+@shopify_blueprint.route("/finalize")
 def finalize():
     """Generate shop token and store the shop information."""
 
