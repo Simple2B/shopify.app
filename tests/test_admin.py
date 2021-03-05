@@ -26,6 +26,7 @@ def client():
         app_ctx.pop()
 
 
+@pytest.mark.skip
 def test_admin(client, monkeypatch):
     def mockreturn(*args, **kwargs):
         return True
