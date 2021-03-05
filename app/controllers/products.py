@@ -179,10 +179,11 @@ def upload_product(shop_id: int):
                     title = product.title
                     if Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX"):
                         title = title.replace("vidaXL ", "") if title.startswith("vidaXL ") else title
+                    price = get_price(product, shop_id)
                     shop_prod = shopify.Product.create(
                         dict(
                             title=title,
-                            variants=[dict(price=get_price(product), sku=product.sku)],
+                            variants=[dict(price=get_price(product, shop_id), sku=product.sku)],
                             images=[
                                 {"src": img}
                                 for img in scrap_img(product.vidaxl_id).get(
