@@ -12,6 +12,8 @@ class Shop(db.Model, ModelMixin):
     private_app_access_token = db.Column(db.String, default="")
 
     configurations = relationship("Configuration")
+    products = relationship("ShopProduct")
+    categories = relationship("Category")
 
     def __repr__(self):
         return f"{self.id}) {self.name}"

@@ -63,5 +63,48 @@ def update_shop_products():
             log(log.CRITICAL, "Error update products in: %s", shop)
 
 
+@app.cli.command()
+def info():
+    """Get App Info"""
+    import json
+    from app.models import Product, Shop
+
+    all_products = Product.query
+    shops = {s.id: s.name for s in Shop.query.all()}
+
+    print(
+        json.dumps(
+            {"Vida products:": all_products.count(), "Shops:": shops},
+            indent=2,
+        )
+    )
+
+
+@app.cli.command()
+@click.argument("shop-id")
+def shop_info(shop_id):
+    """Get App Info"""
+    import json
+    from app.models import Shop
+
+    shop = Shop.query.get(shop_id)
+    if not shop:
+        print("Wrong shop id:", shop_id)
+        return
+
+    categories = [c.path for c in shop.categories]
+
+    print(
+        json.dumps(
+            {
+                "Shop:": shop.name,
+                "Shop products:": len(shop.products),
+                "Selected categories": categories,
+            },
+            indent=2,
+        )
+    )
+
+
 if __name__ == "__main__":
     app.run()
