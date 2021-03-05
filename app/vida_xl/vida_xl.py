@@ -16,7 +16,13 @@ def retry_get_request(url, auth=None, headers=None):
             if not res.ok:
                 if attempt_no:
                     time_sleep *= 2
-                log(log.DEBUG, "!> Retry attempt:%d request: [%s]; time sleep: [%d]", attempt_no + 1, url, time_sleep)
+                log(
+                    log.DEBUG,
+                    "!> Retry attempt:%d request: [%s]; time sleep: [%d]",
+                    attempt_no + 1,
+                    url,
+                    time_sleep,
+                )
                 time.sleep(time_sleep)
                 continue
             return res
@@ -49,8 +55,17 @@ class VidaXl(object):
         )
         if not resp.status_code == 200:
             log(log.ERROR, "Invalid response, status code: [%s]", resp.stack_code)
-        log(log.DEBUG, f"Response: {resp}")
-        return resp.json()
+            return None
+        # log(log.DEBUG, f"Response: {resp}")
+        data = resp.json()
+        if not data or "data" not in data:
+            log(log.ERROR, "VidaXl: Invalid data for item: [%s]", item_id)
+            return None
+        data = data["data"]
+        if not data:
+            log(log.ERROR, "VidaXl: No data for item: [%s]", item_id)
+            return None
+        return data[0]
 
     @property
     def products(self):
