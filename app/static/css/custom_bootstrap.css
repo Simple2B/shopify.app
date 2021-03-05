@@ -1,0 +1,26 @@
+/* custom bootstrap */
+
+.col-sm-4, .col-sm-1, .col-sm-7 {
+    width: auto !important;
+}
+
+.form-control {
+    display: inline-block !important;
+    width: auto !important;
+}
+
+.card {
+    margin-top: 1rem;
+    border: 1px solid rgba(0,0,0,.125) !important;
+    border-radius: 1.5rem !important;
+    box-shadow: 7px 8px 4px 3px rgb(0 0 255 / 25%)
+}
+
+.card-header {
+    border-radius: 1.5rem 1.5rem 0rem 0rem !important;
+}
+
+.row {
+    margin-right: 0px !important;
+    margin-left: 0px !important;
+}

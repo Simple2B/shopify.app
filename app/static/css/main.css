@@ -1,8 +1,4 @@
 /* custom css */
-* {
-    border-radius: 0 !important;
-}
-
 .section {
     height: 100vh;
     display: flex;
@@ -16,16 +12,14 @@
     align-items: baseline;
 }
 
-.check_product {
-    margin-bottom: 1rem;
+.memo_flex_row {
     display: flex;
-    justify-content: center;
-    margin-top: 1rem;
+    justify-content: space-between;
+    flex-flow: row wrap;
 }
-.check_product .title {
-    margin-bottom: 1rem;
+.memo_flex_row > div:first-child {
+    flex-grow: 1;
 }
-
 .prefix_vidaxl{
     display: flex;
     flex-flow: column wrap;
@@ -36,24 +30,58 @@
 }
 
 .prefix_checkbox {
+    display: inline-block !important;
     vertical-align: middle;
-    margin-left: .5rem;
-}
-
-.vidaxl_prefix_on {
-    color: lightgreen;
-    font-weight: 700;
-}
-
-.vidaxl_prefix_off {
-    color: grey;
-}
-
-span.vidaxl_prefix_off, span.vidaxl_prefix_on {
-    margin-left: .5rem;
 }
 
 .flex {
     display: flex;
     align-items: baseline;
+    flex-basis: 100%;
+}
+
+.category_field {
+    min-width: 30% !important;
+}
+
+.access_token {
+    min-width: 60% !important;
+}
+
+.label {
+    width: 8rem !important;
+}
+
+/* Category */
+.category {
+    flex-grow: 1;
+    flex-basis: 60%;
+}
+
+.category_panel {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 1rem;
+}
+
+.__category_button {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px;
+}
+
+.category_rows {
+    overflow: scroll;
+    height: 35vh;
+}
+
+.border-none {
+    padding: 0;
+    border: none;
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+    cursor: pointer;
 }
