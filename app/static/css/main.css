@@ -1,6 +1,10 @@
 /* custom css */
-* {
-    border-radius: 0 !important;
+.col-sm-4 .col-sm-1 .col-sm-7 {
+    width: auto !important;
+}
+
+.form-control {
+    width: auto !important;
 }
 
 .section {
@@ -36,24 +40,23 @@
 }
 
 .prefix_checkbox {
+    display: inline-block !important;
     vertical-align: middle;
-    margin-left: .5rem;
-}
-
-.vidaxl_prefix_on {
-    color: lightgreen;
-    font-weight: 700;
-}
-
-.vidaxl_prefix_off {
-    color: grey;
-}
-
-span.vidaxl_prefix_off, span.vidaxl_prefix_on {
-    margin-left: .5rem;
 }
 
 .flex {
     display: flex;
     align-items: baseline;
+}
+
+.category_title {
+    padding-left: 15px;
+}
+
+.category_field {
+    width: 60%;
+}
+
+.access_token {
+    width: 60%;
 }

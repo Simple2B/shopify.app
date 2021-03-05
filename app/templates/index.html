@@ -6,21 +6,23 @@
       <h4 class="card-title">Admin panel</h4>
     </div>
     <div class="card-body">
-      <form class="form" role="form" action="{{ url_for('admin.admin', shop_id=form.shop_id) }}" method="post" enctype="multipart/form-data">
+      <form class="form" role="form" action="{{ url_for('admin.admin', shop_id=form.shop_id, shop=shop) }}" method="post" enctype="multipart/form-data">
         <div class="form-group row flex">
-          {{form.leave_vidaxl_prefix.label(class='col-sm-4')}}
-          {{form.leave_vidaxl_prefix(class='form-control col-sm-1')}}
+          <div>
+            {{form.leave_vidaxl_prefix.label(class='col-sm-4')}}
+            {{form.leave_vidaxl_prefix(class='form-control col-sm-1 prefix_checkbox')}}
+          </div>
         </div>
         <div class="form-group row flex">
-          <a href="{{ url_for('admin.all_categories') }}">All Categories in VidaXl</a>
+          <a href="{{ url_for('admin.all_categories') }}" class="category_title">All Categories in VidaXl</a>
         </div>
         <div class="form-group row flex">
           {{form.category_rules_file.label(class='col-sm-4')}}
-          {{form.category_rules_file(class='form-control col-sm-7')}}
+          {{form.category_rules_file(class='form-control col-sm-7 category_field')}}
         </div>
         <div class="form-group row flex">
           {{form.private_app_access_token.label(class='col-sm-4')}}
-          {{form.private_app_access_token(class='form-control col-sm-1')}}
+          {{form.private_app_access_token(class='form-control col-sm-1 access_token')}}
         </div>
         {{form.submit(class='btn btn-primary')}}
       </form>
