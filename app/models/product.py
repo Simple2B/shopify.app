@@ -22,6 +22,7 @@ class Product(db.Model, ModelMixin):
     updated = db.Column(db.DateTime, default=datetime.now)
 
     shop_products = relationship("ShopProduct")
+    images = relationship("Image")
 
     def __repr__(self) -> str:
         return self.__str__()
