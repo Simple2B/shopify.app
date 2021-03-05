@@ -3,9 +3,8 @@ import pytest
 from requests.auth import HTTPBasicAuth
 from app.controllers import download_products
 from app import create_app, db
-from app.vida_xl import VidaXl
 from app.vida_xl.vida_xl import retry_get_request
-from app.models import Product, Configuration
+from app.models import Product
 from .utils import fill_db_by_test_data
 
 from config import TestingConfig as conf
@@ -32,26 +31,6 @@ def client():
         app_ctx.pop()
 
 
-@pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
-def test_get_products(client):
-    vida = VidaXl()
-    for i, prod in enumerate(vida.products):
-        assert prod
-        title = prod["name"]
-        if not Configuration.get_value(
-            1, "LEAVE_VIDAXL_PREFIX"
-        ):
-            name = title
-        else:
-            if title.startswith("vidaXL "):
-                name = title.replace("vidaXL ", "")
-            else:
-                name = title
-        assert name
-        if i > 1111:
-            break
-
-
 @pytest.mark.skip
 def test_retry_get_request(client):
     for _ in range(100):
@@ -62,7 +41,7 @@ def test_retry_get_request(client):
 
 @pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
 def test_download_products(client):
-    LIMIT = 123
+    LIMIT = 1
     for product in Product.query.all():
         product.delete()
     download_products(LIMIT)
@@ -74,7 +53,7 @@ def test_download_products(client):
         prod.is_new = False
         prod.save(False)
     products[0].save()
-    download_products(LIMIT+LIMIT)
+    download_products(LIMIT + LIMIT)
     new_products = Product.query.filter(Product.is_new == True).all()  # noqa E712
     assert new_products
     assert len(new_products) == LIMIT

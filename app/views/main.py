@@ -1,10 +1,10 @@
-from flask import Blueprint, current_app, request, url_for
+from flask import Blueprint, url_for, redirect, request
+from app.controllers import shopify_auth_required
 
 main_blueprint = Blueprint("main", __name__)
 
 
 @main_blueprint.route("/")
+@shopify_auth_required
 def index():
-    # if request.args.get("shop", None):
-
-    return current_app.config["APP_NAME"]
+    return redirect(url_for("admin.admin", **request.args))

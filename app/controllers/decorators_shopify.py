@@ -16,22 +16,23 @@ def shopify_auth_required(f):
             )
             if not shopify.Session.validate_params(request.args):
                 log(log.ERROR, "shopify_auth: Wrong arguments in the request")
-                return redirect(url_for("shopify_bp.install", **request.args))
-            shop = Shop.query.filter_by(name=request.args.get('shop', '')).first()
+                return redirect(url_for("shopify.install", **request.args))
+            shop = Shop.query.filter_by(name=request.args.get("shop", "")).first()
             if not shop:
                 log(log.ERROR, "shopify_auth: Unknown shop: [%s]", shop)
-                return redirect(url_for("shopify_bp.install", **request.args))
+                return redirect(url_for("shopify.install", **request.args))
             session["shopify_token"] = shop.access_token
             session["shop"] = shop.name
             session["shopify_id"] = shop.id
         else:
             if shopify.Session.secret != current_app.config["SHOPIFY_SECRET"]:
                 log(log.ERROR, "shopify_auth: Wrong arguments in the request")
-                return redirect(url_for("shopify_bp.install", **request.args))
-            name = request.args.get('shop', '')
+                return redirect(url_for("shopify.install", **request.args))
+            name = request.args.get("shop", "")
             shop = Shop.query.filter_by(name=name).first()
             if not shop:
                 log(log.ERROR, "Unknown shop: [%s]", name)
-                return redirect(url_for("shopify_bp.install", **request.args))
+                return redirect(url_for("shopify.install", **request.args))
         return f(*args, **kwargs)
+
     return decorated_function
