@@ -6,7 +6,7 @@ from flask import (
     request,
     redirect,
     session,
-    url_for,
+    url_for
 )
 
 from app.models import Shop
@@ -26,7 +26,6 @@ def install():
         api_key=current_app.config["SHOPIFY_API_KEY"],
         secret=current_app.config["SHOPIFY_SECRET"],
     )
-
     session = shopify.Session(shop_url, version=current_app.config["VERSION_API"])
     log(log.DEBUG, "session: [%s]", session)
     scope = ["write_products", "read_products", "read_script_tags", "write_script_tags"]

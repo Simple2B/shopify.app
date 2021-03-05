@@ -22,6 +22,7 @@ class BaseConfig(object):
     NUMBER_OF_REPETITIONS = os.environ.get("NUMBER_OF_REPETITIONS", "10")
     SLEEP_TIME = float(os.environ.get("SLEEP_TIME", "1"))
     HOST_NAME = os.environ.get("HOST_NAME", "localhost")
+    SHOPIFY_PRIVATE_APP_PASSWORD = os.environ.get("SHOPIFY_PRIVATE_APP_PASSWORD", "")
 
     # VidaXL credentials
     VIDAXL_API_BASE_URL = os.environ.get(
@@ -44,6 +45,9 @@ class BaseConfig(object):
         "true",
         "True",
     )
+    ADMIN_MOM_SELECTOR = os.environ.get("ADMIN_MOM_SELECTOR", False)
+    ADMIN_MARGIN_PERCENT = os.environ.get("ADMIN_MARGIN_PERCENT", 30)
+    ADMIN_ROUND_TO = os.environ.get("ADMIN_ROUND_TO", 99)
     # ADMIN_VIDAXL_DISCOUNT = float(os.environ.get("VIDAXL_DISCOUNT", "0.95"))
 
     @staticmethod

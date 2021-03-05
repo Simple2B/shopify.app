@@ -196,6 +196,7 @@ def upload_product(shop_id: int):
                         shop_product_id=shop_prod.id,
                         shop_id=shop_id,
                         product_id=product.id,
+                        price=price
                     ).save()
                     collect = shopify.Collect.create(
                         dict(product_id=shop_prod.id, collection_id=collection_id)
