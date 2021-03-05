@@ -15,9 +15,6 @@
                 {{form.leave_vidaxl_prefix(class='form-control col-sm-1 prefix_checkbox')}}
               </div>
             </div>
-            <div class="form-group row flex">
-              <a href="{{ url_for('admin.all_categories') }}" class="category_title">All Categories in VidaXl</a>
-            </div>
             <div class="form-group row">
               <div class="flex">
                 {{form.private_app_access_token.label(class='label')}}
@@ -26,9 +23,14 @@
             </div>
           </div>
           <div class="form-group category">
-            <div class="flex">
-              {{form.category_rules_file.label(class='label')}}
-              {{form.category_rules_file(class='form-control col-sm-7 category_field')}}
+            <div class="category_file">
+              <div>
+                {{form.category_rules_file.label(class='label')}}
+                {{form.category_rules_file(class='form-control col-sm-7 category_field')}}
+              </div>
+              <div class="form-group row">
+                <a href="{{ url_for('admin.all_categories') }}">All Categories</a>
+              </div>
             </div>
             <div class="category_panel">
               <div class="category_rows">
@@ -37,13 +39,6 @@
                     {{ category.path }}
                   </div>
                 {% endfor %}
-              </div>
-              <div class="__category_button">
-                <div class="">
-                  <button class="border-none" id="category_panel">
-                    <img src="{{ url_for('static', filename='images/up_direction_element.svg') }}">
-                  </button>
-                </div>
               </div>
             </div>
           </div>
