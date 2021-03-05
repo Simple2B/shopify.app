@@ -1,12 +1,4 @@
 /* custom css */
-.col-sm-4 .col-sm-1 .col-sm-7 {
-    width: auto !important;
-}
-
-.form-control {
-    width: auto !important;
-}
-
 .section {
     height: 100vh;
     display: flex;
@@ -20,16 +12,14 @@
     align-items: baseline;
 }
 
-.check_product {
-    margin-bottom: 1rem;
+.memo_flex_row {
     display: flex;
-    justify-content: center;
-    margin-top: 1rem;
+    justify-content: space-between;
+    flex-flow: row wrap;
 }
-.check_product .title {
-    margin-bottom: 1rem;
+.memo_flex_row > div:first-child {
+    flex-grow: 1;
 }
-
 .prefix_vidaxl{
     display: flex;
     flex-flow: column wrap;
@@ -47,16 +37,51 @@
 .flex {
     display: flex;
     align-items: baseline;
-}
-
-.category_title {
-    padding-left: 15px;
+    flex-basis: 100%;
 }
 
 .category_field {
-    width: 60%;
+    min-width: 30% !important;
 }
 
 .access_token {
-    width: 60%;
+    min-width: 60% !important;
+}
+
+.label {
+    width: 8rem !important;
+}
+
+/* Category */
+.category {
+    flex-grow: 1;
+    flex-basis: 60%;
+}
+
+.category_panel {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 1rem;
+}
+
+.__category_button {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px;
+}
+
+.category_rows {
+    overflow: scroll;
+    height: 35vh;
+}
+
+.border-none {
+    padding: 0;
+    border: none;
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+    cursor: pointer;
 }
