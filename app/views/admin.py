@@ -36,7 +36,7 @@ def admin(shop_id):
             update_categories(shop_id, request.files["category_rules_file"])
         if form.access_token.data:
             update_access_token(shop_id, form.access_token.data)
-        return redirect(url_for("admin.admin", shop_id=shop_id))
+        return redirect(url_for("admin.admin", shop_id=shop_id, **request.args))
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
         for error in form.errors:
@@ -46,7 +46,7 @@ def admin(shop_id):
     form.leave_vidaxl_prefix.data = Configuration.get_value(
         shop_id, "LEAVE_VIDAXL_PREFIX"
     )
-    return render_template("index.html", form=form)
+    return render_template("index.html", form=form, **request.args)
 
 
 @admin_blueprint.route("/all_categories", methods=["GET"])

@@ -12,6 +12,7 @@ class ShopProduct(db.Model, ModelMixin):
     shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=False)
     shop_product_id = db.Column(db.Integer, nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    price = db.Column(db.Float, nullable=False)
 
     shop = relationship("Shop")
     product = relationship("Product")
