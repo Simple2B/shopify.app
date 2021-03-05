@@ -1,0 +1,11 @@
+#!/bin/bash
+BAK_DATE=`date +"%Y.%m.%d"`
+BAK_DIR=`printf "backup.%s" $BAK_DATE`
+echo create folred $BAK_DIR
+mkdir $BAK_DIR
+echo copy files
+cp database-* $BAK_DIR/
+cp .env $BAK_DIR/
+
+tar cvzf $BAK_DIR.tgz $BAK_DIR
+rm -rf $BAK_DIR
