@@ -6,7 +6,6 @@ from .price import get_price
 from .scrap import scrap_img
 from app.logger import log
 from app.vida_xl import VidaXl
-from app import db
 from config import BaseConfig as conf
 
 
@@ -67,12 +66,11 @@ def download_products(limit=None):
     updated_product_count = 0
     for prod in vida.products:
         # add product into DB
-        if not update_product_db(prod, update_date, updated_product_count):
+        if not update_product_db(prod, update_date):
             continue
         updated_product_count += 1
         if limit is not None and updated_product_count >= limit:
             break
-    db.session.commit()
     for product in (
         Product.query.filter(Product.updated < update_date)
         .filter(Product.is_deleted == False)  # noqa E712
@@ -80,9 +78,8 @@ def download_products(limit=None):
     ):
         product.is_deleted = True
         product.is_changed = True
-        product.save(False)
+        product.save()
         log(log.DEBUG, "Product code:[%s] deleted...", product.sku)
-    db.session.commit()
     log(
         log.INFO,
         "Updated %d products in %d seconds",
@@ -91,7 +88,7 @@ def download_products(limit=None):
     )
 
 
-def update_product_db(prod, update_date=None, updated_product_count=None):
+def update_product_db(prod, update_date=None):
     if not update_date:
         update_date = datetime.now()
     name = prod["name"]
@@ -130,10 +127,7 @@ def update_product_db(prod, update_date=None, updated_product_count=None):
             product.is_changed = True
         product.updated = update_date
         product.is_deleted = False
-        if updated_product_count:
-            product.save(updated_product_count % 100 == 0)
-        else:
-            product.save()
+        product.save()
     else:
         Product(
             sku=code,

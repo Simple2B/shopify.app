@@ -5,10 +5,10 @@ from wtforms.fields.simple import SubmitField
 
 class ConfigurationForm(FlaskForm):
     leave_vidaxl_prefix = BooleanField(
-        "Leave VidaXl prefix",
+        "Leave VidaXl prefix:",
         default=False,
     )
-    category_rules_file = FileField("Category rule")
-    private_app_access_token = StringField("Access Token", default="")
+    category_rules_file = FileField("Category rule:")
+    private_app_access_token = StringField("Access Token:", default="")
     # TODO: add others configuration parameters
     submit = SubmitField("Save")
