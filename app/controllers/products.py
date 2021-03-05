@@ -66,14 +66,7 @@ def download_products(limit=None):
     updated_product_count = 0
     for prod in vida.products:
         # add product into DB
-        title = prod["name"]
-        if not Configuration.prefix_vidaxl:
-            name = title
-        else:
-            if title.startswith("vidaXL "):
-                name = title.replace("vidaXL ", "")
-            else:
-                name = title
+        name = prod["name"]
         code = prod["code"]
         price = float(prod["price"])
         quantity = float(prod["quantity"])
@@ -183,9 +176,12 @@ def upload_product(shop_id: int):
                     collection_id = collection_names[collection_name]
 
                     log(log.DEBUG, "price: %s", product.price)
+                    title = product.title
+                    if Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX"):
+                        title = title.replace("vidaXL ", "") if title.startswith("vidaXL ") else title
                     shop_prod = shopify.Product.create(
                         dict(
-                            title=product.title,
+                            title=title,
                             variants=[dict(price=get_price(product), sku=product.sku)],
                             images=[
                                 {"src": img}
