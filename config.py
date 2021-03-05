@@ -46,8 +46,8 @@ class BaseConfig(object):
         "True",
     )
     ADMIN_MOM_SELECTOR = os.environ.get("ADMIN_MOM_SELECTOR", False)
-    ADMIN_MARGIN_PROCENT = os.environ.get("ADMIN_MARGIN_PROCENT", 30)
-    ADMIN_ROUND_TO = os.environ.get("ADMIN_MARGIN_PROCENT", 99)
+    ADMIN_MARGIN_PERCENT = os.environ.get("ADMIN_MARGIN_PERCENT", 30)
+    ADMIN_ROUND_TO = os.environ.get("ADMIN_ROUND_TO", 99)
     # ADMIN_VIDAXL_DISCOUNT = float(os.environ.get("VIDAXL_DISCOUNT", "0.95"))
 
     @staticmethod
