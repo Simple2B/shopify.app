@@ -19,7 +19,12 @@ def client():
         app_ctx.pop()
 
 
-def test_scrappy(client):
+def test_scrappy(client, monkeypatch):
+
+    def mockreturn(item_id):
+        images = ['https://res.cloudina...783677.jpg', 'https://res.cloudina...837217.jpg']
+        return {"item_id": item_id, "qty": len(images), "images": images}
+    monkeypatch.setattr(scrap, "scrap_img", mockreturn)
     products = Product.query.limit(10).all()
     assert products
     start_time = datetime.now()
