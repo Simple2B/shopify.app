@@ -1,54 +1,68 @@
-import requests
+import urllib
 import time
-from requests.auth import HTTPBasicAuth
+from bs4 import BeautifulSoup
+from urllib.request import Request, urlopen
 from flask import current_app
+from app.models import Configuration
 from app.logger import log
 
 
-def get_price(product):
+def get_price(product, shop_id):
     """Launch price gen with config parameters
 
     Args:
         product ([Product]): Product at DB
+        shop_id (int): shop identifier
 
     Returns:
         [float]: Finish price
     """
-    if current_app.config["ADMIN_MOM_SELECTOR"]:
+    mom_selector = Configuration.get_value(shop_id, "MOM_SELECTOR")
+    margin_percent = Configuration.get_value(shop_id, "MARGIN_PERCENT")
+    if mom_selector:
+        round_to = Configuration.get_value(shop_id, "ROUND_TO")
         price = price_generator(
-            product.price,
-            get_mom_price(product.sku),
+            purchase_price=product.price,
+            margin=margin_percent,
+            mom_price=get_mom_price(product.sku),
             mom=True,
-            margin=current_app.config["ADMIN_MARGIN_PROCENT"],
-            round_to=current_app.config["ADMIN_ROUND_TO"],
+            round_to=round_to,
         )
     else:
         price = price_generator(
             product.price,
-            margin=current_app.config["ADMIN_MARGIN_PROCENT"],)
+            margin=margin_percent,
+        )
     return price
 
 
-def get_response_from_mom(product_id):
-    """Get response from service Mall of Master
+def get_html(item_id: int):
+    req = Request(
+        f"https://www.mallofmaster.nl/catalogsearch/result/?q={item_id}",
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    html = urlopen(req)
+    return html
+
+
+def scrap_price(item_id: int):
+    """Get price from Mall of Master NL
 
     Args:
-        product_id (int or str): Product ID
+        item_id (int): Code item in VidaXL, SKU in Mall of Master
 
     Returns:
-        Response
+        [int]: [Price]
     """
-    response = requests.get(
-        f"https://b2b.vidaxl.com/api_customer/products?code_eq={product_id}",
-        auth=HTTPBasicAuth(
-            current_app.config["VIDAXL_USER_NAME"], current_app.config["VIDAXL_API_KEY"]
-        ),
-    )
-    if response.status_code == 200:
-        return response.json()
-    else:
-        log(log.ERROR, "Invalid response [%s]", response.status_code)
-        return False
+    try:
+        soup = BeautifulSoup(get_html(item_id), "html.parser")
+    except urllib.error.HTTPError as e:
+        log(log.ERROR, "Invalid response [%s]", e)
+        return None
+    price = soup.find("span", class_="price")
+    if price:
+        return float(price.string[2:].replace(",", "."))
+    return None
 
 
 def get_mom_price(product_id):
@@ -60,10 +74,10 @@ def get_mom_price(product_id):
     Returns:
         MoM price
     """
-    for i in range(current_app.config["NUMBER_OF_REPETITIONS"]):
-        response = get_response_from_mom(product_id)
-        if response:
-            return response["data"][0]["price"]
+    for i in range(int(current_app.config["NUMBER_OF_REPETITIONS"])):
+        price = scrap_price(product_id)
+        if price is not None:
+            return price
         time.sleep(current_app.config["SLEEP_TIME"])
     log(log.ERROR, "Service Mall of Master not responding")
     return False
@@ -87,10 +101,10 @@ def price_generator(purchase_price, margin, mom_price=None, mom=None, round_to=N
         if float(purchase_price) > float(mom_price):
             new_price = float(purchase_price) * (float(margin) / 100 + 1)
         else:
-            if mom > 1:
+            if mom_price > 1:
                 new_price = str(mom_price - 1)[:-2] + str(round_to)
             else:
                 new_price = float(purchase_price) * (float(margin) / 100 + 1)
     elif margin:
         new_price = float(purchase_price) * (float(margin) / 100 + 1)
-    return float(new_price)
+    return round(float(new_price), 2)
