@@ -14,10 +14,9 @@ def get_context():
 
 
 @app.cli.command()
-@click.confirmation_option(prompt="Drop all database tables?")
-def reset_db():
-    """Resebase the current database."""
-    db.drop_all()
+# @click.confirmation_option(prompt="Drop all database tables?")
+def create_db():
+    """Create new database."""
     db.create_all()
 
 
@@ -26,24 +25,36 @@ def scrappy():
     """Test scrap images from VidaXL"""
     # db.drop_all()
     from app.controllers import scrap
+
     scrap.scrappy_all_products(40)
 
 
 @app.cli.command()
-def update_vidaxl_products():
-    """Update all products from VidaXl
-    """
+@click.option("--count", default=0, help="Number of products.")
+def update_vidaxl_products(count):
+    """Update all products from VidaXl"""
     from app.controllers import download_products
-    download_products()
+
+    download_products(count if count > 0 else None)
+
+
+@app.cli.command()
+@click.argument("sku")
+def vida_product(sku):
+    """Get VidaXl product by SKU"""
+    import json
+    from app.vida_xl import VidaXl
+
+    print(json.dumps(VidaXl().get_product(sku), indent=2))
 
 
 @app.cli.command()
 def update_shop_products():
-    """Update all products from VidaXl
-    """
+    """Upload all products to Shop(s)"""
     from app.controllers import upload_product
     from app.models import Shop
     from app.logger import log
+
     for shop in Shop.query.all():
         try:
             upload_product(shop.id)
@@ -52,5 +63,5 @@ def update_shop_products():
             log(log.CRITICAL, "Error update products in: %s", shop)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

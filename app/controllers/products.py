@@ -63,55 +63,12 @@ def upload_product_old(
 def download_products(limit=None):
     vida = VidaXl()
     update_date = datetime.now()
+    log(log.INFO, "Start update VidaXl products - %s", "All" if not limit else limit)
     updated_product_count = 0
     for prod in vida.products:
         # add product into DB
-        name = prod["name"]
-        code = prod["code"]
-        price = float(prod["price"])
-        quantity = float(prod["quantity"])
-        currency = prod["currency"]
-        vidaxl_id = prod["id"]
-        if currency != "EUR":
-            log(
-                log.WARNING,
-                "Product code: [%s] skipped - currency: [%s]",
-                code,
-                currency,
-            )
+        if not update_product_db(prod, update_date, updated_product_count):
             continue
-        category_path = prod["category_path"]
-        if quantity == 0.0:
-            # log(log.DEBUG, "Product code:[%s] has zero qty", code)
-            continue
-        product = Product.query.filter(Product.sku == code).first()
-        if product:
-            if name != product.title:
-                product.title = name
-                product.is_changed = True
-            if category_path != product.category_path:
-                product.category_path = category_path
-                product.is_changed = True
-            if price != product.price:
-                product.price = price
-                product.is_changed = True
-            if quantity != product.qty:
-                product.qty = quantity
-                product.is_changed = True
-            if product.is_deleted:
-                product.is_changed = True
-            product.updated = update_date
-            product.is_deleted = False
-            product.save(updated_product_count % 100 == 0)
-        else:
-            Product(
-                sku=code,
-                vidaxl_id=vidaxl_id,
-                title=name,
-                category_path=category_path,
-                price=price,
-                qty=quantity,
-            ).save()
         updated_product_count += 1
         if limit is not None and updated_product_count >= limit:
             break
@@ -134,6 +91,61 @@ def download_products(limit=None):
     )
 
 
+def update_product_db(prod, update_date=None, updated_product_count=None):
+    if not update_date:
+        update_date = datetime.now()
+    name = prod["name"]
+    code = prod["code"]
+    price = float(prod["price"])
+    quantity = float(prod["quantity"])
+    currency = prod["currency"]
+    vidaxl_id = prod["id"]
+    if currency != "EUR":
+        log(
+            log.WARNING,
+            "Product code: [%s] skipped - currency: [%s]",
+            code,
+            currency,
+        )
+        return False
+    category_path = prod["category_path"]
+    if quantity == 0.0:
+        # log(log.DEBUG, "Product code:[%s] has zero qty", code)
+        return False
+    product = Product.query.filter(Product.sku == code).first()
+    if product:
+        if name != product.title:
+            product.title = name
+            product.is_changed = True
+        if category_path != product.category_path:
+            product.category_path = category_path
+            product.is_changed = True
+        if price != product.price:
+            product.price = price
+            product.is_changed = True
+        if quantity != product.qty:
+            product.qty = quantity
+            product.is_changed = True
+        if product.is_deleted:
+            product.is_changed = True
+        product.updated = update_date
+        product.is_deleted = False
+        if updated_product_count:
+            product.save(updated_product_count % 100 == 0)
+        else:
+            product.save()
+    else:
+        Product(
+            sku=code,
+            vidaxl_id=vidaxl_id,
+            title=name,
+            category_path=category_path,
+            price=price,
+            qty=quantity,
+        ).save()
+    return True
+
+
 def upload_product(shop_id: int):
     rows = Category.query.filter(Category.shop_id == shop_id).all()
     selected_categories = [r.path.split("/") for r in rows]
@@ -153,9 +165,12 @@ def upload_product(shop_id: int):
     log(log.INFO, "Update shop: %s", shop.name)
     begin_time = datetime.now()
     updated_product_count = 0
-    with shopify.Session.temp(shop.name, conf.VERSION_API, shop.private_app_access_token):
+    with shopify.Session.temp(
+        shop.name, conf.VERSION_API, shop.private_app_access_token
+    ):
         collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
         products = Product.query.filter(Product.is_new == True).all()  # noqa E712
+        LEAVE_VIDAXL_PREFIX = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
         for product in products:
             if in_selected_category(product.category_path):
                 # check if product already created in the shop
@@ -164,10 +179,13 @@ def upload_product(shop_id: int):
                     sp for sp in product.shop_products if sp.shop_id == shop_id
                 ]
                 if not shop_products:
-                    collection_name = product.category_path.split("/")[
-                        0
-                    ]  # TODO: Vitaly try improve
-                    log(log.INFO, "New product [%s] --> [%s]", product.title, collection_name)
+                    collection_name = product.category_path.split("/")[0]
+                    log(
+                        log.INFO,
+                        "New product [%s] --> [%s]",
+                        product.title,
+                        collection_name,
+                    )
                     if collection_name not in collection_names:
                         collection = shopify.CustomCollection.create(
                             dict(title=collection_name)
@@ -177,12 +195,19 @@ def upload_product(shop_id: int):
 
                     log(log.DEBUG, "price: %s", product.price)
                     title = product.title
-                    if Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX"):
-                        title = title.replace("vidaXL ", "") if title.startswith("vidaXL ") else title
+                    if LEAVE_VIDAXL_PREFIX:
+                        title = (
+                            title.replace("vidaXL ", "")
+                            if title.startswith("vidaXL ")
+                            else title
+                        )
+                    price = get_price(product, shop_id)
                     shop_prod = shopify.Product.create(
                         dict(
                             title=title,
-                            variants=[dict(price=get_price(product), sku=product.sku)],
+                            variants=[
+                                dict(price=get_price(product, shop_id), sku=product.sku)
+                            ],
                             images=[
                                 {"src": img}
                                 for img in scrap_img(product.vidaxl_id).get(
@@ -196,13 +221,16 @@ def upload_product(shop_id: int):
                         shop_product_id=shop_prod.id,
                         shop_id=shop_id,
                         product_id=product.id,
+                        price=price,
                     ).save()
                     collect = shopify.Collect.create(
                         dict(product_id=shop_prod.id, collection_id=collection_id)
                     )
                     assert collect
                     inventory_item_id = shop_prod.variants[0].inventory_item_id
-                    inv_levels = shopify.InventoryLevel.find(inventory_item_ids=inventory_item_id)
+                    inv_levels = shopify.InventoryLevel.find(
+                        inventory_item_ids=inventory_item_id
+                    )
                     if inv_levels:
                         items = shopify.InventoryItem.find(ids=inventory_item_id)
                         for item in items:
@@ -211,7 +239,9 @@ def upload_product(shop_id: int):
                         for inv_level in inv_levels:
                             location_id = inv_level.location_id
                             inv_level.available = product.qty
-                            shopify.InventoryLevel.set(location_id, inventory_item_id, product.qty)
+                            shopify.InventoryLevel.set(
+                                location_id, inventory_item_id, product.qty
+                            )
                     product.is_new = False
                     product.save()
                     updated_product_count += 1
