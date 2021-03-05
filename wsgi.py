@@ -30,16 +30,27 @@ def scrappy():
 
 
 @app.cli.command()
-def update_vidaxl_products():
+@click.option("--count", default=0, help="Number of products.")
+def update_vidaxl_products(count):
     """Update all products from VidaXl"""
     from app.controllers import download_products
 
-    download_products()
+    download_products(count if count > 0 else None)
+
+
+@app.cli.command()
+@click.argument("sku")
+def vida_product(sku):
+    """Get VidaXl product by SKU"""
+    import json
+    from app.vida_xl import VidaXl
+
+    print(json.dumps(VidaXl().get_product(sku), indent=2))
 
 
 @app.cli.command()
 def update_shop_products():
-    """Update all products from VidaXl"""
+    """Upload all products to Shop(s)"""
     from app.controllers import upload_product
     from app.models import Shop
     from app.logger import log
