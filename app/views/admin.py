@@ -11,7 +11,7 @@ from flask import (
     send_file,
 )
 from app.forms import ConfigurationForm
-from app.models import Configuration, Product
+from app.models import Configuration, Product, Category
 from app.logger import log
 from app.controllers import (
     update_categories,
@@ -26,6 +26,7 @@ admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
 def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
+    form.categories = Category.query.filter(Category.shop_id == shop_id).all()
     if form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
         Configuration.set_value(
