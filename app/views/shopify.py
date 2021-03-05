@@ -22,19 +22,19 @@ def install():
     """Redirect user to permission authorization page."""
 
     shop_url = request.args.get("shop")
-    log(log.DEBUG, "url: [%s]", shop_url)
+    log(log.DEBUG, "Install: url: [%s]", shop_url)
     shopify.Session.setup(
         api_key=current_app.config["SHOPIFY_API_KEY"],
         secret=current_app.config["SHOPIFY_SECRET"],
     )
 
     session = shopify.Session(shop_url, version=current_app.config["VERSION_API"])
-    log(log.DEBUG, "session: [%s]", session)
+    log(log.DEBUG, "Install: session: [%s]", session)
     scope = ["write_products", "read_products", "read_script_tags", "write_script_tags"]
     permission_url = session.create_permission_url(
         scope, url_for("shopify_bp.finalize", _external=True)
     )
-    log(log.DEBUG, "permission_url: [%s]", permission_url)
+    log(log.DEBUG, "Install: permission_url: [%s]", permission_url)
     return render_template("shopify_bp/install.html", permission_url=permission_url)
 
 

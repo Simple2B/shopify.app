@@ -13,7 +13,7 @@ class BaseConfig(object):
     SECRET_KEY = os.environ.get("SECRET_KEY", "e45f99e7dfa84f04939e041db0ee0771")
     SHOPIFY_API_KEY = os.environ.get("SHOPIFY_API_KEY", "")
     SHOPIFY_SECRET = os.environ.get("SHOPIFY_SECRET", "")
-    APP_NAME = os.environ.get("APP_NAME", "")
+    APP_NAME = os.environ.get("APP_NAME", "Shopify App")
     SHOPIFY_DOMAIN = os.environ.get("SHOPIFY_DOMAIN", "")
     VERSION_API = os.environ.get("VERSION_API", "2021-01")
     WEBHOOK_APP_UNINSTALL_URL = os.environ.get("WEBHOOK_APP_UNINSTALL_URL", "")
