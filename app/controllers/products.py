@@ -63,55 +63,12 @@ def upload_product_old(
 def download_products(limit=None):
     vida = VidaXl()
     update_date = datetime.now()
+    log(log.INFO, "Start update VidaXl products - %s", "All" if not limit else limit)
     updated_product_count = 0
     for prod in vida.products:
         # add product into DB
-        name = prod["name"]
-        code = prod["code"]
-        price = float(prod["price"])
-        quantity = float(prod["quantity"])
-        currency = prod["currency"]
-        vidaxl_id = prod["id"]
-        if currency != "EUR":
-            log(
-                log.WARNING,
-                "Product code: [%s] skipped - currency: [%s]",
-                code,
-                currency,
-            )
+        if not update_product_db(prod, update_date, updated_product_count):
             continue
-        category_path = prod["category_path"]
-        if quantity == 0.0:
-            # log(log.DEBUG, "Product code:[%s] has zero qty", code)
-            continue
-        product = Product.query.filter(Product.sku == code).first()
-        if product:
-            if name != product.title:
-                product.title = name
-                product.is_changed = True
-            if category_path != product.category_path:
-                product.category_path = category_path
-                product.is_changed = True
-            if price != product.price:
-                product.price = price
-                product.is_changed = True
-            if quantity != product.qty:
-                product.qty = quantity
-                product.is_changed = True
-            if product.is_deleted:
-                product.is_changed = True
-            product.updated = update_date
-            product.is_deleted = False
-            product.save(updated_product_count % 100 == 0)
-        else:
-            Product(
-                sku=code,
-                vidaxl_id=vidaxl_id,
-                title=name,
-                category_path=category_path,
-                price=price,
-                qty=quantity,
-            ).save()
         updated_product_count += 1
         if limit is not None and updated_product_count >= limit:
             break
@@ -132,6 +89,61 @@ def download_products(limit=None):
         updated_product_count,
         (datetime.now() - update_date).seconds,
     )
+
+
+def update_product_db(prod, update_date=None, updated_product_count=None):
+    if not update_date:
+        update_date = datetime.now()
+    name = prod["name"]
+    code = prod["code"]
+    price = float(prod["price"])
+    quantity = float(prod["quantity"])
+    currency = prod["currency"]
+    vidaxl_id = prod["id"]
+    if currency != "EUR":
+        log(
+            log.WARNING,
+            "Product code: [%s] skipped - currency: [%s]",
+            code,
+            currency,
+        )
+        return False
+    category_path = prod["category_path"]
+    if quantity == 0.0:
+        # log(log.DEBUG, "Product code:[%s] has zero qty", code)
+        return False
+    product = Product.query.filter(Product.sku == code).first()
+    if product:
+        if name != product.title:
+            product.title = name
+            product.is_changed = True
+        if category_path != product.category_path:
+            product.category_path = category_path
+            product.is_changed = True
+        if price != product.price:
+            product.price = price
+            product.is_changed = True
+        if quantity != product.qty:
+            product.qty = quantity
+            product.is_changed = True
+        if product.is_deleted:
+            product.is_changed = True
+        product.updated = update_date
+        product.is_deleted = False
+        if updated_product_count:
+            product.save(updated_product_count % 100 == 0)
+        else:
+            product.save()
+    else:
+        Product(
+            sku=code,
+            vidaxl_id=vidaxl_id,
+            title=name,
+            category_path=category_path,
+            price=price,
+            qty=quantity,
+        ).save()
+    return True
 
 
 def upload_product(shop_id: int):
