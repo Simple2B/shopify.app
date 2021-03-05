@@ -26,8 +26,7 @@ def scrappy():
     """Test scrap images from VidaXL"""
     # db.drop_all()
     from app.controllers import scrap
-    from app.logger import log
-    log(log.INFO, scrap.scrap_img(35653))
+    scrap.scrappy_all_products(40)
 
 
 @app.cli.command()

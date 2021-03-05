@@ -34,5 +34,4 @@ def shopify_auth_required(f):
                 log(log.ERROR, "Unknown shop: [%s]", name)
                 return redirect(url_for("shopify_bp.install", **request.args))
         return f(*args, **kwargs)
-
     return decorated_function

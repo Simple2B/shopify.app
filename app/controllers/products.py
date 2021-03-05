@@ -153,9 +153,12 @@ def upload_product(shop_id: int):
     log(log.INFO, "Update shop: %s", shop.name)
     begin_time = datetime.now()
     updated_product_count = 0
-    with shopify.Session.temp(shop.name, conf.VERSION_API, conf.SHOPIFY_PRIVATE_APP_PASSWORD):
+    with shopify.Session.temp(
+        shop.name, conf.VERSION_API, shop.private_app_access_token
+    ):
         collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
         products = Product.query.filter(Product.is_new == True).all()  # noqa E712
+        LEAVE_VIDAXL_PREFIX = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
         for product in products:
             if in_selected_category(product.category_path):
                 # check if product already created in the shop
@@ -164,10 +167,13 @@ def upload_product(shop_id: int):
                     sp for sp in product.shop_products if sp.shop_id == shop_id
                 ]
                 if not shop_products:
-                    collection_name = product.category_path.split("/")[
-                        0
-                    ]  # TODO: Vitaly try improve
-                    log(log.INFO, "New product [%s] --> [%s]", product.title, collection_name)
+                    collection_name = product.category_path.split("/")[0]
+                    log(
+                        log.INFO,
+                        "New product [%s] --> [%s]",
+                        product.title,
+                        collection_name,
+                    )
                     if collection_name not in collection_names:
                         collection = shopify.CustomCollection.create(
                             dict(title=collection_name)
@@ -176,11 +182,20 @@ def upload_product(shop_id: int):
                     collection_id = collection_names[collection_name]
 
                     log(log.DEBUG, "price: %s", product.price)
-                    price = get_price(product)
+                    title = product.title
+                    if LEAVE_VIDAXL_PREFIX:
+                        title = (
+                            title.replace("vidaXL ", "")
+                            if title.startswith("vidaXL ")
+                            else title
+                        )
+                    price = get_price(product, shop_id)
                     shop_prod = shopify.Product.create(
                         dict(
-                            title=product.title,
-                            variants=[dict(price=price, sku=product.sku)],
+                            title=title,
+                            variants=[
+                                dict(price=get_price(product, shop_id), sku=product.sku)
+                            ],
                             images=[
                                 {"src": img}
                                 for img in scrap_img(product.vidaxl_id).get(
@@ -194,14 +209,16 @@ def upload_product(shop_id: int):
                         shop_product_id=shop_prod.id,
                         shop_id=shop_id,
                         product_id=product.id,
-                        price=price
+                        price=price,
                     ).save()
                     collect = shopify.Collect.create(
                         dict(product_id=shop_prod.id, collection_id=collection_id)
                     )
                     assert collect
                     inventory_item_id = shop_prod.variants[0].inventory_item_id
-                    inv_levels = shopify.InventoryLevel.find(inventory_item_ids=inventory_item_id)
+                    inv_levels = shopify.InventoryLevel.find(
+                        inventory_item_ids=inventory_item_id
+                    )
                     if inv_levels:
                         items = shopify.InventoryItem.find(ids=inventory_item_id)
                         for item in items:
@@ -210,7 +227,9 @@ def upload_product(shop_id: int):
                         for inv_level in inv_levels:
                             location_id = inv_level.location_id
                             inv_level.available = product.qty
-                            shopify.InventoryLevel.set(location_id, inventory_item_id, product.qty)
+                            shopify.InventoryLevel.set(
+                                location_id, inventory_item_id, product.qty
+                            )
                     product.is_new = False
                     product.save()
                     updated_product_count += 1

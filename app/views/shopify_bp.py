@@ -10,7 +10,6 @@ from flask import (
 )
 
 from app.models import Shop
-from app import db
 from app.logger import log
 
 
@@ -30,6 +29,9 @@ def install():
     session = shopify.Session(shop_url, version=current_app.config["VERSION_API"])
     log(log.DEBUG, "session: [%s]", session)
     scope = ["write_products", "read_products", "read_script_tags", "write_script_tags"]
+    # permission_url = session.create_permission_url(
+    #     scope, url_for("shopify_bp.finalize", _external=True)
+    # )
     permission_url = session.create_permission_url(
         scope, f"https://{current_app.config['HOST_NAME']}/shopify/finalize"
     )
@@ -53,9 +55,10 @@ def finalize():
     log(log.DEBUG, "session: [%s]", shopify_session)
     token = shopify_session.request_token(request.args)
     log(log.DEBUG, "token: [%s]", token)
-    shop = Shop(name=shop_url, access_token=token)
-    db.session.add(shop)
-    db.session.commit()
+    shop = Shop.query.filter(Shop.name == shop_url).first()
+    if not shop:
+        shop = Shop(name=shop_url, access_token=token)
+        shop.save()
 
     session["shopify_url"] = shop_url
     session["shopify_token"] = token

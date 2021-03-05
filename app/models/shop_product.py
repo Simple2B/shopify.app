@@ -16,3 +16,9 @@ class ShopProduct(db.Model, ModelMixin):
 
     shop = relationship("Shop")
     product = relationship("Product")
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def __str__(self):
+        return f"<{self.product_id}: ({self.shop_product_id})>"

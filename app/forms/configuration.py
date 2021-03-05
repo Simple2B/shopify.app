@@ -9,6 +9,6 @@ class ConfigurationForm(FlaskForm):
         default=False,
     )
     category_rules_file = FileField("Category rule")
-    access_token = StringField("Access Token", default="")
+    private_app_access_token = StringField("Access Token", default="")
     # TODO: add others configuration parameters
     submit = SubmitField("Save")
