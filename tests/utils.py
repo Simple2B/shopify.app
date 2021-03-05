@@ -22,9 +22,9 @@ def fill_db_by_test_data():
     ]
     for i in range(10):
         Product(
-            sku=f"1000{i + 1}",
+            sku=f"{100089 + i}",
             title=f"Test Product({i + 1})",
             category_path=categories[i],
-            price=(i * 1.01),
-            qty=i
+            price=((i + 1) * 1.01),
+            qty=i+1
         ).save()
