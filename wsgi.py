@@ -34,7 +34,7 @@ def update_vidaxl_products():
     """Update all products from VidaXl
     """
     from app.controllers import download_products
-    download_products()
+    download_products(10000)
 
 
 @app.cli.command()
