@@ -196,7 +196,7 @@ def upload_product(shop_id: int):
                             else title
                         )
                     price = get_price(product, shop_id)
-                    description = scrap_description(product.vidaxl_id)
+                    description = scrap_description(product)
                     shop_prod = shopify.Product.create(
                         dict(
                             title=title,
