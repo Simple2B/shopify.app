@@ -204,7 +204,7 @@ def upload_product(shop_id: int):
                             ],
                             images=[
                                 {"src": img}
-                                for img in scrap_img(product.vidaxl_id).get(
+                                for img in scrap_img(product.vidaxl_id, product.id).get(
                                     "images", []
                                 )
                             ],
