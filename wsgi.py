@@ -49,7 +49,8 @@ def vida_product(sku):
 
 
 @app.cli.command()
-def update_shop_products():
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from app.controllers import upload_product
     from app.models import Shop
@@ -57,7 +58,10 @@ def update_shop_products():
 
     for shop in Shop.query.all():
         try:
-            upload_product(shop.id)
+            if limit:
+                upload_product(shop.id, limit)
+            else:
+                upload_product(shop.id)
         except Exception as e:
             log(log.ERROR, "%s", e)
             log(log.CRITICAL, "Error update products in: %s", shop)

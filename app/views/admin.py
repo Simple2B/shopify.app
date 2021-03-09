@@ -9,7 +9,7 @@ from flask import (
     send_file,
 )
 from app.forms import ConfigurationForm
-from app.models import Configuration, Product, Category
+from app.models import Configuration, Product, Shop
 from app.logger import log
 from app.controllers import (
     shopify_auth_required,
@@ -25,15 +25,13 @@ admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
 def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
-    form.categories = Category.query.filter(Category.shop_id == shop_id).all()
+    shop = Shop.query.get(shop_id)
+    form.categories = [c.path for c in shop.categories]
     vidaxl_prefix_conf = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
     if form.validate_on_submit():
         form_vidaxl_prefix = form.leave_vidaxl_prefix.data
         log(log.DEBUG, "Form validate with succeed!")
-        if not Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX") == form_vidaxl_prefix:
-            Configuration.set_value(
-                shop_id, "LEAVE_VIDAXL_PREFIX", form_vidaxl_prefix
-            )
+        Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form_vidaxl_prefix)
         if "category_rules_file" in request.files:
             update_categories(shop_id, request.files["category_rules_file"])
         if form.private_app_access_token.data:
