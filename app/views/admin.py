@@ -28,14 +28,15 @@ def admin(shop_id):
     shop = Shop.query.get(shop_id)
     form.categories = [c.path for c in shop.categories]
     vidaxl_prefix_conf = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
+    form.private_app_access_token.data = shop.private_app_access_token
     if form.validate_on_submit():
         form_vidaxl_prefix = form.leave_vidaxl_prefix.data
         log(log.DEBUG, "Form validate with succeed!")
         Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form_vidaxl_prefix)
-        if "category_rules_file" in request.files:
-            update_categories(shop_id, request.files["category_rules_file"])
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
+        if "category_rules_file" in request.files:
+            update_categories(shop_id, request.files["category_rules_file"])
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
         return render_template("index.html", form=form, **request.args)
