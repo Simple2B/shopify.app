@@ -56,6 +56,35 @@ def scrap_img(item_id: int):
         timeout += timeout/2
 
 
+def scrap_description(item_id):
+    """Get product description
+
+    Args:
+        item_id ([int]): [Item_id in VidaXL API]
+
+    Returns:
+        [tags]: [<p> description </p>, <ul> specification_list </ul>]
+    """
+    timeout = current_app.config["SLEEP_TIME"]
+    attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
+    for i in range(attempts):
+        soup = check_soup(item_id)
+        if soup:
+            block = soup.find('div', class_='panel-body')
+            description = block.p
+            specification_list = block.ul
+            return description, specification_list
+        log(
+            log.INFO,
+            "Scraping description: Invalid Response. Attempt: %d(%d) timeout:%s",
+            i + 2,
+            attempts,
+            timeout,
+        )
+        time.sleep(timeout)
+        timeout += timeout/2
+
+
 def scrappy_all_products(products_number=None):
     if products_number:
         products = Product.query.limit(products_number).all()
