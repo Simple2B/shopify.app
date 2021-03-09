@@ -26,7 +26,6 @@ def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
     shop = Shop.query.get(shop_id)
-    form.private_app_access_token.data = shop.private_app_access_token
     if form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
         Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data)
@@ -40,6 +39,7 @@ def admin(shop_id):
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
         form.categories = [c.path for c in shop.categories]
+        form.private_app_access_token.data = shop.private_app_access_token
         return render_template("index.html", form=form, **request.args)
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
@@ -52,6 +52,7 @@ def admin(shop_id):
     form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
     form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
     form.categories = [c.path for c in shop.categories]
+    form.private_app_access_token.data = shop.private_app_access_token
     return render_template("index.html", form=form, **request.args)
 
 
