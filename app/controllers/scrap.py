@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.request import Request, urlopen
 from flask import current_app
 from bs4 import BeautifulSoup
-from app.models import Product, Image
+from app.models import Product, Image, Description
 from app.logger import log
 
 
@@ -53,6 +53,40 @@ def scrap_img(product):
         log(
             log.INFO,
             "Scraping pictures: Invalid Response. Attempt: %d(%d) timeout:%s",
+            i + 2,
+            attempts,
+            timeout,
+        )
+        time.sleep(timeout)
+        timeout += timeout/2
+
+
+def scrap_description(product):
+    """Get product description
+
+    Args:
+        Product ([class]): [Product]
+
+    Returns:
+        [str]: [<p> description </p>, <ul> specification_list </ul>]
+    """
+    description = product.description
+    if description:
+        return description
+    timeout = current_app.config["SLEEP_TIME"]
+    attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
+    for i in range(attempts):
+        soup = check_soup(product.vidaxl_id)
+        if soup:
+            block = soup.find('div', class_='panel-body')
+            description = block.p
+            specification_list = block.ul
+            full_description = f'{description}{specification_list}'
+            Description(product_id=product.id, text=full_description).save()
+            return full_description
+        log(
+            log.INFO,
+            "Scraping description: Invalid Response. Attempt: %d(%d) timeout:%s",
             i + 2,
             attempts,
             timeout,

@@ -5,3 +5,4 @@ from .shop import Shop
 from .category import Category
 from .shop_product import ShopProduct
 from .image import Image
+from .description import Description

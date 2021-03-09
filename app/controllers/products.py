@@ -3,7 +3,7 @@ from datetime import datetime
 import shopify
 from app.models import Configuration, Category, Product, Shop, ShopProduct
 from .price import get_price
-from .scrap import scrap_img
+from .scrap import scrap_img, scrap_description
 from app.logger import log
 from app.vida_xl import VidaXl
 from config import BaseConfig as conf
@@ -196,9 +196,11 @@ def upload_product(shop_id: int, limit=None):
                             else title
                         )
                     price = get_price(product, shop_id)
+                    description = scrap_description(product)
                     shop_prod = shopify.Product.create(
                         dict(
                             title=title,
+                            body_html=description,
                             variants=[
                                 dict(price=get_price(product, shop_id), sku=product.sku)
                             ],
