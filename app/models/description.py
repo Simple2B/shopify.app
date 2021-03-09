@@ -4,11 +4,11 @@ from sqlalchemy.orm import relationship
 
 
 class Description(db.Model, ModelMixin):
-    __tablename__ = "description"
+    __tablename__ = "descriptions"
 
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
-    text = db.Column(db.String, default="")
+    text = db.Column(db.String)
 
     product = relationship("Product")
 

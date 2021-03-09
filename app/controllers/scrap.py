@@ -65,7 +65,7 @@ def scrap_description(product):
     Returns:
         [str]: [<p> description </p>, <ul> specification_list </ul>]
     """
-    description = Product.query.get(product.id).description
+    description = product.description
     if description:
         return description
     timeout = current_app.config["SLEEP_TIME"]
