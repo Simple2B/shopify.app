@@ -25,23 +25,22 @@ def check_soup(vidaxl_id: int):
         return None
 
 
-def scrap_img(vidaxl_id: int, product_id: int):
+def scrap_img(product):
     """Get all item pictures from VidaXL
 
     Args:
-        vidaxl_id (int): Item ID in VidaXL API
-        product_id (int): Product ID
+        Product (class)
 
     Returns:
         [JSON]: vidaxl_id, images quantity, list of images urls
     """
-    images = Product.query.get(product_id).images
+    images = Product.query.get(product.id).images
     if images:
-        return {"item_id": vidaxl_id, "qty": len(images), "images": images}
+        return {"item_id": product.vidaxl_id, "qty": len(images), "images": images}
     timeout = current_app.config["SLEEP_TIME"]
     attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
     for i in range(attempts):
-        soup = check_soup(vidaxl_id)
+        soup = check_soup(product.vidaxl_id)
         if soup:
             gallery = soup.find("div", class_="media-gallery")
             img_container = gallery.findAll("a")
@@ -49,8 +48,8 @@ def scrap_img(vidaxl_id: int, product_id: int):
                 i.attrs["href"] for i in img_container if "missing_image" not in i
             ]
             for img in images:
-                Image(product_id=product_id, url=img).save()
-            return {"item_id": vidaxl_id, "qty": len(images), "images": images}
+                Image(product_id=product.id, url=img).save()
+            return {"item_id": product.vidaxl_id, "qty": len(images), "images": images}
         log(
             log.INFO,
             "Scraping pictures: Invalid Response. Attempt: %d(%d) timeout:%s",
