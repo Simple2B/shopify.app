@@ -38,6 +38,7 @@ def admin(shop_id):
             update_categories(shop_id, request.files["category_rules_file"])
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
+        shop = Shop.query.get(shop_id)
         form.categories = [c.path for c in shop.categories]
         form.private_app_access_token.data = shop.private_app_access_token
         return render_template("index.html", form=form, **request.args)
