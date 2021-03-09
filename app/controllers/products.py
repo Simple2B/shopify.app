@@ -140,7 +140,7 @@ def update_product_db(prod, update_date=None):
     return True
 
 
-def upload_product(shop_id: int):
+def upload_product(shop_id: int, limit=None):
     rows = Category.query.filter(Category.shop_id == shop_id).all()
     selected_categories = [r.path.split("/") for r in rows]
 
@@ -206,7 +206,7 @@ def upload_product(shop_id: int):
                             ],
                             images=[
                                 {"src": img}
-                                for img in scrap_img(product.vidaxl_id).get(
+                                for img in scrap_img(product.vidaxl_id, product.id).get(
                                     "images", []
                                 )
                             ],
@@ -241,6 +241,8 @@ def upload_product(shop_id: int):
                     product.is_new = False
                     product.save()
                     updated_product_count += 1
+                    if limit is not None and updated_product_count >= limit:
+                        return
     log(
         log.INFO,
         "Updated %d products in %d seconds",

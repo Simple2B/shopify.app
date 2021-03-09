@@ -9,7 +9,7 @@ from flask import (
     send_file,
 )
 from app.forms import ConfigurationForm
-from app.models import Configuration, Product, Category
+from app.models import Configuration, Product, Shop
 from app.logger import log
 from app.controllers import (
     shopify_auth_required,
@@ -25,21 +25,21 @@ admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
 def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
-    form.categories = Category.query.filter(Category.shop_id == shop_id).all()
-    vidaxl_prefix_conf = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
+    shop = Shop.query.get(shop_id)
+    form.private_app_access_token.data = shop.private_app_access_token
     if form.validate_on_submit():
-        form_vidaxl_prefix = form.leave_vidaxl_prefix.data
         log(log.DEBUG, "Form validate with succeed!")
-        if not Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX") == form_vidaxl_prefix:
-            Configuration.set_value(
-                shop_id, "LEAVE_VIDAXL_PREFIX", form_vidaxl_prefix
-            )
-        if "category_rules_file" in request.files:
-            update_categories(shop_id, request.files["category_rules_file"])
+        Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data)
+        Configuration.set_value(shop_id, "MARGIN_PERCENT", form.margin_percent.data)
+        Configuration.set_value(shop_id, "MOM_SELECTOR", form.mom_selector.data)
+        Configuration.set_value(shop_id, "ROUND_TO", form.round_to.data)
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
+        if "category_rules_file" in request.files:
+            update_categories(shop_id, request.files["category_rules_file"])
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
+        form.categories = [c.path for c in shop.categories]
         return render_template("index.html", form=form, **request.args)
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
@@ -47,7 +47,11 @@ def admin(shop_id):
             for msg in form.errors[error]:
                 flash(msg, "warning")
 
-    form.leave_vidaxl_prefix.data = vidaxl_prefix_conf
+    form.leave_vidaxl_prefix.data = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
+    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
+    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
+    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
+    form.categories = [c.path for c in shop.categories]
     return render_template("index.html", form=form, **request.args)
 
 
