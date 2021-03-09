@@ -103,7 +103,7 @@ def scrappy_all_products(products_number=None):
     assert products
     start_time = datetime.now()
     for i, prod in enumerate(products):
-        imgs = scrap_img(prod.vidaxl_id)
+        imgs = scrap_img(prod)
         assert imgs
         log(log.INFO, imgs)
     difference_time = datetime.now() - start_time

@@ -35,7 +35,7 @@ def test_scrappy(client, monkeypatch):
     assert products
     start_time = datetime.now()
     for prod in products:
-        imgs = scrap.scrap_img(prod.vidaxl_id)
+        imgs = scrap.scrap_img(prod)
         assert imgs
         log(log.INFO, imgs)
     time_out = datetime.now() - start_time
