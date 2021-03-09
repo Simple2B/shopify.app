@@ -73,7 +73,7 @@ def scrap_description(item_id):
             block = soup.find('div', class_='panel-body')
             description = block.p
             specification_list = block.ul
-            return description, specification_list
+            return f'{description}{specification_list}'
         log(
             log.INFO,
             "Scraping description: Invalid Response. Attempt: %d(%d) timeout:%s",
