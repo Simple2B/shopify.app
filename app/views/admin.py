@@ -26,7 +26,6 @@ def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
     shop = Shop.query.get(shop_id)
-    form.categories = [c.path for c in shop.categories]
     form.private_app_access_token.data = shop.private_app_access_token
     if form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
@@ -40,6 +39,7 @@ def admin(shop_id):
             update_categories(shop_id, request.files["category_rules_file"])
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
+        form.categories = [c.path for c in shop.categories]
         return render_template("index.html", form=form, **request.args)
     if form.is_submitted():
         log(log.ERROR, "%s", form.errors)
@@ -51,6 +51,7 @@ def admin(shop_id):
     form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
     form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
     form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
+    form.categories = [c.path for c in shop.categories]
     return render_template("index.html", form=form, **request.args)
 
 
