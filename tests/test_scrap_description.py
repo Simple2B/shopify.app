@@ -1,6 +1,7 @@
 import pytest
 from app.controllers import scrap_description
 from app import create_app, db
+from app.models import Description, Product
 from .utils import fill_db_by_test_data
 
 
@@ -22,6 +23,9 @@ def client():
 
 
 def test_scrap_description(client):
-    description = scrap_description(35084)
+    product = Product.query.first()
+    description = scrap_description(product)
     assert description
     assert 'Brüder Mannesmann' in description
+    test_db = Description.query.first()
+    assert test_db

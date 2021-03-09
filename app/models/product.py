@@ -23,6 +23,7 @@ class Product(db.Model, ModelMixin):
 
     shop_products = relationship("ShopProduct")
     images = relationship("Image")
+    description = relationship("Description")
 
     def __repr__(self) -> str:
         return self.__str__()
