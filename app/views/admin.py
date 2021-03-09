@@ -27,21 +27,13 @@ def admin(shop_id):
     form.shop_id = shop_id
     shop = Shop.query.get(shop_id)
     form.categories = [c.path for c in shop.categories]
-    vidaxl_prefix_conf = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
-    margin_percent_conf = Configuration.get_value(shop_id, "MARGIN_PERCENT")
-    mom_selector_conf = Configuration.get_value(shop_id, "MOM_SELECTOR")
-    round_to = Configuration.get_value(shop_id, "ROUND_TO")
     form.private_app_access_token.data = shop.private_app_access_token
     if form.validate_on_submit():
-        form_vidaxl_prefix = form.leave_vidaxl_prefix.data
-        form_margin_percent = form.margin_percent.data
-        form_mom_selector = form.mom_selector.data
-        form_round_to = form.round_to.data
         log(log.DEBUG, "Form validate with succeed!")
-        Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form_vidaxl_prefix)
-        Configuration.set_value(shop_id, "MARGIN_PERCENT", form_margin_percent)
-        Configuration.set_value(shop_id, "MOM_SELECTOR", form_mom_selector)
-        Configuration.set_value(shop_id, "ROUND_TO", form_round_to)
+        Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data)
+        Configuration.set_value(shop_id, "MARGIN_PERCENT", form.margin_percent.data)
+        Configuration.set_value(shop_id, "MOM_SELECTOR", form.mom_selector.data)
+        Configuration.set_value(shop_id, "ROUND_TO", form.round_to.data)
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
         if "category_rules_file" in request.files:
@@ -55,10 +47,10 @@ def admin(shop_id):
             for msg in form.errors[error]:
                 flash(msg, "warning")
 
-    form.leave_vidaxl_prefix.data = vidaxl_prefix_conf
-    form.margin_percent.data = margin_percent_conf
-    form.mom_selector.data = mom_selector_conf
-    form.round_to.data = round_to
+    form.leave_vidaxl_prefix.data = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
+    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
+    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
+    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
     return render_template("index.html", form=form, **request.args)
 
 

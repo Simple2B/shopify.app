@@ -12,7 +12,7 @@ class ConfigurationForm(FlaskForm):
     category_rules_file = FileField("Category rule:")
     private_app_access_token = StringField("Access Token:", default="")
     mom_selector = BooleanField("Pricing by MoM:", default=False)
-    margin_percent = FloatField("Margin percent:", default=1.0)
+    margin_percent = FloatField("Margin percentage:", default=1.0)
     round_to = IntegerField("Defin cents e.g. 50.xx:", default=99)
     # TODO: add others configuration parameters
     submit = SubmitField("Save")
