@@ -15,6 +15,7 @@ class Configuration(db.Model, ModelMixin):
     name = db.Column(db.String, default="unknown name")
     value = db.Column(db.String, default="")
     value_type = db.Column(db.String, default="")
+    path = db.Column(db.String, default="/")
 
     shop = relationship("Shop")
 
