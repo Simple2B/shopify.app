@@ -286,7 +286,7 @@ def upload_product(shop_id: int, limit=None):
                             ShopProduct.shop_id == shop_id,
                         )
                     ).first()
-                    log(log.INFO, '%s', shop_product)
+                    log(log.INFO, 'Product [%s] was deleted from store', shop_product)
                     shopify_product = shopify.Product.find(shop_product.shop_product_id)
                     shopify_product.destroy()
                     deleted_products += 1
