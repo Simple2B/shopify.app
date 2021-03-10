@@ -82,7 +82,19 @@ class VidaXl(object):
         LIMIT = min(LIMIT, data["pagination"]["limit"])
         log(log.INFO, "Get total products: [%d]", total_products)
         products = data["data"]
+        percents_done = 0
+        count_done = 0
+
+        def update_progress():
+            nonlocal count_done, percents_done
+            count_done += 1
+            new_percents = count_done * 100 // total_products
+            if new_percents - percents_done >= 10:
+                percents_done = new_percents
+                log(log.INFO, "Progress: %d%%", percents_done)
+
         for product in products:
+            update_progress()
             yield product
         if total_products > LIMIT:
             range_ = (total_products - LIMIT) // LIMIT
@@ -101,4 +113,5 @@ class VidaXl(object):
                 data = response.json()
                 products = data["data"]
                 for product in products:
+                    update_progress()
                     yield product
