@@ -36,7 +36,7 @@ def scrap_img(product):
     """
     images = Product.query.get(product.id).images
     if images:
-        return {"item_id": product.vidaxl_id, "qty": len(images), "images": images}
+        return images
     timeout = current_app.config["SLEEP_TIME"]
     attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
     for i in range(attempts):
@@ -49,7 +49,7 @@ def scrap_img(product):
             ]
             for img in images:
                 Image(product_id=product.id, url=img).save()
-            return {"item_id": product.vidaxl_id, "qty": len(images), "images": images}
+            return images
         log(
             log.INFO,
             "Scraping pictures: Invalid Response. Attempt: %d(%d) timeout:%s",
@@ -59,6 +59,7 @@ def scrap_img(product):
         )
         time.sleep(timeout)
         timeout += timeout/2
+    return None
 
 
 def scrap_description(product):
@@ -93,6 +94,7 @@ def scrap_description(product):
         )
         time.sleep(timeout)
         timeout += timeout/2
+    return None
 
 
 def scrappy_all_products(products_number=None):
