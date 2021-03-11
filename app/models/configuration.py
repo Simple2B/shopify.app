@@ -20,7 +20,7 @@ class Configuration(db.Model, ModelMixin):
     shop = relationship("Shop")
 
     @staticmethod
-    def get_value(shop_id: int, name: str, path: str):
+    def get_value(shop_id: int, name: str, path="/"):
         conf = (
             Configuration.query.filter(Configuration.shop_id == shop_id)
             .filter(Configuration.name == name)
