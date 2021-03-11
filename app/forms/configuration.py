@@ -14,6 +14,5 @@ class ConfigurationForm(FlaskForm):
     mom_selector = BooleanField("Pricing by MoM:", default=False)
     margin_percent = FloatField("Margin percentage:", default=1.0)
     round_to = IntegerField("Defin cents e.g. 50.xx:", default=99)
-    hidden_field = HiddenField("Hidden field", default="")
-    # TODO: add others configuration parameters
+    categories_tree = HiddenField("Categories data")
     submit = SubmitField("Save")

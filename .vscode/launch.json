@@ -29,8 +29,10 @@
                 "FLASK_DEBUG": "0"
             },
             "args": [
-                "update-vidaxl-products"
+                "update-vidaxl-products",
+                "--limit", "5"
             ],
+            "jinja": true
         },
         {
             "name": "Python: Flask",
@@ -44,7 +46,7 @@
             },
             "args": [
                 "run",
-                "-p", "8090",
+                "-p", "10002",
                 "-h", "localhost"
                 // "-h", "memo.simple2b.net"
             ],

@@ -27,6 +27,6 @@ def test_scrap_description(client):
     description = scrap_description(product)
     assert description
     assert 'Brüder Mannesmann' in description
-    desc = Description.query.fileter(Description.product_id == product.id).first()
+    desc = Description.query.filter(Description.product_id == product.id).first()
     assert desc
     assert desc.text == description

@@ -17,10 +17,10 @@ def get_price(product, shop_id):
     Returns:
         [float]: Finish price
     """
-    mom_selector = Configuration.get_value(shop_id, "MOM_SELECTOR")
-    margin_percent = Configuration.get_value(shop_id, "MARGIN_PERCENT")
+    mom_selector = Configuration.get_value(shop_id, "MOM_SELECTOR", product.category_path)
+    margin_percent = Configuration.get_value(shop_id, "MARGIN_PERCENT", product.category_path)
     if mom_selector:
-        round_to = Configuration.get_value(shop_id, "ROUND_TO")
+        round_to = Configuration.get_value(shop_id, "ROUND_TO", product.category_path)
         price = price_generator(
             purchase_price=product.price,
             margin=margin_percent,
