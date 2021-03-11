@@ -53,18 +53,15 @@ def vida_product(sku):
 def update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from app.controllers import upload_product
-    from app.models import Shop
     from app.logger import log
-
-    for shop in Shop.query.all():
-        try:
-            if limit:
-                upload_product(shop.id, limit)
-            else:
-                upload_product(shop.id)
-        except Exception as e:
-            log(log.ERROR, "%s", e)
-            log(log.CRITICAL, "Error update products in: %s", shop)
+    try:
+        if limit:
+            upload_product(limit)
+        else:
+            upload_product()
+    except Exception as e:
+        log(log.ERROR, "%s", e)
+        log(log.CRITICAL, "Error update products")
 
 
 @app.cli.command()
