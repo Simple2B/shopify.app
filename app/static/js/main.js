@@ -5,19 +5,21 @@ hidden_field.setAttribute("value", "Json")
 console.log(hidden_field, hidden_field.value)
 
 // const root = document.getElementById("rootID")
-// const category = document.getElementById("categorySelectorID")
+// const textRoot = root.querySelector("a")
+// const category = document.getElementById("categoryTreeID")
 // const subcategories = Array.from(category.getElementsByTagName("a"))
 // console.log(subcategories)
 // let previusActiveLink = root
 // subcategories.forEach(el => {
 //     console.log(el.innerText);
-//     el.addEventListener("click", () => {
+//     el.addEventListener("click", (event) => {
+//         const currentLink = event.path[1]
 //         previusActiveLink.classList.remove("active_link");
-//         previusActiveLink = el
-//         el.classList.add("active_link");
-//         if (el === root) {
-//             root.innerText = "Root"
-//         } else {root.innerText = `${el.innerText}`}
+//         previusActiveLink = currentLink
+//         currentLink.classList.add("active_link");
+//         if (currentLink === root) {
+//             el.innerText = "Root"
+//         } else {textRoot.innerText = `${el.innerText}`};
 //     })
 // });
 // test work tree
@@ -34,17 +36,36 @@ for (i = 0; i < toggler.length; i++) {
 
 
 // creating dynamic selector Category
-function setAttributes(el, attrs) {
-    for(var key in attrs) {
+function setAttributes(el, attrs, text=undefined) {
+    for (var key in attrs) {
       el.setAttribute(key, attrs[key]);
     }
+    if (text) {el.innerText = text;}
 };
 
+// define "root category"
+const categoryPanel = document.querySelector(".category_panel");
+const div = document.createElement('div');
+const rootUl = document.createElement('ul');
+const rootLi = document.createElement('li');
+const rootSpan = document.createElement('span');
+const rootA = document.createElement('a');
+// define elements of another categories and subcategories
 const ul = document.createElement('ul');
 const li = document.createElement('li');
+const span = document.createElement('span');
 const a = document.createElement('a');
 
-// div.setAttribute('class', '_form-search');
+// create tree
+div.setAttribute('class', 'testing');
+setAttributes(rootUl, {"id": "categoryTreeID", "class": "tree"});
+setAttributes(rootLi, {"id": "rootID"});
+setAttributes(rootSpan, {"class": "caret"});
+setAttributes(rootA, {"href": "#"}, "Root");
+
+setAttributes(ul, {"class": "nested"});
+
+
 // img.setAttribute('src', '/static/images/Search_icon.png');
 // setAttributes(input, {
 //     "class": "input_search",
@@ -55,3 +76,10 @@ const a = document.createElement('a');
 // div.prepend(img);
 // div.append(input);
 // document.querySelector('.chart-left .form').before(div);
+categoryPanel.after(div);
+div.append(rootUl);
+rootUl.append(rootLi);
+rootLi.append(rootSpan);
+rootSpan.append(rootA);
+
+rootLi.append(ul)

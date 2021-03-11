@@ -77,7 +77,7 @@
 .top-level-menu a:hover { color: #000000; }
 
 .active_link {
-    background-color: rgb(0 0 255 / 25%);
+    background-color: rgb(0 0 255 / 25%) !important;
 }
 
 
@@ -104,12 +104,12 @@
 
 /*  */
 /* Remove default bullets */
-ul, #myUL {
+ul, #categoryTreeID {
     list-style-type: none;
   }
 
   /* Remove margins and padding from the parent ul */
-  #myUL {
+  #categoryTreeID {
     margin: 0;
     padding: 0;
   }
@@ -142,3 +142,20 @@ ul, #myUL {
   .active {
     display: block;
   }
+  /* category tree */
+  .tree li {
+    height: 1.7rem;
+    width: 10rem;
+    background: #999999;
+  }
+  .tree li:hover { background-color: rgb(0 0 255 / 25%); }
+  .tree a {
+    font: bold 14px Arial, Helvetica, sans-serif;
+    color: #FFFFFF;
+    text-decoration: none;
+    padding: 0 0 0 10px;
+    display: inline-block;
+    line-height: 30px;
+  }
+
+  .tree a:hover { color: #000000; }
