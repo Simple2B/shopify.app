@@ -54,14 +54,7 @@ def update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from app.controllers import upload_product
     from app.logger import log
-    try:
-        if limit:
-            upload_product(limit)
-        else:
-            upload_product()
-    except Exception as e:
-        log(log.ERROR, "%s", e)
-        log(log.CRITICAL, "Error update products")
+    #TODO New code :)
 
 
 @app.cli.command()
