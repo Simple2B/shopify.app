@@ -57,11 +57,11 @@ def admin(shop_id):
                 flash(msg, "warning")
 
     form.leave_vidaxl_prefix.data = Configuration.get_value(
-        shop_id, "LEAVE_VIDAXL_PREFIX"
+        shop_id, "LEAVE_VIDAXL_PREFIX", path='/'
     )
-    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
-    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
-    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
+    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT", path='/')
+    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR", path='/')
+    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO", path='/')
     form.categories = [c.path for c in shop.categories]
     form.private_app_access_token.data = shop.private_app_access_token
     form.categories_tree.data = json.dumps(

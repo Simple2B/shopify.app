@@ -10,7 +10,7 @@ from .utils import fill_db_by_test_data
 
 @pytest.fixture
 def client():
-    app = create_app(environment="development")
+    app = create_app(environment="testing")
     app.config["TESTING"] = True
 
     with app.test_client() as client:
