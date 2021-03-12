@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% block links %}
-<link href="bootstrap.css" rel="stylesheet">
-<link href="{{ url_for('static', filename='css/multi_selector.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('static', filename='css/bootstrap-treeview.css') }}" rel="stylesheet" media="screen">
+
 {% endblock %}
 {% block content %}
 <div class="container py-10">
@@ -31,76 +32,31 @@
           </div>
           <div class="_row">
             <div class="form-group category">
-              <div class="category_panel">
-                <div class="category_rows">
-                  {% for path in form.categories %}
-                  <div>
-                    {{ path }}
-                  </div>
-                  {% endfor %}
-                </div>
-
-
-              </div>
-
-              <div>
-              <ul id="categoryTreeID" class="tree">
-                <li id="rootID"><span class="caret"></span><a href="#">Root</a>
-                  <ul class="nested">
-                    <li><a href="#">Water</a></li>
-                    <li><a href="#">Coffee</a></li>
-                    <li><span class="caret"></span><a href="#">Tea</a>
-                      <ul class="nested">
-                        <li><a href="#">Black Tea</a></li>
-                        <li><a href="#">White Tea</a></li>
-                        <li><span class="caret"></span>
-                          <a href="#">Green Tea</a>
-                          <ul class="nested">
-                            <li><a href="#">Sencha</a></li>
-                            <li><a href="#">Gyokuro</a></li>
-                            <li><a href="#">Matcha</a></li>
-                            <li><a href="#">Pi Lo Chun</a></li>
-                          </ul>
-                          <li><span class="caret"></span>
-                            <a href="#">test</a>
-                            <ul class="nested">
-                              <li><a href="#">1</a></li>
-                              <li><a href="#">2</a></li>
-                              <li><a href="#">3</a></li>
-                              <li><a href="#">4</a></li>
-                            </ul>
-                          </li>
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-              </div>
+              <div id="category-tree"></div>
             </div>
             <div>
               <div class="form-group row">
                 <div class="flex">
                   {{form.leave_vidaxl_prefix.label(class='')}}
-                  {{form.leave_vidaxl_prefix(class='form-control col-sm-1 prefix_checkbox')}}
+                  {{form.leave_vidaxl_prefix(id='LEAVE_VIDAXL_PREFIX', class='form-control col-sm-1 prefix_checkbox')}}
                 </div>
               </div>
               <div class="form-group row">
                 <div class="flex">
                   {{form.mom_selector.label(class='')}}
-                  {{form.mom_selector(class='form-control col-sm-1 prefix_checkbox')}}
+                  {{form.mom_selector(id='MOM_SELECTOR', class='form-control col-sm-1 prefix_checkbox')}}
                 </div>
               </div>
               <div class="form-group row">
                 <div class="flex">
                   {{form.margin_percent.label(class='label')}}
-                  {{form.margin_percent(class='form-control col-sm-1 memo_input_field')}}
+                  {{form.margin_percent(id='MARGIN_PERCENT', class='form-control col-sm-1 memo_input_field')}}
                 </div>
               </div>
               <div class="form-group row">
                 <div class="flex">
                   {{form.round_to.label(class='label')}}
-                  {{form.round_to(class='form-control col-sm-1 memo_input_field')}}
+                  {{form.round_to(id='ROUND_TO', class='form-control col-sm-1 memo_input_field')}}
                 </div>
               </div>
             </div>
@@ -112,6 +68,8 @@
   </div>
 </div>
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/jquery.js') }}" type="text/javascript" defer></script>
+<script src="{{ url_for('static', filename='js/bootstrap-treeview.js') }}" type="text/javascript" defer></script>
 <script src="{{ url_for('static', filename='js/category_tree.js') }}" type="text/javascript" defer></script>
 {% endblock %}
 {% endblock %}
