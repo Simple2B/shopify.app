@@ -52,9 +52,25 @@ def vida_product(sku):
 @click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_products(limit):
     """Upload all products to Shop(s)"""
-    from app.controllers import upload_product
+    from datetime import datetime
+    from app.controllers import (
+        upload_new_products_vidaxl_to_store,
+        upload_products_to_store_by_category,
+        update_products_vidaxl_to_store,
+        change_product_price,
+        delete_products_from_store_exclude_category,
+        delete_vidaxl_product_from_store
+        )
     from app.logger import log
-    #TODO New code :)
+
+    begin = datetime.now()
+    # upload_products_to_store_by_category(limit=20)
+    # upload_new_products_vidaxl_to_store(limit=20)
+    # update_products_vidaxl_to_store(limit=50)
+    # delete_products_from_store_exclude_category(limit=2000)
+    # delete_vidaxl_product_from_store(limit=30)
+    # change_product_price(limit=30)
+    log(log.INFO, 'Full loop ended in %d seconds', (datetime.now() - begin).seconds)
 
 
 @app.cli.command()
