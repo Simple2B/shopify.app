@@ -36,7 +36,7 @@ def scrap_img(product):
     """
     images = Product.query.get(product.id).images
     if images:
-        return images
+        return [image.url for image in images]
     timeout = current_app.config["SLEEP_TIME"]
     attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
     for i in range(attempts):
@@ -73,7 +73,7 @@ def scrap_description(product):
     """
     description = product.description
     if description:
-        return description
+        return description[0].text
     timeout = current_app.config["SLEEP_TIME"]
     attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
     for i in range(attempts):
