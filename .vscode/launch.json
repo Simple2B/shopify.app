@@ -16,7 +16,7 @@
             },
             "args": [
                 "run",
-                "-p", "10002",
+                "-p", "8090",
                 "-h", "localhost"
                 // "-h", "memo.simple2b.net"
             ],
