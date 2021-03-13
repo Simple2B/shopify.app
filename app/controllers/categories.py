@@ -83,12 +83,14 @@ def apply_categories_configuration_tree(shop_id: int, data: dict):
 
     def apply_node(children, path):
         for node in children:
-            path += node["text"]
-            apply_parameters(node, path)
-            children = node["nodes"]
-            if children:
-                path += "/"
-                apply_node(children, path)
+            node_path = path + node["text"]
+            apply_parameters(node, node_path)
+            if "nodes" not in node:
+                continue
+            nodes = node["nodes"]
+            if nodes:
+                node_path += "/"
+                apply_node(nodes, node_path)
 
     children = data["nodes"]
     path = ""

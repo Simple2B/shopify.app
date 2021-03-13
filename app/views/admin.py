@@ -34,12 +34,6 @@ def admin(shop_id):
         flash("Unknown shop!", "warning")
     elif form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
-        Configuration.set_value(
-            shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data
-        )
-        Configuration.set_value(shop_id, "MARGIN_PERCENT", form.margin_percent.data)
-        Configuration.set_value(shop_id, "MOM_SELECTOR", form.mom_selector.data)
-        Configuration.set_value(shop_id, "ROUND_TO", form.round_to.data)
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
         if "category_rules_file" in request.files:
