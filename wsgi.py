@@ -1,10 +1,20 @@
 #!/user/bin/env python
+import os
 import click
 
 from app import create_app, db, models, forms
 from app.logger import log
 
 app = create_app()
+
+
+def process_exists(pid: int):
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 
 
 # flask cli context setup
@@ -34,10 +44,23 @@ def scrappy():
 @click.option("--limit", default=0, help="Number of products.")
 def update(limit):
     """Update ALL"""
+    FILE_NAME = "/tmp/UPDATING"
+    try:
+        with open(FILE_NAME, "r") as f:
+            pid = int(f.readline())
+            if process_exists(pid):
+                log(log.WARNING, "Updating in progress...")
+                return
+    except IOError:
+        pass
+
+    with open(FILE_NAME, "w") as f:
+        f.write(f"{os.getpid()}\n")
     log(log.INFO, "---==START UPDATE==---")
     update_vidaxl_products(limit)
     update_shop_products(limit)
     log(log.INFO, "---==FINISH UPDATE==---")
+    os.remove(FILE_NAME)
 
 
 # @app.cli.command()
