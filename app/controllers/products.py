@@ -154,11 +154,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                             description = "<p>No description</p>"
                         images = scrap_img(product)
                         if not images:
-                            images = [
-                                {
-                                    "src": NO_PHOTO_IMG
-                                }
-                            ]
+                            images = [{"src": NO_PHOTO_IMG}]
                         else:
                             images = [{"src": img} for img in images]
                         shop_prod = shopify.Product.create(
@@ -219,8 +215,8 @@ def update_products_vidaxl_to_store(limit=None):  # 2
     """[Update VidaXL products in the stores]"""
     begin_time = datetime.now()
     products = (
-        Product.query.filter(Product.is_changed == True)
-        .filter(Product.is_deleted == False)
+        Product.query.filter(Product.is_changed == True)  # noqa E712
+        .filter(Product.is_deleted == False)  # noqa E712
         .all()
     )
     updated_product_count = 0
@@ -235,10 +231,10 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                     ]
                     if shop_products:
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
-                            shop.id, "LEAVE_VIDAXL_PREFIX"
+                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
                         title = product.title
-                        if LEAVE_VIDAXL_PREFIX:
+                        if not LEAVE_VIDAXL_PREFIX:
                             title = (
                                 title.replace("vidaXL ", "")
                                 if title.startswith("vidaXL ")
@@ -249,23 +245,27 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                             description = "<p>No description</p>"
                         images = scrap_img(product)
                         if not images:
-                            images = [
-                                {
-                                    "src": NO_PHOTO_IMG
-                                }
-                            ]
+                            images = [{"src": NO_PHOTO_IMG}]
                         else:
                             images = [{"src": img} for img in images]
                         price = get_price(product, shop.id)
-                        shopify_product = shopify.Product.find(
-                            shop_products[0].shop_product_id
-                        )
-                        shopify_product.title = title
-                        shopify_product.body_html = description
-                        shopify_product.variants[0].price = price
-                        shopify_product.variants[0].sku = product.sku
-                        shopify_product.images = images
-                        shopify_product.save()
+                        try:
+                            shopify_product = shopify.Product.find(
+                                shop_products[0].shop_product_id
+                            )
+                            shopify_product.title = title
+                            shopify_product.body_html = description
+                            shopify_product.variants[0].price = price
+                            shopify_product.variants[0].sku = product.sku
+                            shopify_product.images = images
+                            shopify_product.save()
+                        except Exception:
+                            log(
+                                log.ERROR,
+                                "update_products_vidaxl_to_store: Product %s not present in shop [%s]",
+                                product,
+                                shop,
+                            )
                         log(
                             log.INFO,
                             "Product %s was updated in %s",
@@ -276,7 +276,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
         product.save()
         updated_product_count += 1
         if limit is not None and updated_product_count >= limit:
-            return
+            break
     log(
         log.INFO,
         "Updated %d products in %d seconds",
@@ -306,9 +306,7 @@ def delete_vidaxl_product_from_store(limit=None):  # 3
                     ]
                     for prod in shop_products:
                         try:
-                            shopify_product = shopify.Product.find(
-                                prod.shop_product_id
-                            )
+                            shopify_product = shopify.Product.find(prod.shop_product_id)
                             shopify_product.destroy()
                         except Exception:
                             pass
@@ -457,11 +455,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             description = "<p>No description</p>"
                         images = scrap_img(product)
                         if not images:
-                            images = [
-                                {
-                                    "src": NO_PHOTO_IMG
-                                }
-                            ]
+                            images = [{"src": NO_PHOTO_IMG}]
                         else:
                             images = [{"src": img} for img in images]
                         shop_prod = shopify.Product.create(

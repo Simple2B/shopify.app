@@ -90,6 +90,14 @@ def update_shop_vx_delete_products(limit):
 
 
 @app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_vx_changed_products(limit):
+    """Upload changed VidaXl products to Shop(s)"""
+    from app.controllers import update_products_vidaxl_to_store
+    update_products_vidaxl_to_store(limit=limit if limit else None)
+
+
+@app.cli.command()
 def info():
     """Get App Info"""
     import json
