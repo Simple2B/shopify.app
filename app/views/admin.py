@@ -18,6 +18,8 @@ from app.controllers import (
     update_access_token,
     get_categories_configuration_tree,
     apply_categories_configuration_tree,
+    set_csv_url,
+    get_csv_url,
 )
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -34,7 +36,7 @@ def admin(shop_id):
         flash("Unknown shop!", "warning")
     elif form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
-        Configuration.set_value(shop_id, "SCV_PATH", form.csv_path.data)
+        set_csv_url(form.csv_url.data)
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
         if "category_rules_file" in request.files:
@@ -57,7 +59,7 @@ def admin(shop_id):
     form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
     form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
     form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
-    form.csv_path.data = Configuration.get_value(shop_id, "SCV_PATH")
+    form.csv_url.data = get_csv_url()
     form.categories = [c.path for c in shop.categories]
     form.private_app_access_token.data = shop.private_app_access_token
     form.categories_tree.data = json.dumps(

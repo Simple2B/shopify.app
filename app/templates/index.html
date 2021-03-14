@@ -24,15 +24,13 @@
               {{form.category_rules_file(class='form-control col-sm-2')}}
               <a href="{{ url_for('admin.all_categories')}}" class="form-control-label col-sm-4">Get All</a>
             </div>
-          </div>
-          <div>
-            <div>
-              {{form.csv_path.label(class='label')}}
-              {{form.csv_path(class='form-control')}}
+            <div class="row">
+              {{form.csv_url.label(class='form-control-label col-sm-3')}}
+              {{form.csv_url(class='form-control col-sm-9')}}
             </div>
           </div>
-          <div class="_row">
-            <div class="form-group category">
+          <div class="row">
+            <div class="form-group category col-sm-6">
               <div id="category-tree"></div>
             </div>
             <div>

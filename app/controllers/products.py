@@ -7,7 +7,6 @@ import shopify
 from app import db
 from app.models import (
     Configuration,
-    Category,
     Product,
     Shop,
     ShopProduct,
@@ -123,7 +122,7 @@ def upload_csv(csv_url, limit=None):
 
 
 def download_products(limit=None):
-    csv_url = Configuration.get_value(1, "SCV_PATH", path="/")
+    csv_url = Configuration.get_value(1, "CSV_URL", path="/")
     if csv_url:
         return upload_csv(csv_url)
     vida = VidaXl()
