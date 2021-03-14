@@ -114,6 +114,14 @@ def upload_products_to_store_by_category(limit):
 
 
 @app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_price(limit):
+    """Update product in shops by categories"""
+    from app.controllers import change_product_price
+    change_product_price(limit=limit if limit else None)
+
+
+@app.cli.command()
 def info():
     """Get App Info"""
     import json
