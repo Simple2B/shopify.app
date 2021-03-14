@@ -74,6 +74,21 @@ def update_shop_products(limit):
 
 
 @app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_vx_new_products(limit):
+    """Upload new VidaXl products to Shop(s)"""
+    from datetime import datetime
+    from app.controllers import (
+        upload_new_products_vidaxl_to_store,
+        )
+    from app.logger import log
+
+    begin = datetime.now()
+    upload_new_products_vidaxl_to_store(limit=limit if limit else None)
+    log(log.INFO, 'Full loop ended in %d seconds', (datetime.now() - begin).seconds)
+
+
+@app.cli.command()
 def info():
     """Get App Info"""
     import json
@@ -109,13 +124,21 @@ def shop_info(shop_id):
         return
 
     categories = [c.path for c in shop.categories]
+    configurations = {}
+    for c in shop.configurations:
+        if c.path not in configurations:
+            configurations[c.path] = {}
+        configurations[c.path][c.name] = c.value
 
     print(
         json.dumps(
             {
                 "Shop:": shop.name,
                 "Shop products:": len(shop.products),
+                "access_token": shop.access_token,
+                "private_app_access_token": shop.private_app_access_token,
                 "Selected categories": categories,
+                "Configurations": configurations
             },
             indent=2,
         )
