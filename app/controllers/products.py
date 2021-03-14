@@ -1,5 +1,4 @@
 from datetime import datetime
-from re import S
 import shopify
 from app.models import Configuration, Product, Shop, ShopProduct
 from .price import get_price

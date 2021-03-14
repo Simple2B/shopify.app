@@ -2,6 +2,7 @@
 import click
 
 from app import create_app, db, models, forms
+from app.logger import log
 
 app = create_app()
 
@@ -30,12 +31,21 @@ def scrappy():
 
 
 @app.cli.command()
-@click.option("--count", default=0, help="Number of products.")
-def update_vidaxl_products(count):
+@click.option("--limit", default=0, help="Number of products.")
+def update(limit):
+    """Update ALL"""
+    log(log.INFO, "---==START UPDATE==---")
+    update_vidaxl_products(limit)
+    update_shop_products(limit)
+    log(log.INFO, "---==FINISH UPDATE==---")
+
+
+# @app.cli.command()
+# @click.option("--limit", default=0, help="Number of products.")
+def update_vidaxl_products(limit):
     """Update all products from VidaXl"""
     from app.controllers import download_products
-
-    download_products(count if count > 0 else None)
+    download_products(limit if limit > 0 else None)
 
 
 @app.cli.command()
@@ -48,8 +58,8 @@ def vida_product(sku):
     print(json.dumps(VidaXl().get_product(sku), indent=2))
 
 
-@app.cli.command()
-@click.option("--limit", default=0, help="Max. Number of products for update.")
+# @app.cli.command()
+# @click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from datetime import datetime
@@ -64,12 +74,17 @@ def update_shop_products(limit):
     from app.logger import log
 
     begin = datetime.now()
-    # upload_products_to_store_by_category(limit=20)
-    # upload_new_products_vidaxl_to_store(limit=20)
-    # update_products_vidaxl_to_store(limit=50)
-    # delete_products_from_store_exclude_category(limit=2000)
-    # delete_vidaxl_product_from_store(limit=30)
-    # change_product_price(limit=30)
+    limit = limit if limit else None
+    delete_products_from_store_exclude_category(limit)
+    delete_vidaxl_product_from_store(limit)
+
+    upload_products_to_store_by_category(limit)
+    update_products_vidaxl_to_store(limit)
+
+    change_product_price(limit)
+
+    upload_new_products_vidaxl_to_store(limit)
+
     log(log.INFO, "Full loop ended in %d seconds", (datetime.now() - begin).seconds)
 
 
@@ -135,8 +150,8 @@ def info():
             {
                 "Vida products:": all_products.count(),
                 "New products:": all_products.filter(
-                    Product.is_new == True
-                ).count(),  # noqa E712
+                    Product.is_new == True  # noqa E712
+                ).count(),
                 "Changed products:": all_products.filter(
                     Product.is_changed == True
                 ).count(),

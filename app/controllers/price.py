@@ -2,7 +2,6 @@ import urllib
 import time
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
-from flask import current_app
 from app.models import Configuration
 from config import BaseConfig as conf
 from app.logger import log
