@@ -1,12 +1,13 @@
 from datetime import datetime
 import shopify
-from flask import url_for
 from app.models import Configuration, Product, Shop, ShopProduct
 from .price import get_price
 from .scrap import scrap_img, scrap_description
 from app.logger import log
 from app.vida_xl import VidaXl
 from config import BaseConfig as conf
+
+NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210.png"
 
 
 def download_products(limit=None):
@@ -122,7 +123,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                             c.title: c.id for c in shopify.CustomCollection.find()
                         }
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
-                            shop.id, "LEAVE_VIDAXL_PREFIX"
+                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
                         collection_name = product.category_path.split("/")[0]
                         log(
@@ -141,7 +142,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
 
                         log(log.DEBUG, "price: %s", product.price)
                         title = product.title
-                        if LEAVE_VIDAXL_PREFIX:
+                        if not LEAVE_VIDAXL_PREFIX:
                             title = (
                                 title.replace("vidaXL ", "")
                                 if title.startswith("vidaXL ")
@@ -155,9 +156,8 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                         if not images:
                             images = [
                                 {
-                                    "src": url_for('static', filename='images/no-photo-polycar-300x210.png')
-
-                                }  # noqa E712
+                                    "src": NO_PHOTO_IMG
+                                }
                             ]
                         else:
                             images = [{"src": img} for img in images]
@@ -251,8 +251,8 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                         if not images:
                             images = [
                                 {
-                                    "src": url_for('static', filename='images/no-photo-polycar-300x210.png')
-                                }  # noqa E712
+                                    "src": NO_PHOTO_IMG
+                                }
                             ]
                         else:
                             images = [{"src": img} for img in images]
@@ -454,8 +454,8 @@ def upload_products_to_store_by_category(limit=None):  # 6
                         if not images:
                             images = [
                                 {
-                                    "src": url_for('static', filename='images/no-photo-polycar-300x210.png')
-                                }  # noqa E712
+                                    "src": NO_PHOTO_IMG
+                                }
                             ]
                         else:
                             images = [{"src": img} for img in images]

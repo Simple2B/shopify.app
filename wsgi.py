@@ -59,8 +59,8 @@ def update_shop_products(limit):
         update_products_vidaxl_to_store,
         change_product_price,
         delete_products_from_store_exclude_category,
-        delete_vidaxl_product_from_store
-        )
+        delete_vidaxl_product_from_store,
+    )
     from app.logger import log
 
     begin = datetime.now()
@@ -70,22 +70,16 @@ def update_shop_products(limit):
     # delete_products_from_store_exclude_category(limit=2000)
     # delete_vidaxl_product_from_store(limit=30)
     # change_product_price(limit=30)
-    log(log.INFO, 'Full loop ended in %d seconds', (datetime.now() - begin).seconds)
+    log(log.INFO, "Full loop ended in %d seconds", (datetime.now() - begin).seconds)
 
 
 @app.cli.command()
 @click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_vx_new_products(limit):
     """Upload new VidaXl products to Shop(s)"""
-    from datetime import datetime
-    from app.controllers import (
-        upload_new_products_vidaxl_to_store,
-        )
-    from app.logger import log
+    from app.controllers import upload_new_products_vidaxl_to_store
 
-    begin = datetime.now()
     upload_new_products_vidaxl_to_store(limit=limit if limit else None)
-    log(log.INFO, 'Full loop ended in %d seconds', (datetime.now() - begin).seconds)
 
 
 @app.cli.command()
@@ -101,10 +95,16 @@ def info():
         json.dumps(
             {
                 "Vida products:": all_products.count(),
-                "New products:": all_products.filter(Product.is_new == True).count(),  # noqa E712
-                "Changed products:": all_products.filter(Product.is_changed == True).count(),
-                "Deleted products:": all_products.filter(Product.is_deleted == True).count(),
-                "Shops:": shops
+                "New products:": all_products.filter(
+                    Product.is_new == True
+                ).count(),  # noqa E712
+                "Changed products:": all_products.filter(
+                    Product.is_changed == True
+                ).count(),
+                "Deleted products:": all_products.filter(
+                    Product.is_deleted == True
+                ).count(),
+                "Shops:": shops,
             },
             indent=2,
         )
@@ -138,7 +138,7 @@ def shop_info(shop_id):
                 "access_token": shop.access_token,
                 "private_app_access_token": shop.private_app_access_token,
                 "Selected categories": categories,
-                "Configurations": configurations
+                "Configurations": configurations,
             },
             indent=2,
         )
