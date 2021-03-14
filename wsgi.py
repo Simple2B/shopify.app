@@ -84,7 +84,13 @@ def info():
 
     print(
         json.dumps(
-            {"Vida products:": all_products.count(), "Shops:": shops},
+            {
+                "Vida products:": all_products.count(),
+                "New products:": all_products.filter(Product.is_new == True).count(),  # noqa E712
+                "Changed products:": all_products.filter(Product.is_changed == True).count(),
+                "Deleted products:": all_products.filter(Product.is_deleted == True).count(),
+                "Shops:": shops
+            },
             indent=2,
         )
     )

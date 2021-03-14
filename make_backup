@@ -1,7 +1,7 @@
 #!/bin/bash
 BAK_DATE=`date +"%Y.%m.%d"`
 BAK_DIR=`printf "backup.%s" $BAK_DATE`
-echo create folred $BAK_DIR
+echo create folder $BAK_DIR
 mkdir $BAK_DIR
 echo copy files
 cp database-* $BAK_DIR/

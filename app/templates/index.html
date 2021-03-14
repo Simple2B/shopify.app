@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% block links %}
+<link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" media="screen">
+<link href="{{ url_for('static', filename='css/bootstrap-treeview.css') }}" rel="stylesheet" media="screen">
+
+{% endblock %}
 {% block content %}
 <div class="container py-10">
   <div class="card w-90 mx-auto">
@@ -6,64 +11,59 @@
       <h4 class="card-title">Admin panel</h4>
     </div>
     <div class="card-body">
-      <form class="form" role="form" action="{{ url_for('admin.admin', shop_id=form.shop_id, shop=shop) }}" method="post" enctype="multipart/form-data">
-        <div class="memo_flex_row">
-          <div>
-            <div class="form-group row">
-              <div class="flex">
-                {{form.leave_vidaxl_prefix.label(class='')}}
-                {{form.leave_vidaxl_prefix(class='form-control col-sm-1 prefix_checkbox')}}
-              </div>
+      <form class="form" role="form" action="{{ url_for('admin.admin', shop_id=form.shop_id, shop=shop) }}"
+        method="post" enctype="multipart/form-data">
+        {{form.categories_tree(id='category-tree-data')}}
+        <div class="memo_flex_column">
+            <div class="row">
+              {{form.private_app_access_token.label(class='col-sm-3')}}
+              {{form.private_app_access_token(class='form-control col-sm-9')}}
             </div>
-            <div class="form-group row">
-              <div class="flex">
-                {{form.mom_selector.label(class='')}}
-                {{form.mom_selector(class='form-control col-sm-1 prefix_checkbox')}}
-              </div>
+            <div class="row">
+              {{form.category_rules_file.label(class='form-control-label col-sm-3')}}
+              {{form.category_rules_file(class='form-control col-sm-2')}}
+              <a href="{{ url_for('admin.all_categories')}}" class="form-control-label col-sm-4">Get All</a>
             </div>
-            <div class="form-group row">
-              <div class="flex">
-                {{form.margin_percent.label(class='label')}}
-                {{form.margin_percent(class='form-control col-sm-1 access_token')}}
-              </div>
+          <div class="_row">
+            <div class="form-group category">
+              <div id="category-tree"></div>
             </div>
-            <div class="form-group row">
-              <div class="flex">
-                {{form.round_to.label(class='label')}}
-                {{form.round_to(class='form-control col-sm-1 access_token')}}
-              </div>
-            </div>
-            <div class="form-group row">
-              <div class="flex">
-                {{form.private_app_access_token.label(class='label')}}
-                {{form.private_app_access_token(class='form-control col-sm-1 access_token')}}
-              </div>
-            </div>
-          </div>
-          <div class="form-group category">
-            <div class="category_file">
-              <div>
-                {{form.category_rules_file.label(class='label')}}
-                {{form.category_rules_file(class='form-control col-sm-7 category_field')}}
+            <div>
+              <div class="form-group row">
+                <div class="flex">
+                  {{form.leave_vidaxl_prefix.label(class='col-sm-7')}}
+                  {{form.leave_vidaxl_prefix(id='LEAVE_VIDAXL_PREFIX', class='form-control col-sm-1')}}
+                </div>
               </div>
               <div class="form-group row">
-                <a href="{{ url_for('admin.all_categories') }}">All Categories</a>
+                <div class="flex">
+                  {{form.mom_selector.label(class='col-sm-7')}}
+                  {{form.mom_selector(id='MOM_SELECTOR', class='form-control col-sm-1')}}
+                </div>
               </div>
-            </div>
-            <div class="category_panel">
-              <div class="category_rows">
-                {% for path in form.categories  %}
-                  <div>
-                    {{ path }}
-                  </div>
-                {% endfor %}
+              <div class="form-group row">
+                <div class="flex">
+                  {{form.margin_percent.label(class='col-sm-7')}}
+                  {{form.margin_percent(id='MARGIN_PERCENT', class='form-control col-sm-3')}}
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="flex">
+                  {{form.round_to.label(class='col-sm-7')}}
+                  {{form.round_to(id='ROUND_TO', class='form-control col-sm-3')}}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        {{form.submit(class='btn btn-primary')}}
+        {{form.submit(class='btn')}}
       </form>
     </div>
   </div>
 </div>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/jquery.js') }}" type="text/javascript" defer></script>
+<script src="{{ url_for('static', filename='js/bootstrap-treeview.js') }}" type="text/javascript" defer></script>
+<script src="{{ url_for('static', filename='js/category_tree.js') }}" type="text/javascript" defer></script>
+{% endblock %}
 {% endblock %}
