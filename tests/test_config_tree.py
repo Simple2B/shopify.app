@@ -29,8 +29,8 @@ def test_config_tree(client):
     shop = Shop.query.first()
     data = get_categories_configuration_tree(shop.id)
     assert data
-    data["children"][0]["children"][0]["MARGIN_PERCENT"] = 555
+    data["nodes"][0]["nodes"][0]["MARGIN_PERCENT"] = 555
     apply_categories_configuration_tree(shop.id, data)
     data = get_categories_configuration_tree(shop.id)
     assert data
-    assert data["children"][0]["children"][0]["MARGIN_PERCENT"] == 555
+    assert data["nodes"][0]["nodes"][0]["MARGIN_PERCENT"] == 555

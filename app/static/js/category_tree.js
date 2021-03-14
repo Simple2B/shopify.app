@@ -1,93 +1,82 @@
 // creating dynamic selector Category
-function setAttributes(el, attrs, text = undefined) {
-  for (var key in attrs) {
-    el.setAttribute(key, attrs[key]);
+
+const hidden_field = document.getElementById("category-tree-data");
+const g_treeData = JSON.parse(hidden_field.value);
+let g_currentSelectedIndex = 0;
+console.log(g_treeData);
+
+function getNodeByIndex(index) {
+  function getNode(node) {
+    if (node.index == index) {
+      return node;
+    }
+    for (let i in node.nodes) {
+      let child = node.nodes[i];
+      if (child.index == index) {
+        return child;
+      }
+      child = getNode(child);
+      if (child) {
+        return child;
+      }
+    }
+    return null;
   }
-  if (text) { el.innerText = text; }
-};
-
-const hidden_field = document.getElementById("category-tree-data")
-console.log(hidden_field, hidden_field.value)
-const data = JSON.parse(hidden_field.value)
-console.log(data)
-console.log(data.category)
-
-function layout_node(node) {
-  const li = document.createElement('li');
-  const a = document.createElement('a');
-  setAttributes(a, { "href": "#" }, node.category);
-  if (node.children.length == 0){
-    li.append(a);
-  } else {
-    const span = document.createElement('span');
-    span.setAttribute("class", "caret");
-    li.append(span);
-    li.append(a);
-    const ul = document.createElement('ul');
-    setAttributes(ul, { "class": "nested" });
-    li.append(ul);
-    node.children.forEach(node => {
-      ul.append(layout_node(node));
-    });
-  }
-  return li;
-};
-
-// define "root category"
-const div = document.createElement('div');
-const rootUl = document.createElement('ul');
-const rootLi = document.createElement('li');
-const rootSpan = document.createElement('span');
-const rootA = document.createElement('a');
-// define elements of another categories and subcategories
-
-// create tree
-div.setAttribute('class', 'testing');
-setAttributes(rootUl, { "id": "categoryTreeID", "class": "tree" });
-setAttributes(rootLi, { "id": "rootID" });
-setAttributes(rootSpan, { "class": "caret" });
-setAttributes(rootA, { "href": "#" }, "Root");
-
-// document.querySelector(".category_panel").after(div);
-div.append(rootUl);
-rootUl.append(rootLi);
-rootLi.append(rootSpan);
-rootLi.append(rootA);
-
-const ul = document.createElement('ul');
-rootLi.append(ul)
-setAttributes(ul, { "class": "nested" });
-
-data.children.forEach(node => {
-  ul.append(layout_node(node));
-});
-
-
-let toggler = document.getElementsByClassName("caret");
-
-for (let i = 0; i < toggler.length; i++) {
-  toggler[i].addEventListener("click", function () {
-    this.parentElement.querySelector(".nested").classList.toggle("active");
-    this.classList.toggle("caret-down");
-  });
+  return getNode(g_treeData);
 }
 
-// save configuration for categories
-const root = document.getElementById("rootID")
-const textRoot = root.querySelector("a")
-const category = document.getElementById("categoryTreeID")
-const subcategories = Array.from(category.getElementsByTagName("a"))
-console.log(subcategories)
-let previusActiveLink = root
-subcategories.forEach(el => {
-  console.log(el.innerText);
-  el.addEventListener("click", (event) => {
-    const currentLink = event.path[1]
-    previusActiveLink.classList.remove("active_link");
-    previusActiveLink = currentLink
-    currentLink.classList.add("active_link");
-    if (currentLink === root) {
-      el.innerText = data.category
-    } else { textRoot.innerText = `${el.innerText}` };
-  })
+// Treeview Initialization
+function getTree() {
+  // remove empty nodes
+  function removeEmptyNodes(node) {
+    if (!node.nodes) return;
+    if (node.nodes.length == 0) {
+      delete node.nodes;
+      return;
+    }
+    node.nodes.forEach((node) => removeEmptyNodes(node));
+  }
+  removeEmptyNodes(g_treeData);
+  return [g_treeData];
+}
+
+function saveData(index) {
+  let data = getNodeByIndex(index);
+  if (data) {
+    data.LEAVE_VIDAXL_PREFIX = $("#LEAVE_VIDAXL_PREFIX").prop("checked");
+    data.MOM_SELECTOR = $("#MOM_SELECTOR").prop("checked");
+    data.MARGIN_PERCENT = parseFloat($("#MARGIN_PERCENT").val());
+    data.ROUND_TO = parseInt($("#ROUND_TO").val(), 10);
+  }
+}
+
+function loadData(index) {
+  let data = getNodeByIndex(index);
+  if (data) {
+    $("#LEAVE_VIDAXL_PREFIX").prop("checked", data.LEAVE_VIDAXL_PREFIX);
+    $("#MOM_SELECTOR").prop("checked", data.MOM_SELECTOR);
+    $("#MARGIN_PERCENT").val(data.MARGIN_PERCENT);
+    $("#ROUND_TO").val(data.ROUND_TO);
+  }
+}
+
+$("#category-tree").treeview({
+  // expandIcon: "glyphicon glyphicon-checked",
+  // collapseIcon: "glyphicon glyphicon-unchecked",
+  // collapseIcon: "glyphicon glyphicon-unchecked",
+  data: getTree(),
+  onNodeSelected: function (event, node) {
+    loadData(node.index);
+    g_currentSelectedIndex = node.index;
+  },
+  onNodeUnselected: function (event, node) {
+    saveData(node.index);
+  },
+});
+
+$("#category-tree").treeview("selectNode", [0, { silent: true }]);
+loadData(0);
+$("#submit").click(function () {
+  saveData(g_currentSelectedIndex);
+  hidden_field.value = JSON.stringify(g_treeData);
 });
