@@ -288,9 +288,10 @@ def update_products_vidaxl_to_store(limit=None):  # 2
 def delete_vidaxl_product_from_store(limit=None):  # 3
     """[Delete VidaXL product from stores]"""
     begin_time = datetime.now()
+    # TODO: consider select from shop_products
     products = (
-        Product.query.filter(Product.is_changed == True)
-        .filter(Product.is_deleted == True)
+        Product.query.filter(Product.is_changed == True)  # noqa E712
+        .filter(Product.is_deleted == True)  # noqa E712
         .all()
     )
     deleted_product_count = 0
@@ -303,19 +304,23 @@ def delete_vidaxl_product_from_store(limit=None):  # 3
                     shop_products = [
                         sp for sp in product.shop_products if sp.shop_id == shop.id
                     ]
-                    if shop_products:
-                        shopify_product = shopify.Product.find(
-                            shop_products[0].shop_product_id
-                        )
-                        shopify_product.destroy()
-                        shop_products[0].delete()
-                        log(
-                            log.INFO,
-                            "Product %s was deleted in %s",
-                            product,
-                            shop,
-                        )
-                        deleted_product_count += 1
+                    for prod in shop_products:
+                        try:
+                            shopify_product = shopify.Product.find(
+                                prod.shop_product_id
+                            )
+                            shopify_product.destroy()
+                        except Exception:
+                            pass
+                        prod.delete()
+
+                    log(
+                        log.INFO,
+                        "Product %s was deleted in %s",
+                        product,
+                        shop,
+                    )
+        deleted_product_count += 1
         product.is_changed = False
         product.save()
         if limit is not None and deleted_product_count >= limit:

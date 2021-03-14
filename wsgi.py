@@ -78,8 +78,15 @@ def update_shop_products(limit):
 def update_shop_vx_new_products(limit):
     """Upload new VidaXl products to Shop(s)"""
     from app.controllers import upload_new_products_vidaxl_to_store
-
     upload_new_products_vidaxl_to_store(limit=limit if limit else None)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_vx_delete_products(limit):
+    """Upload deleted VidaXl products to Shop(s)"""
+    from app.controllers import delete_vidaxl_product_from_store
+    delete_vidaxl_product_from_store(limit=limit if limit else None)
 
 
 @app.cli.command()
