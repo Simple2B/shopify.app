@@ -1,4 +1,5 @@
 import io
+import json
 from datetime import datetime
 
 from flask import (
@@ -15,6 +16,8 @@ from app.controllers import (
     shopify_auth_required,
     update_categories,
     update_access_token,
+    get_categories_configuration_tree,
+    apply_categories_configuration_tree,
 )
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -26,34 +29,38 @@ def admin(shop_id):
     form = ConfigurationForm(request.form)
     form.shop_id = shop_id
     shop = Shop.query.get(shop_id)
-    if form.validate_on_submit():
+    if not shop:
+        log(log.CRITICAL, "Unknown shop_id:[%s]", shop_id)
+        flash("Unknown shop!", "warning")
+    elif form.validate_on_submit():
         log(log.DEBUG, "Form validate with succeed!")
-        Configuration.set_value(shop_id, "LEAVE_VIDAXL_PREFIX", form.leave_vidaxl_prefix.data)
-        Configuration.set_value(shop_id, "MARGIN_PERCENT", form.margin_percent.data)
-        Configuration.set_value(shop_id, "MOM_SELECTOR", form.mom_selector.data)
-        Configuration.set_value(shop_id, "ROUND_TO", form.round_to.data)
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
         if "category_rules_file" in request.files:
             update_categories(shop_id, request.files["category_rules_file"])
+        apply_categories_configuration_tree(
+            shop_id,
+            json.loads(form.categories_tree.data)
+        )
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
-        shop = Shop.query.get(shop_id)
-        form.categories = [c.path for c in shop.categories]
-        form.private_app_access_token.data = shop.private_app_access_token
-        return render_template("index.html", form=form, **request.args)
-    if form.is_submitted():
+    elif form.is_submitted():
         log(log.ERROR, "%s", form.errors)
         for error in form.errors:
             for msg in form.errors[error]:
                 flash(msg, "warning")
 
-    form.leave_vidaxl_prefix.data = Configuration.get_value(shop_id, "LEAVE_VIDAXL_PREFIX")
-    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
-    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
-    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
+    form.leave_vidaxl_prefix.data = Configuration.get_value(
+        shop_id, "LEAVE_VIDAXL_PREFIX", path='/'
+    )
+    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT", path='/')
+    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR", path='/')
+    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO", path='/')
     form.categories = [c.path for c in shop.categories]
     form.private_app_access_token.data = shop.private_app_access_token
+    form.categories_tree.data = json.dumps(
+        get_categories_configuration_tree(shop_id), indent=2
+    )
     return render_template("index.html", form=form, **request.args)
 
 

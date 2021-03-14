@@ -15,14 +15,16 @@ class Configuration(db.Model, ModelMixin):
     name = db.Column(db.String, default="unknown name")
     value = db.Column(db.String, default="")
     value_type = db.Column(db.String, default="")
+    path = db.Column(db.String, default="/")
 
     shop = relationship("Shop")
 
     @staticmethod
-    def get_value(shop_id: int, name: str):
+    def get_value(shop_id: int, name: str, path="/"):
         conf = (
             Configuration.query.filter(Configuration.shop_id == shop_id)
             .filter(Configuration.name == name)
+            .filter(Configuration.path == path)
             .first()
         )
         if conf:
@@ -30,7 +32,7 @@ class Configuration(db.Model, ModelMixin):
         return current_app.config.get("ADMIN_" + name, None)
 
     @staticmethod
-    def set_value(shop_id: int, name: str, value):
+    def set_value(shop_id: int, name: str, value, path="/"):
         value_type = "str"
         if isinstance(value, bool):
             value_type = "bool"
@@ -42,6 +44,7 @@ class Configuration(db.Model, ModelMixin):
         conf = (
             Configuration.query.filter(Configuration.shop_id == shop_id)
             .filter(Configuration.name == name)
+            .filter(Configuration.path == path)
             .first()
         )
         if conf:
@@ -54,7 +57,8 @@ class Configuration(db.Model, ModelMixin):
                 shop_id=shop_id,
                 name=name,
                 value=str(value),
-                value_type=value_type
+                value_type=value_type,
+                path=path,
             ).save()
 
     @staticmethod

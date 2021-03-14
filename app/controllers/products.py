@@ -159,6 +159,8 @@ def upload_product(shop_id: int, limit=None):
     log(log.INFO, "Update shop: %s", shop.name)
     begin_time = datetime.now()
     updated_product_count = 0
+    # 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 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
+    # memo-s2b-store.myshopify.com shop.primusmark.myshopify.com
     with shopify.Session.temp(
         shop.name, conf.VERSION_API, shop.private_app_access_token
     ):
