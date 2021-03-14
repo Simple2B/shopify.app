@@ -1,5 +1,6 @@
 from datetime import datetime
 import shopify
+from flask import url_for
 from app.models import Configuration, Product, Shop, ShopProduct
 from .price import get_price
 from .scrap import scrap_img, scrap_description
@@ -103,9 +104,9 @@ def in_selected_category(shop, category_path):
 
 
 def upload_new_products_vidaxl_to_store(limit=None):  # 1
-    """[Upload new products from VidaXL to stores by categories]"""
+    """Upload new products from VidaXL to stores by categories"""
     begin_time = datetime.now()
-    products = Product.query.filter(Product.is_new == True).all()
+    products = Product.query.filter(Product.is_new == True).all()  # noqa E712
     updated_product_count = 0
     for product in products:
         for shop in Shop.query.all():
@@ -154,7 +155,8 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                         if not images:
                             images = [
                                 {
-                                    "src": "https://polycar.com.ua/wp-content/uploads/2019/07/no-photo-polycar-300x210.png"
+                                    "src": url_for('static', filename='images/no-photo-polycar-300x210.png')
+
                                 }  # noqa E712
                             ]
                         else:
@@ -249,7 +251,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                         if not images:
                             images = [
                                 {
-                                    "src": "https://polycar.com.ua/wp-content/uploads/2019/07/no-photo-polycar-300x210.png"
+                                    "src": url_for('static', filename='images/no-photo-polycar-300x210.png')
                                 }  # noqa E712
                             ]
                         else:
@@ -452,7 +454,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                         if not images:
                             images = [
                                 {
-                                    "src": "https://polycar.com.ua/wp-content/uploads/2019/07/no-photo-polycar-300x210.png"
+                                    "src": url_for('static', filename='images/no-photo-polycar-300x210.png')
                                 }  # noqa E712
                             ]
                         else:

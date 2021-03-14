@@ -21,7 +21,7 @@ class BaseConfig(object):
     ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN", "")
     NUMBER_OF_REPETITIONS = os.environ.get("NUMBER_OF_REPETITIONS", "10")
     SLEEP_TIME = float(os.environ.get("SLEEP_TIME", "1"))
-    HOST_NAME = os.environ.get("HOST_NAME", "localhost")
+    SERVER_NAME = os.environ.get("SERVER_NAME")
     SHOPIFY_PRIVATE_APP_PASSWORD = os.environ.get("SHOPIFY_PRIVATE_APP_PASSWORD", "")
 
     # VidaXL credentials
