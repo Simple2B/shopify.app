@@ -1,9 +1,20 @@
 #!/user/bin/env python
+import os
 import click
 
 from app import create_app, db, models, forms
+from app.logger import log
 
 app = create_app()
+
+
+def process_exists(pid: int):
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
 
 
 # flask cli context setup
@@ -30,12 +41,34 @@ def scrappy():
 
 
 @app.cli.command()
-@click.option("--count", default=0, help="Number of products.")
-def update_vidaxl_products(count):
+@click.option("--limit", default=0, help="Number of products.")
+def update(limit):
+    """Update ALL"""
+    FILE_NAME = "/tmp/UPDATING"
+    try:
+        with open(FILE_NAME, "r") as f:
+            pid = int(f.readline())
+            if process_exists(pid):
+                log(log.WARNING, "Updating in progress...")
+                return
+    except IOError:
+        pass
+
+    with open(FILE_NAME, "w") as f:
+        f.write(f"{os.getpid()}\n")
+    log(log.INFO, "---==START UPDATE==---")
+    update_vidaxl_products(limit)
+    update_shop_products(limit)
+    log(log.INFO, "---==FINISH UPDATE==---")
+    os.remove(FILE_NAME)
+
+
+# @app.cli.command()
+# @click.option("--limit", default=0, help="Number of products.")
+def update_vidaxl_products(limit):
     """Update all products from VidaXl"""
     from app.controllers import download_products
-
-    download_products(count if count > 0 else None)
+    download_products(limit if limit > 0 else None)
 
 
 @app.cli.command()
@@ -48,23 +81,82 @@ def vida_product(sku):
     print(json.dumps(VidaXl().get_product(sku), indent=2))
 
 
-@app.cli.command()
-@click.option("--limit", default=0, help="Max. Number of products for update.")
+# @app.cli.command()
+# @click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_products(limit):
     """Upload all products to Shop(s)"""
-    from app.controllers import upload_product
-    from app.models import Shop
+    from datetime import datetime
+    from app.controllers import (
+        upload_new_products_vidaxl_to_store,
+        upload_products_to_store_by_category,
+        update_products_vidaxl_to_store,
+        change_product_price,
+        delete_products_from_store_exclude_category,
+        delete_vidaxl_product_from_store,
+    )
     from app.logger import log
 
-    for shop in Shop.query.all():
-        try:
-            if limit:
-                upload_product(shop.id, limit)
-            else:
-                upload_product(shop.id)
-        except Exception as e:
-            log(log.ERROR, "%s", e)
-            log(log.CRITICAL, "Error update products in: %s", shop)
+    begin = datetime.now()
+    limit = limit if limit else None
+    delete_products_from_store_exclude_category(limit)
+    delete_vidaxl_product_from_store(limit)
+
+    upload_products_to_store_by_category(limit)
+    update_products_vidaxl_to_store(limit)
+
+    change_product_price(limit)
+
+    upload_new_products_vidaxl_to_store(limit)
+
+    log(log.INFO, "Full loop ended in %d seconds", (datetime.now() - begin).seconds)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_vx_new_products(limit):
+    """Upload new VidaXl products to Shop(s)"""
+    from app.controllers import upload_new_products_vidaxl_to_store
+    upload_new_products_vidaxl_to_store(limit=limit if limit else None)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_vx_delete_products(limit):
+    """Upload deleted VidaXl products to Shop(s)"""
+    from app.controllers import delete_vidaxl_product_from_store
+    delete_vidaxl_product_from_store(limit=limit if limit else None)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_shop_vx_changed_products(limit):
+    """Upload changed VidaXl products to Shop(s)"""
+    from app.controllers import update_products_vidaxl_to_store
+    update_products_vidaxl_to_store(limit=limit if limit else None)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def delete_products_from_store_exclude_category(limit):
+    """Deletes product from shop for excluded categories"""
+    from app.controllers import delete_products_from_store_exclude_category
+    delete_products_from_store_exclude_category(limit=limit if limit else None)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def upload_products_to_store_by_category(limit):
+    """Update product in shops by categories"""
+    from app.controllers import upload_products_to_store_by_category
+    upload_products_to_store_by_category(limit=limit if limit else None)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def update_price(limit):
+    """Update product in shops by categories"""
+    from app.controllers import change_product_price
+    change_product_price(limit=limit if limit else None)
 
 
 @app.cli.command()
@@ -80,10 +172,16 @@ def info():
         json.dumps(
             {
                 "Vida products:": all_products.count(),
-                "New products:": all_products.filter(Product.is_new == True).count(),  # noqa E712
-                "Changed products:": all_products.filter(Product.is_changed == True).count(),
-                "Deleted products:": all_products.filter(Product.is_deleted == True).count(),
-                "Shops:": shops
+                "New products:": all_products.filter(
+                    Product.is_new == True  # noqa E712
+                ).count(),
+                "Changed products:": all_products.filter(
+                    Product.is_changed == True
+                ).count(),
+                "Deleted products:": all_products.filter(
+                    Product.is_deleted == True
+                ).count(),
+                "Shops:": shops,
             },
             indent=2,
         )
@@ -103,13 +201,21 @@ def shop_info(shop_id):
         return
 
     categories = [c.path for c in shop.categories]
+    configurations = {}
+    for c in shop.configurations:
+        if c.path not in configurations:
+            configurations[c.path] = {}
+        configurations[c.path][c.name] = c.value
 
     print(
         json.dumps(
             {
                 "Shop:": shop.name,
                 "Shop products:": len(shop.products),
+                "access_token": shop.access_token,
+                "private_app_access_token": shop.private_app_access_token,
                 "Selected categories": categories,
+                "Configurations": configurations,
             },
             indent=2,
         )
