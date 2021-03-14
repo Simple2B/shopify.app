@@ -49,7 +49,7 @@ def update(limit):
         with open(FILE_NAME, "r") as f:
             pid = int(f.readline())
             if process_exists(pid):
-                log(log.WARNING, "Updating in progress...")
+                # log(log.WARNING, "Updating in progress...")
                 return
     except IOError:
         pass
