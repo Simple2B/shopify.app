@@ -404,7 +404,7 @@ def delete_products_from_store_exclude_category(limit=None):  # 5
 
 
 def upload_products_to_store_by_category(limit=None):  # 6
-    """[Upload products to stores by categories]"""
+    """Upload products to stores by categories"""
     for shop in Shop.query.all():
         log(log.INFO, "Upload products to stores by categories: %s", shop.name)
         begin_time = datetime.now()
@@ -412,7 +412,10 @@ def upload_products_to_store_by_category(limit=None):  # 6
         with shopify.Session.temp(
             shop.name, conf.VERSION_API, shop.private_app_access_token
         ):
-            products = Product.query.filter(Product.is_deleted == False).all()
+            collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
+            products = Product.query.filter(
+                Product.is_deleted == False  # noqa E712
+            ).all()
             for product in products:
                 if in_selected_category(shop, product.category_path):
                     shop_products = [
@@ -420,11 +423,8 @@ def upload_products_to_store_by_category(limit=None):  # 6
                     ]
                     if not shop_products:
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
-                            shop.id, "LEAVE_VIDAXL_PREFIX"
+                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
-                        collection_names = {
-                            c.title: c.id for c in shopify.CustomCollection.find()
-                        }
                         collection_name = product.category_path.split("/")[0]
                         log(
                             log.INFO,
@@ -442,7 +442,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
 
                         log(log.DEBUG, "price: %s", product.price)
                         title = product.title
-                        if LEAVE_VIDAXL_PREFIX:
+                        if not LEAVE_VIDAXL_PREFIX:
                             title = (
                                 title.replace("vidaXL ", "")
                                 if title.startswith("vidaXL ")
@@ -493,10 +493,10 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 )
                         updated_product_count += 1
                         if limit is not None and updated_product_count >= limit:
-                            return
+                            break
         log(
             log.INFO,
-            "Upload %d products in %s in %d seconds",
+            "Upload %d products in [%s] in %d seconds",
             updated_product_count,
             shop,
             (datetime.now() - begin_time).seconds,
