@@ -98,6 +98,13 @@ def update_shop_vx_changed_products(limit):
 
 
 @app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def delete_products_from_store_exclude_category(limit):
+    """Deletes product from shop for excluded categories"""
+    from app.controllers import delete_products_from_store_exclude_category
+    delete_products_from_store_exclude_category(limit=limit if limit else None)
+
+@app.cli.command()
 def info():
     """Get App Info"""
     import json

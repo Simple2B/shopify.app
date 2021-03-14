@@ -378,23 +378,22 @@ def delete_products_from_store_exclude_category(limit=None):  # 5
         with shopify.Session.temp(
             shop.name, conf.VERSION_API, shop.private_app_access_token
         ):
-            if shop.products:
-                for shop_product in shop.products:
-                    product = shop_product.product
-                    if not in_selected_category(shop, product.category_path):
-                        try:
-                            shopify_product = shopify.Product.find(
-                                shop_product.shop_product_id
-                            )
-                            shopify_product.destroy()
-                            shop_product.delete()
-                            shop_product.save()
-                            deleted_product_count += 1
-                            log(log.INFO, "%s was deleted from %s", product, shop)
-                        except Exception:
-                            log(log.ERROR, "%s *NOT IN* %s", product, shop)
-                        if limit is not None and deleted_product_count >= limit:
-                            return
+            for shop_product in shop.products:
+                product = shop_product.product
+                if not in_selected_category(shop, product.category_path):
+                    # this product need remove from the shop
+                    try:
+                        shopify_product = shopify.Product.find(
+                            shop_product.shop_product_id
+                        )
+                        shopify_product.destroy()
+                        shop_product.delete()
+                        log(log.INFO, "%s was deleted from [%s]", product, shop)
+                    except Exception:
+                        log(log.ERROR, "%s *NOT IN* [%s]", product, shop)
+                    deleted_product_count += 1
+                    if limit is not None and deleted_product_count >= limit:
+                        break
         log(
             log.INFO,
             "Deleted %d products in %s in %d seconds",
