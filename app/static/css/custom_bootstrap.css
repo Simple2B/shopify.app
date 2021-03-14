@@ -6,7 +6,7 @@
 
 .form-control {
     display: inline-block !important;
-    width: auto !important;
+    width: 60% !important;
 }
 
 .card {

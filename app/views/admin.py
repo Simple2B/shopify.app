@@ -40,6 +40,7 @@ def admin(shop_id):
         Configuration.set_value(shop_id, "MARGIN_PERCENT", form.margin_percent.data)
         Configuration.set_value(shop_id, "MOM_SELECTOR", form.mom_selector.data)
         Configuration.set_value(shop_id, "ROUND_TO", form.round_to.data)
+        Configuration.set_value(shop_id, "SCV_PATH", form.csv_path.data)
         if form.private_app_access_token.data:
             update_access_token(shop_id, form.private_app_access_token.data)
         if "category_rules_file" in request.files:
@@ -57,11 +58,12 @@ def admin(shop_id):
                 flash(msg, "warning")
 
     form.leave_vidaxl_prefix.data = Configuration.get_value(
-        shop_id, "LEAVE_VIDAXL_PREFIX", path='/'
+        shop_id, "LEAVE_VIDAXL_PREFIX"
     )
-    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT", path='/')
-    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR", path='/')
-    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO", path='/')
+    form.margin_percent.data = Configuration.get_value(shop_id, "MARGIN_PERCENT")
+    form.mom_selector.data = Configuration.get_value(shop_id, "MOM_SELECTOR")
+    form.round_to.data = Configuration.get_value(shop_id, "ROUND_TO")
+    form.csv_path.data = Configuration.get_value(shop_id, "SCV_PATH")
     form.categories = [c.path for c in shop.categories]
     form.private_app_access_token.data = shop.private_app_access_token
     form.categories_tree.data = json.dumps(

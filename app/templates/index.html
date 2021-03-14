@@ -29,6 +29,12 @@
               <a href="{{ url_for('admin.all_categories') }}">All Categories</a>
             </div>
           </div>
+          <div>
+            <div>
+              {{form.csv_path.label(class='label')}}
+              {{form.csv_path(class='form-control')}}
+            </div>
+          </div>
           <div class="_row">
             <div class="form-group category">
               <div class="category_panel">

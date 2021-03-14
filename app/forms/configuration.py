@@ -10,6 +10,7 @@ class ConfigurationForm(FlaskForm):
         default=False,
     )
     category_rules_file = FileField("Category rule:")
+    csv_path = StringField("CSV Path:", default="")
     private_app_access_token = StringField("Access Token:", default="")
     mom_selector = BooleanField("Pricing by MoM:", default=False)
     margin_percent = FloatField("Margin percentage:", default=1.0)
