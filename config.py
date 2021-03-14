@@ -24,6 +24,9 @@ class BaseConfig(object):
     HOST_NAME = os.environ.get("HOST_NAME", "localhost")
     SHOPIFY_PRIVATE_APP_PASSWORD = os.environ.get("SHOPIFY_PRIVATE_APP_PASSWORD", "")
 
+    # csv_example
+    CSV_URL = os.environ.get("CSV_URL", "")
+
     # VidaXL credentials
     VIDAXL_API_BASE_URL = os.environ.get(
         "VIDAXL_API_BASE_URL", "https://b2b.vidaxl.com"
