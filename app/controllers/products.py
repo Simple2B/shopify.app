@@ -4,7 +4,6 @@ import csv
 from io import TextIOWrapper
 from datetime import datetime
 import shopify
-from app import db
 from app.models import (
     Configuration,
     Product,
@@ -69,7 +68,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     try:
                         prod.images[i].url = image
                     except IndexError:
-                        Image(product_id=prod.id, url=image).save(commit=False)
+                        Image(product_id=prod.id, url=image).save()
                         number_db_commit += 1
 
                 prod.save()
