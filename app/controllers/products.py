@@ -10,18 +10,16 @@ from config import BaseConfig as conf
 NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210.png"
 
 
-def download_products(limit=None):
+def download_products():
     vida = VidaXl()
     update_date = datetime.now()
-    log(log.INFO, "Start update VidaXl products - %s", "All" if not limit else limit)
+    log(log.INFO, "Start update VidaXl products")
     updated_product_count = 0
     for prod in vida.products:
         # add product into DB
         if not update_product_db(prod, update_date):
             continue
         updated_product_count += 1
-        if limit is not None and updated_product_count >= limit:
-            break
     for product in (
         Product.query.filter(Product.updated < update_date)
         .filter(Product.is_deleted == False)  # noqa E712
@@ -30,7 +28,6 @@ def download_products(limit=None):
         product.is_deleted = True
         product.is_changed = True
         product.save()
-        log(log.DEBUG, "Product code:[%s] deleted...", product.sku)
     log(
         log.INFO,
         "Updated %d products in %d seconds",
@@ -58,7 +55,12 @@ def update_product_db(prod, update_date=None):
         return False
     category_path = prod["category_path"]
     if quantity == 0.0:
-        # log(log.DEBUG, "Product code:[%s] has zero qty", code)
+        product = Product.query.filter(Product.sku == code).first()
+        if product:
+            product.is_deleted = True
+            product.is_changed = True
+            product.save()
+            log(log.DEBUG, "Product code:[%s] deleted...", product.sku)
         return False
     product = Product.query.filter(Product.sku == code).first()
     if product:
