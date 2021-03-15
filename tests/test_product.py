@@ -6,7 +6,6 @@ from io import TextIOWrapper
 
 from app import db, create_app
 from app.controllers.products import download_vidaxl_product_from_csv
-from tests.utils import fill_db_by_test_data
 from config import BaseConfig as conf
 from app.models import Product
 
@@ -34,7 +33,6 @@ def test_update_db(client):
     download_vidaxl_product_from_csv(csv_url, limit=10)
     count_products_after = Product.query.count()
     assert count_products_after == 10
-
 
 
 def test_experiments_with_csv():

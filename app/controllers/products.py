@@ -23,7 +23,6 @@ NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
     def update_db_from_file_stream(csv_dict_reader):
-        number_db_commit = 0
         for i, csv_prod in enumerate(csv_dict_reader):
             update_date = datetime.now()
             sku = csv_prod["SKU"]
@@ -69,7 +68,6 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         prod.images[i].url = image
                     except IndexError:
                         Image(product_id=prod.id, url=image).save()
-                        number_db_commit += 1
 
                 prod.save()
             else:
