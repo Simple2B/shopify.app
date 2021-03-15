@@ -8,6 +8,7 @@ from app import db, create_app
 from app.controllers.products import download_vidaxl_product_from_csv
 from config import BaseConfig as conf
 from app.models import Product
+from tests.utils import fill_db_by_test_data
 
 
 @pytest.fixture
@@ -20,6 +21,7 @@ def client():
         app_ctx.push()
         db.drop_all()
         db.create_all()
+        fill_db_by_test_data()
         yield client
         db.session.remove()
         db.drop_all()
@@ -30,9 +32,10 @@ def client():
 def test_update_db(client):
     Product.query.delete()
     csv_url = conf.ADMIN_CSV_URL
-    download_vidaxl_product_from_csv(csv_url, limit=10)
+    LIMIT = 10
+    download_vidaxl_product_from_csv(csv_url, limit=LIMIT)
     count_products_after = Product.query.count()
-    assert count_products_after == 10
+    assert count_products_after == LIMIT
 
 
 def test_experiments_with_csv():
