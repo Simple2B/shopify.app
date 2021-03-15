@@ -22,24 +22,50 @@ NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210
 
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
-    def update_db_from_file_stream(csv_dict_reader):
-        for i, csv_prod in enumerate(csv_dict_reader):
-            update_date = datetime.now()
-            sku = csv_prod["SKU"]
-            title = csv_prod["Product_title"]
-            price = float(csv_prod["B2B price"])
-            quantity = float(csv_prod["Stock"])
-            category_path = csv_prod["Category"]
-            description = csv_prod["HTML_description"]
-            images = [
-                csv_prod[image]
-                for image in csv_prod
-                if image.startswith("Image") and csv_prod[image] != ""
-            ]
-            log(log.DEBUG, "Get images (%d)", len(images))
-            vidaxl_id = csv_prod["EAN"]
-            prod = Product.query.filter(Product.sku == sku).first()
-            if prod:
+
+    def read_products_from_csv():
+        r = requests.get(csv_url, stream=True)
+        if r.encoding is None:
+            r.encoding = 'utf-8'
+        if limit is not None:
+            row_count = 0
+        csv_reader = csv.reader(r.iter_lines(decode_unicode=True))
+        keys = []
+        for row in csv_reader:
+            if not keys:
+                keys = row
+            else:
+                csv_prod = {i[0]: i[1] for i in zip(keys, row)}
+                yield csv_prod
+                if limit is not None:
+                    row_count += 1
+                    if row_count >= limit:
+                        break
+
+    update_date = datetime.now()
+    for csv_prod in read_products_from_csv():
+        sku = csv_prod["SKU"]
+        title = csv_prod["Product_title"]
+        price = float(csv_prod["B2B price"])
+        quantity = float(csv_prod["Stock"])
+        category_path = csv_prod["Category"]
+        description = csv_prod["HTML_description"]
+        images = [
+            csv_prod[key]
+            for key in csv_prod
+            if key.startswith("Image ") and csv_prod[key] != ""
+        ]
+        log(log.DEBUG, "Get images (%d)", len(images))
+        vidaxl_id = csv_prod["EAN"]
+        prod = Product.query.filter(Product.sku == sku).first()
+        if prod:
+            if quantity <= 0:
+                if not prod.is_deleted:
+                    # delete product
+                    prod.is_deleted = True
+                    prod.is_changed = True
+                    prod.save()
+            else:
                 if title != prod.title:
                     prod.title = title
                     prod.is_changed = True
@@ -52,26 +78,29 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                 if quantity != prod.qty:
                     prod.qty = quantity
                     prod.is_changed = True
-                if description != prod.description[0].text:
-                    prod.description[0].text = description
-                    prod.is_changed = True
+                if not prod.description:
+                    Description(product_id=prod.id, text=description).save()
+                else:
+                    if description != prod.description[0].text:
+                        Description.query.filter(Description.product_id == prod.id).delete()
+                        Description(product_id=prod.id, text=description).save()
 
                 if prod.is_deleted:
+                    prod.is_deleted = False
                     prod.is_changed = True
 
-                prod.updated = update_date
-                prod.is_deleted = False
+                if prod.is_changed:
+                    prod.updated = update_date
+                    prod.save()
 
-                # update images
-                for i, image in enumerate(images):
-                    try:
-                        prod.images[i].url = image
-                    except IndexError:
+                if len(images) != len(prod.images):
+                    # update images
+                    Image.query.filter(Image.product_id == prod.id).delete()
+                    for image in images:
                         Image(product_id=prod.id, url=image).save()
-
-                prod.save()
-            else:
-                next_product = Product(
+        else:
+            if quantity > 0:
+                product = Product(
                     vidaxl_id=vidaxl_id,
                     sku=sku,
                     title=title,
@@ -80,27 +109,9 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     qty=quantity,
                 ).save()
                 for image in images:
-                    Image(product_id=next_product.id, url=image).save()
-                Description(product_id=next_product.id, text=description).save()
-                log(log.DEBUG, "Add new product[%d: %s] to db", next_product.id, title)
-            if limit and i + 1 >= limit:
-                break
-
-    with tempfile.NamedTemporaryFile(mode="w+b") as csv_file:
-        response = requests.get(csv_url, stream=True)
-        if response.status_code != 200:
-            log(log.ERROR, "download_vidaxl_product_from_csv: Invalid response [%s]", response)
-            return
-        for chunk in response.iter_content(chunk_size=100 * 1024):
-            csv_file.write(chunk)
-        try:
-            with open(csv_file.name, "rb") as f:
-                csv_dict_reader = csv.DictReader(
-                    TextIOWrapper(f, encoding="utf-8"), delimiter=","
-                )
-                update_db_from_file_stream(csv_dict_reader)
-        except OSError as exc:
-            log(log.ERROR, "download_vidaxl_product_from_csv: Invalid file; exception: (%s)", exc)
+                    Image(product_id=product.id, url=image).save()
+                Description(product_id=product.id, text=description).save()
+                log(log.DEBUG, "Add new product[%d: %s] to db", product.id, title)
 
 
 def download_vidaxl_product_by_api(limit=None):
