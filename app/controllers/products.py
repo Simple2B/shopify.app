@@ -22,26 +22,24 @@ from config import BaseConfig as conf
 NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210.png"
 
 
-def upload_csv(csv_url, limit=None):
-
-    def update_db_from_file_stream(csv_dict_reader, limit=None):
+def download_vidaxl_product_from_csv(csv_url, limit=None):
+    def update_db_from_file_stream(csv_dict_reader):
         number_db_commit = 0
-        next_product_id = Product.query.count() + 1
-        for i, vidaxl_prod in enumerate(csv_dict_reader):
+        for i, csv_prod in enumerate(csv_dict_reader):
             update_date = datetime.now()
-            sku = vidaxl_prod["SKU"]
-            title = vidaxl_prod["Product_title"]
-            price = float(vidaxl_prod["B2B price"])
-            quantity = float(vidaxl_prod["Stock"])
-            category_path = vidaxl_prod["Category"]
-            description = vidaxl_prod["HTML_description"]
+            sku = csv_prod["SKU"]
+            title = csv_prod["Product_title"]
+            price = float(csv_prod["B2B price"])
+            quantity = float(csv_prod["Stock"])
+            category_path = csv_prod["Category"]
+            description = csv_prod["HTML_description"]
             images = [
-                vidaxl_prod[image]
-                for image in vidaxl_prod
-                if image.startswith("Image") and vidaxl_prod[image] != ""
+                csv_prod[image]
+                for image in csv_prod
+                if image.startswith("Image") and csv_prod[image] != ""
             ]
             log(log.DEBUG, "Get images (%d)", len(images))
-            vidaxl_id = vidaxl_prod["EAN"]
+            vidaxl_id = csv_prod["EAN"]
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
                 if title != prod.title:
@@ -71,39 +69,33 @@ def upload_csv(csv_url, limit=None):
                     if not image:
                         continue
                     if len(images) > len(prod.images):
-                        Image(product_id=prod.id, url=image).save(commit=False)
+                        Image(product_id=prod.id, url=image).save()
                         number_db_commit += 1
                         continue
                     prod.images[i].url = image
 
-                prod.save(commit=False)
-                number_db_commit += 1
+                prod.save()
             else:
-                Product(
+                next_product = Product(
                     vidaxl_id=vidaxl_id,
                     sku=sku,
                     title=title,
                     category_path=category_path,
                     price=price,
                     qty=quantity,
-                ).save(commit=False)
+                ).save()
                 for image in images:
-                    Image(product_id=next_product_id, url=image).save(commit=False)
-                Description(product_id=next_product_id, text=description).save(commit=False)
-                log(log.DEBUG, "Add new product[%d: %s] to db", next_product_id, title)
-                next_product_id += 1
-                number_db_commit += 1
-            if number_db_commit > 100:
-                db.session.commit()
+                    Image(product_id=next_product.id, url=image).save()
+                Description(product_id=next_product.id, text=description).save()
+                log(log.DEBUG, "Add new product[%d: %s] to db", next_product.id, title)
             if limit and i + 1 >= limit:
-                db.session.commit()
                 break
 
     with tempfile.NamedTemporaryFile(mode="w+b") as csv_file:
         response = requests.get(csv_url, stream=True)
         if response.status_code != 200:
-            log(log.ERROR, "Invalid response [%s]", response)
-            return None
+            log(log.ERROR, "download_vidaxl_product_from_csv: Invalid response [%s]", response)
+            return
         for chunk in response.iter_content(chunk_size=100 * 1024):
             csv_file.write(chunk)
         try:
@@ -111,20 +103,12 @@ def upload_csv(csv_url, limit=None):
                 csv_dict_reader = csv.DictReader(
                     TextIOWrapper(f, encoding="utf-8"), delimiter=","
                 )
-                update_db_from_file_stream(csv_dict_reader, limit)
-                return True
-        except Exception as exc:
-            log(log.ERROR, "Invalid file; exception: (%s)", exc)
-            return None
-            if not f.read():
-                log(log.WARNING, "CSV File is empty")
-                return None
+                update_db_from_file_stream(csv_dict_reader)
+        except OSError as exc:
+            log(log.ERROR, "download_vidaxl_product_from_csv: Invalid file; exception: (%s)", exc)
 
 
-def download_products(limit=None):
-    csv_url = Configuration.get_value(1, "CSV_URL", path="/")
-    if csv_url:
-        return upload_csv(csv_url)
+def download_vidaxl_product_by_api(limit=None):
     vida = VidaXl()
     update_date = datetime.now()
     log(log.INFO, "Start update VidaXl products - %s", "All" if not limit else limit)
@@ -151,6 +135,14 @@ def download_products(limit=None):
         updated_product_count,
         (datetime.now() - update_date).seconds,
     )
+
+
+def download_products(limit=None):
+    csv_url = Configuration.get_value(1, "CSV_URL", path="/")
+    if csv_url:
+        download_vidaxl_product_from_csv(csv_url, limit)
+    else:
+        download_vidaxl_product_by_api(limit)
 
 
 def update_product_db(prod, update_date=None):
@@ -468,11 +460,11 @@ def change_product_price(limit=None):  # 4
                         shop_product.save()
                     except Exception:
                         log(
-                                log.ERROR,
-                                "change_product_price: Product %s not present in shop [%s]",
-                                product,
-                                shop,
-                            )
+                            log.ERROR,
+                            "change_product_price: Product %s not present in shop [%s]",
+                            product,
+                            shop,
+                        )
                     log(
                         log.INFO,
                         "Product price [%f] %s was changed in [%s]",

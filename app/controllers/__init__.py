@@ -9,7 +9,6 @@ from .products import (
     delete_vidaxl_product_from_store,
     delete_products_from_store_exclude_category,
     change_product_price,
-    upload_csv,
 )
 from .categories import (
     update_categories,
