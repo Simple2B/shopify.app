@@ -120,11 +120,11 @@ def upload_csv(csv_url, limit=None):
                 for i, image in enumerate(images):
                     if not image:
                         continue
-                    if len(images) > len(prod.images):
+                    try:
+                        prod.images[i].url = image
+                    except IndexError:
                         Image(product_id=prod.id, url=image).save(commit=False)
                         number_db_commit += 1
-                        continue
-                    prod.images[i].url = image
 
                 prod.save(commit=False)
                 number_db_commit += 1
