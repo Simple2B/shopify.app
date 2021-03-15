@@ -2,8 +2,8 @@ import urllib
 import time
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
-from flask import current_app
 from app.models import Configuration
+from config import BaseConfig as conf
 from app.logger import log
 
 
@@ -17,23 +17,27 @@ def get_price(product, shop_id):
     Returns:
         [float]: Finish price
     """
-    mom_selector = Configuration.get_value(shop_id, "MOM_SELECTOR", product.category_path)
-    margin_percent = Configuration.get_value(shop_id, "MARGIN_PERCENT", product.category_path)
+    mom_selector = Configuration.get_value(
+        shop_id, "MOM_SELECTOR", product.category_path
+    )
+    margin_percent = Configuration.get_value(
+        shop_id, "MARGIN_PERCENT", product.category_path
+    )
     if mom_selector:
         round_to = Configuration.get_value(shop_id, "ROUND_TO", product.category_path)
-        price = price_generator(
-            purchase_price=product.price,
-            margin=margin_percent,
-            mom_price=get_mom_price(product.sku),
-            mom=True,
-            round_to=round_to,
-        )
-    else:
-        price = price_generator(
-            product.price,
-            margin=margin_percent,
-        )
-    return price
+        mom_price = get_mom_price(product.sku)
+        if mom_price is not None:
+            return price_generator(
+                purchase_price=product.price,
+                margin=margin_percent,
+                mom_price=mom_price,
+                mom=True,
+                round_to=round_to,
+            )
+    return price_generator(
+        product.price,
+        margin=margin_percent,
+    )
 
 
 def get_html(item_id: int):
@@ -74,13 +78,18 @@ def get_mom_price(product_id):
     Returns:
         MoM price
     """
-    for i in range(int(current_app.config["NUMBER_OF_REPETITIONS"])):
+
+    for i in range(int(conf.RETRY_ATTEMPTS_NUMBER)):
         price = scrap_price(product_id)
         if price is not None:
             return price
-        time.sleep(current_app.config["SLEEP_TIME"])
-    log(log.ERROR, "Service Mall of Master not responding")
-    return False
+        time.sleep(conf.SLEEP_TIME)
+    log(
+        log.WARNING,
+        "Service Mall of Master not responding or product [%s] not registered on MoM",
+        product_id,
+    )
+    return None
 
 
 def price_generator(purchase_price, margin, mom_price=None, mom=None, round_to=None):

@@ -34,29 +34,33 @@ def get_categories_configuration_tree(shop_id):
         for name in PARAMETERS:
             node[name] = Configuration.get_value(shop_id, name, path)
 
+    node_index = 0
     data = {
-        "category": "/",
-        "children": []
+        "text": "/",
+        "nodes": [],
+        "index": node_index
     }
     add_parameters(data, "/")
 
     shop = Shop.query.get(shop_id)
     for category in shop.categories:
-        children = data["children"]
+        children = data["nodes"]
         path = ""
         for sub_name in category.path.split("/"):
             path += sub_name
-            if sub_name not in [c["category"] for c in children]:
+            if sub_name not in [c["text"] for c in children]:
+                node_index += 1
                 node = {
-                    "category": sub_name,
-                    "children": []
+                    "text": sub_name,
+                    "nodes": [],
+                    "index": node_index
                 }
                 add_parameters(node, path)
                 children += [node]
-                children = node["children"]
+                children = node["nodes"]
             else:
-                node = [c for c in children if c["category"] == sub_name][0]
-                children = node["children"]
+                node = [c for c in children if c["text"] == sub_name][0]
+                children = node["nodes"]
             path += "/"
     return data
 
@@ -79,13 +83,15 @@ def apply_categories_configuration_tree(shop_id: int, data: dict):
 
     def apply_node(children, path):
         for node in children:
-            path += node["category"]
-            apply_parameters(node, path)
-            children = node["children"]
-            if children:
-                path += "/"
-                apply_node(children, path)
+            node_path = path + node["text"]
+            apply_parameters(node, node_path)
+            if "nodes" not in node:
+                continue
+            nodes = node["nodes"]
+            if nodes:
+                node_path += "/"
+                apply_node(nodes, node_path)
 
-    children = data["children"]
+    children = data["nodes"]
     path = ""
     apply_node(children, path)

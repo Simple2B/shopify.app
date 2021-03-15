@@ -5,6 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "wsgi:app",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "-p", "8090",
+                "-h", "localhost"
+                // "-h", "memo.simple2b.net"
+            ],
+            "jinja": true
+        },
+        {
             "name": "update-shop-products",
             "type": "python",
             "request": "launch",
@@ -19,7 +37,7 @@
             ],
         },
         {
-            "name": "update-vidaxl-products",
+            "name": "update-shop-vx-new-products",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -29,26 +47,9 @@
                 "FLASK_DEBUG": "0"
             },
             "args": [
-                "update-vidaxl-products",
-                "--limit", "5"
-            ],
-            "jinja": true
-        },
-        {
-            "name": "Python: Flask",
-            "type": "python",
-            "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "wsgi.py",
-                "FLASK_ENV": "development",
-                "FLASK_DEBUG": "1"
-            },
-            "args": [
-                "run",
-                "-p", "10002",
-                "-h", "localhost"
-                // "-h", "memo.simple2b.net"
+                "update-shop-vx-new-products",
+                "--limit",
+                "5"
             ],
             "jinja": true
         },
