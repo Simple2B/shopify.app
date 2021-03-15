@@ -32,7 +32,7 @@ def client():
 
 @pytest.mark.skipif(not conf.VIDAXL_USER_NAME, reason="VidaXl auth is not configured")
 def test_download_products(client):
-    LIMIT = 100
+    LIMIT = 10
     for product in Product.query.all():
         product.delete()
     download_products(LIMIT)

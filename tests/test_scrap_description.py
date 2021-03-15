@@ -26,7 +26,7 @@ def test_scrap_description(client):
     product = Product.query.first()
     description = scrap_description(product)
     assert description
-    assert 'Brüder Mannesmann' in description
+    assert "This memory foam neck pillow will surely bring you" in description
     desc = Description.query.filter(Description.product_id == product.id).first()
     assert desc
     assert desc.text == description
