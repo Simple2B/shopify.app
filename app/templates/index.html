@@ -19,10 +19,10 @@
               {{form.private_app_access_token.label(class='col-sm-3')}}
               {{form.private_app_access_token(class='form-control col-sm-9')}}
             </div>
-            <div class="row">
+            <div class="row category_row">
               {{form.category_rules_file.label(class='form-control-label col-sm-3')}}
-              {{form.category_rules_file(class='form-control col-sm-2')}}
-              <a href="{{ url_for('admin.all_categories')}}" class="form-control-label col-sm-4">Get All</a>
+              {{form.category_rules_file(class='form-control col-sm-2 category_field')}}
+              <a href="{{ url_for('admin.all_categories')}}" class="form-control-label">Get All</a>
             </div>
             <div class="row">
               {{form.csv_url.label(class='form-control-label col-sm-3')}}

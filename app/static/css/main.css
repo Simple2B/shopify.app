@@ -46,7 +46,7 @@
 
 .flex {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     flex-basis: 100%;
 }
 
@@ -67,8 +67,7 @@
 }
 
 .category_field {
-    margin-top: 1rem;
-    min-width: 65% !important;
+    min-width: 45% !important;
 }
 
 .category_file {
@@ -78,7 +77,9 @@
     flex-basis: 100%;
 }
 
-.category_rows {
-    overflow: auto;
-    max-height: 35vh;
+.category_row {
+    flex-flow: row wrap;
+}
+.category_row input {
+    margin-right: 1rem
 }

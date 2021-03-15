@@ -21,14 +21,18 @@
 }
 
 .row {
+    align-items: center;
     margin-right: 0px !important;
     margin-left: 0px !important;
 }
 
 .btn {
     margin-top: 1rem;
+    margin-left: calc(15px + 1.25rem);
+    /* padding-left: ; */
+    margin-bottom: 1rem !important;
     width: 35%;
-    font-size: 1.35rem;
+    font-size: 16px !important;
     min-width: 10%;
     color: #fff;
     background-color: rgb(0 0 255 / 25%);
@@ -36,4 +40,5 @@
 }
 .btn:hover {
     background-color: rgb(0 0 255 / 45%);
+    border-color:none;
 }
