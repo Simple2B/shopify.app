@@ -33,9 +33,36 @@ def retry_get_request(url, auth=None, headers=None):
     return None
 
 
+def retry_post_request(url, data, auth=None, headers=None):
+    time_sleep = conf.RETRY_TIMEOUT
+    time.sleep(time_sleep)
+    for attempt_no in range(conf.RETRY_ATTEMPTS_NUMBER):
+        try:
+            res = requests.post(url, auth=auth, headers=headers, json=data)
+            if not res.ok:
+                if attempt_no:
+                    time_sleep *= 2
+                log(
+                    log.DEBUG,
+                    "!> Retry attempt:%d request: [%s]; time sleep: [%d]",
+                    attempt_no + 1,
+                    url,
+                    time_sleep,
+                )
+                time.sleep(time_sleep)
+                continue
+            return res
+        except Exception as err:
+            log(log.WARNING, "Get request error: [%s] attempt: %d", err, attempt_no + 1)
+            time.sleep(conf.RETRY_TIMEOUT)
+    log(log.ERROR, "Post request error")
+    return None
+
+
 class VidaXl(object):
     def __init__(self):
         self.basic_auth = HTTPBasicAuth(conf.VIDAXL_USER_NAME, conf.VIDAXL_API_KEY)
+        self.sandbox_auth = HTTPBasicAuth(conf.VIDAXL_USER_NAME, conf.VIDAXL_SANDBOX_PASSWORD)
         self.base_url = f"{conf.VIDAXL_API_BASE_URL}/api_customer/products"
 
     def get_documents(self):
@@ -54,7 +81,7 @@ class VidaXl(object):
             f"{self.base_url}?code_eq={item_id}", auth=self.basic_auth
         )
         if not resp.status_code == 200:
-            log(log.ERROR, "Invalid response, status code: [%s]", resp.stack_code)
+            log(log.ERROR, "Invalid response, status code: [%s]", resp.status_code)
             return None
         # log(log.DEBUG, f"Response: {resp}")
         data = resp.json()
@@ -66,6 +93,16 @@ class VidaXl(object):
             log(log.ERROR, "VidaXl: No data for item: [%s]", item_id)
             return None
         return data[0]
+
+    def create_order(self, order_data):
+        sand_box_url = "https://sandbox.b2b.vidaxl.com"
+        if order_data:
+            response = retry_post_request(f'{sand_box_url}/api_customer/orders', auth=self.sandbox_auth, data=order_data)
+            if response.status_code == 200:
+                log(log.INFO, "%s", response.text)
+                log(log.INFO, "Order was created.")
+            else:
+                log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
 
     @property
     def products(self):
