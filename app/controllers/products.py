@@ -10,6 +10,7 @@ from app.models import (
     Image,
     Description,
 )
+from app import db
 from .price import get_price
 from .scrap import scrap_img, scrap_description
 from app.logger import log
@@ -121,7 +122,10 @@ def download_vidaxl_product_by_api(limit=None):
         # add product into DB
         if not update_product_db(prod, update_date):
             continue
+        if not updated_product_count % 1000:
+            db.session.commit()
         updated_product_count += 1
+    db.session.commit()
     for product in (
         Product.query.filter(Product.updated < update_date)
         .filter(Product.is_deleted == False)  # noqa E712
@@ -169,7 +173,7 @@ def update_product_db(prod, update_date=None):
         if product:
             product.is_deleted = True
             product.is_changed = True
-            product.save()
+            product.save(False)
             log(log.DEBUG, "Product code:[%s] deleted...", product.sku)
         return False
     product = Product.query.filter(Product.sku == code).first()
@@ -190,7 +194,7 @@ def update_product_db(prod, update_date=None):
             product.is_changed = True
         product.updated = update_date
         product.is_deleted = False
-        product.save()
+        product.save(False)
     else:
         Product(
             sku=code,
@@ -199,7 +203,7 @@ def update_product_db(prod, update_date=None):
             category_path=category_path,
             price=price,
             qty=quantity,
-        ).save()
+        ).save(False)
     return True
 
 
