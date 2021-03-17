@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.request import Request, urlopen
 from flask import current_app
 from bs4 import BeautifulSoup
-from app.models import Product, Image
+from app.models import Product, Image, Description
 from app.logger import log
 
 
@@ -36,7 +36,7 @@ def scrap_img(product):
     """
     images = Product.query.get(product.id).images
     if images:
-        return {"item_id": product.vidaxl_id, "qty": len(images), "images": images}
+        return [image.url for image in images]
     timeout = current_app.config["SLEEP_TIME"]
     attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
     for i in range(attempts):
@@ -49,7 +49,7 @@ def scrap_img(product):
             ]
             for img in images:
                 Image(product_id=product.id, url=img).save()
-            return {"item_id": product.vidaxl_id, "qty": len(images), "images": images}
+            return images
         log(
             log.INFO,
             "Scraping pictures: Invalid Response. Attempt: %d(%d) timeout:%s",
@@ -59,6 +59,42 @@ def scrap_img(product):
         )
         time.sleep(timeout)
         timeout += timeout/2
+    return None
+
+
+def scrap_description(product):
+    """Get product description
+
+    Args:
+        Product ([class]): [Product]
+
+    Returns:
+        [str]: [<p> description </p>, <ul> specification_list </ul>]
+    """
+    description = product.description
+    if description:
+        return description[0].text
+    timeout = current_app.config["SLEEP_TIME"]
+    attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
+    for i in range(attempts):
+        soup = check_soup(product.vidaxl_id)
+        if soup:
+            block = soup.find('div', class_='panel-body')
+            description = block.p
+            specification_list = block.ul
+            full_description = f'{description}{specification_list}'
+            Description(product_id=product.id, text=full_description).save()
+            return full_description
+        log(
+            log.INFO,
+            "Scraping description: Invalid Response. Attempt: %d(%d) timeout:%s",
+            i + 2,
+            attempts,
+            timeout,
+        )
+        time.sleep(timeout)
+        timeout += timeout/2
+    return None
 
 
 def scrappy_all_products(products_number=None):
@@ -69,7 +105,7 @@ def scrappy_all_products(products_number=None):
     assert products
     start_time = datetime.now()
     for i, prod in enumerate(products):
-        imgs = scrap_img(prod.vidaxl_id)
+        imgs = scrap_img(prod)
         assert imgs
         log(log.INFO, imgs)
     difference_time = datetime.now() - start_time

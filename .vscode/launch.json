@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "app.py",
+                "FLASK_APP": "wsgi:app",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "1"
             },
@@ -18,8 +18,71 @@
                 "run",
                 "-p", "8090",
                 "-h", "localhost"
+                // "-h", "memo.simple2b.net"
             ],
             "jinja": true
-        }
+        },
+        {
+            "name": "update-shop-products",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "wsgi.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0"
+            },
+            "args": [
+                "update-shop-products"
+            ],
+        },
+        {
+            "name": "update-shop-vx-new-products",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "wsgi.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0"
+            },
+            "args": [
+                "update-shop-vx-new-products",
+                "--limit",
+                "5"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Python: Flask_test_memo",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "wsgi.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "-p", "8091",
+                "-h", "0.0.0.0"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "scrappy",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "wsgi.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0"
+            },
+            "args": [
+                "scrappy"
+            ],
+        },
     ]
 }

@@ -10,7 +10,7 @@ from .utils import fill_db_by_test_data
 
 @pytest.fixture
 def client():
-    app = create_app(environment="development")
+    app = create_app(environment="testing")
     app.config["TESTING"] = True
 
     with app.test_client() as client:
@@ -35,7 +35,7 @@ def test_scrappy(client, monkeypatch):
     assert products
     start_time = datetime.now()
     for prod in products:
-        imgs = scrap.scrap_img(prod.vidaxl_id)
+        imgs = scrap.scrap_img(prod)
         assert imgs
         log(log.INFO, imgs)
     time_out = datetime.now() - start_time

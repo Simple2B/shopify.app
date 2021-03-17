@@ -12,14 +12,24 @@
     align-items: baseline;
 }
 
-.memo_flex_row {
+/* base content */
+.memo_flex_column {
     display: flex;
     justify-content: space-between;
-    flex-flow: row wrap;
+    flex-flow: column wrap;
 }
-.memo_flex_row > div:first-child {
+.memo_flex_column > div:first-child {
     flex-grow: 1;
 }
+.memo_flex_column ._row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+._row > :last-child {
+    flex-grow: 3.7;
+}
+
 .prefix_vidaxl{
     display: flex;
     flex-flow: column wrap;
@@ -40,7 +50,7 @@
     flex-basis: 100%;
 }
 
-.access_token {
+.memo_input_field {
     min-width: 60% !important;
 }
 
@@ -50,12 +60,15 @@
 
 /* Category */
 .category {
+    max-height: 40vh;
     flex-grow: 1;
-    flex-basis: 60%;
+    flex-basis: 35%;
+    overflow: auto;
 }
 
 .category_field {
-    max-width: 65% !important;
+    margin-top: 1rem;
+    min-width: 65% !important;
 }
 
 .category_file {
@@ -66,13 +79,6 @@
 }
 
 .category_rows {
-    overflow: scroll;
-    height: 35vh;
-}
-
-.btn {
-    margin-top: 1rem;
-    width: 35%;
-    font-size: 1.35rem;
-    min-width: 10%;
+    overflow: auto;
+    max-height: 35vh;
 }
