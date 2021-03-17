@@ -34,3 +34,6 @@ def test_config_tree(client):
     data = get_categories_configuration_tree(shop.id)
     assert data
     assert data["nodes"][0]["nodes"][0]["MARGIN_PERCENT"] == 555
+
+    apply_categories_configuration_tree(shop.id, None)
+    apply_categories_configuration_tree(shop.id, {})

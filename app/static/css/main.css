@@ -68,7 +68,7 @@
 
 .category_field {
     margin-top: 1rem;
-    max-width: 65% !important;
+    min-width: 65% !important;
 }
 
 .category_file {

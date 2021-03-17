@@ -57,16 +57,20 @@ def update(limit):
     with open(FILE_NAME, "w") as f:
         f.write(f"{os.getpid()}\n")
     log(log.INFO, "---==START UPDATE==---")
-    update_vidaxl_products()
+    _update_vidaxl_products()
     update_shop_products(limit)
     log(log.INFO, "---==FINISH UPDATE==---")
     os.remove(FILE_NAME)
 
 
-# @app.cli.command()
+@app.cli.command()
 # @click.option("--limit", default=0, help="Number of products.")
 def update_vidaxl_products():
     """Update all products from VidaXl"""
+    _update_vidaxl_products()
+
+
+def _update_vidaxl_products():
     from app.controllers import download_products
     download_products()
 
