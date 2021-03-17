@@ -1,7 +1,5 @@
-import tempfile
 import requests
 import csv
-from io import TextIOWrapper
 from datetime import datetime
 import shopify
 from app.models import (

@@ -72,6 +72,14 @@ def apply_categories_configuration_tree(shop_id: int, data: dict):
         shop_id (int): shop id
         data (dict): JSON string data
     """
+    if not data:
+        log(log.WARNING, "apply_categories_configuration_tree: no data")
+        return
+
+    if "nodes" not in data:
+        log(log.WARNING, "apply_categories_configuration_tree: wrong data")
+        return
+
     def apply_parameters(node, path):
         for name in PARAMETERS:
             if name not in node:
