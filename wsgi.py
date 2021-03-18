@@ -44,7 +44,8 @@ def scrappy():
 @click.option("--limit", default=0, help="Number of products.")
 def update(limit):
     """Update ALL"""
-    FILE_NAME = "/tmp/UPDATING"
+    import getpass
+    FILE_NAME = f"/tmp/UPDATING_{getpass.getuser()}"
     try:
         with open(FILE_NAME, "r") as f:
             pid = int(f.readline())

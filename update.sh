@@ -9,4 +9,5 @@ DIR_PATH=$(dirname $FULL_PATH)
 # echo $DIR_PATH
 cd $DIR_PATH
 source .venv/bin/activate
-flask update 2>&1 | tee -a /tmp/update-all.log
+USER=`whoami`
+flask update 2>&1 | tee -a /tmp/update-all-${USER}.log
