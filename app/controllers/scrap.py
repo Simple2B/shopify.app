@@ -6,10 +6,11 @@ from flask import current_app
 from bs4 import BeautifulSoup
 from app.models import Product, Image, Description
 from app.logger import log
+from config import BaseConfig as conf
 
 
 def get_html(vidaxl_id: int):
-    URL = f"https://b2b.vidaxl.com/products/view/{vidaxl_id}"
+    URL = f"{conf.VIDAXL_API_BASE_URL}/products/view/{vidaxl_id}"
     # log(log.INFO, "Scraper: GET URL: [%s]", URL)
     req = Request(URL, headers={"User-Agent": "Mozilla/5.0"})
     html = urlopen(req)
