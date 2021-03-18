@@ -20,6 +20,7 @@ from app.controllers import (
     apply_categories_configuration_tree,
     set_csv_url,
     get_csv_url,
+    order_parser
 )
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -65,7 +66,8 @@ def admin(shop_id):
     form.categories_tree.data = json.dumps(
         get_categories_configuration_tree(shop_id), indent=2
     )
-    return render_template("index.html", form=form, **request.args)
+    orders = order_parser()
+    return render_template("index.html", form=form, orders=orders, **request.args)
 
 
 @admin_blueprint.route("/all_categories", methods=["GET"])

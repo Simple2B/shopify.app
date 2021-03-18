@@ -18,3 +18,4 @@ from .categories import (
 from .shop import update_access_token, set_csv_url, get_csv_url
 from .price import get_price
 from .shopify_order_to_vidaxl import parser_shopify_to_vidaxl
+from .order_parser import order_parser

@@ -1,5 +1,5 @@
 import time
-
+import json
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -9,7 +9,6 @@ from config import BaseConfig as conf
 
 def retry_get_request(url, auth=None, headers=None):
     time_sleep = conf.RETRY_TIMEOUT
-    time.sleep(time_sleep)
     for attempt_no in range(conf.RETRY_ATTEMPTS_NUMBER):
         try:
             res = requests.get(url, auth=auth, headers=headers)
@@ -35,7 +34,6 @@ def retry_get_request(url, auth=None, headers=None):
 
 def retry_post_request(url, data, auth=None, headers=None):
     time_sleep = conf.RETRY_TIMEOUT
-    time.sleep(time_sleep)
     for attempt_no in range(conf.RETRY_ATTEMPTS_NUMBER):
         try:
             res = requests.post(url, auth=auth, headers=headers, json=data)
@@ -66,15 +64,13 @@ class VidaXl(object):
         self.base_url = f"{conf.VIDAXL_API_BASE_URL}/api_customer/products"
 
     def get_documents(self):
-        sand_box_url = "https://sandbox.b2b.vidaxl.com/"
-        response = retry_get_request(
-            f"{sand_box_url}api_customer/orders/documents", auth=self.basic_auth
-        )
-
+        response = retry_get_request(f'{conf.VIDAXL_API_BASE_URL}/api_customer/orders.json', auth=self.basic_auth)
         if response.status_code == 200:
-            return response.json()
+            log(log.INFO, "%s", response.text)
+            return json.loads(response.text)
         else:
-            return f"Statucs code: {response.status_code}"
+            log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
+            return None
 
     def get_product(self, item_id):
         resp = retry_get_request(
@@ -95,14 +91,15 @@ class VidaXl(object):
         return data[0]
 
     def create_order(self, order_data):
-        sand_box_url = "https://sandbox.b2b.vidaxl.com"
         if order_data:
-            response = retry_post_request(f'{sand_box_url}/api_customer/orders', auth=self.sandbox_auth, data=order_data)
+            response = retry_post_request(f'{conf.VIDAXL_API_BASE_URL}/api_customer/orders', auth=self.basic_auth, data=order_data)
             if response.status_code == 200:
                 log(log.INFO, "%s", response.text)
                 log(log.INFO, "Order was created.")
+                return json.loads(response.text)
             else:
                 log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
+                return None
 
     @property
     def products(self):

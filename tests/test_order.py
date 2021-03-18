@@ -1,7 +1,7 @@
 import pytest
+import random
 
 from app import create_app, db
-from app.models import Product
 from .utils import fill_db_by_test_data
 from app.vida_xl import VidaXl
 from app.controllers import parser_shopify_to_vidaxl
@@ -26,9 +26,10 @@ def client():
         app_ctx.pop()
 
 
-def test_get_price(client):
+def test_order(client):
+    number = random.randint(1000000, 1000000000)
     data = {
-        "id": 3641809174737,
+        "id": number,
         "email": "tsyboom@gmail.com",
         "closed_at": None,
         "created_at": "2021-03-15T16:53:11+02:00",
@@ -138,7 +139,7 @@ def test_get_price(client):
                 "variant_id": 39300114448593,
                 "title": "vidaXL 12Panel Folding Exhibition Display Wall 242x200 cm Black",
                 "quantity": 1,
-                "sku": "51213",
+                "sku": "10107",
                 "variant_title": "",
                 "vendor": "third_testing_store",
                 "fulfillment_service": "manual",
@@ -240,20 +241,20 @@ def test_get_price(client):
             "province_code": None,
         },
         "shipping_address": {
-            "first_name": "Алик",
-            "address1": "Ул.м.слободивны",
+            "first_name": "John",
+            "address1": "Burgemeester Oudlaan 50",
             "phone": None,
-            "city": "Львов",
-            "zip": "79017",
+            "city": "Rotterdam",
+            "zip": "3062 PP",
             "province": None,
-            "country": "Ukraine",
+            "country": "NL",
             "last_name": "Шкуркин",
-            "address2": "5/5",
+            "address2": "",
             "company": None,
             "latitude": None,
             "longitude": None,
-            "name": "Алик Шкуркин",
-            "country_code": "UA",
+            "name": "John Stuck",
+            "country_code": "NL",
             "province_code": None,
         },
         "customer": {
@@ -300,7 +301,9 @@ def test_get_price(client):
             },
         },
     }
-    # product = Product.query.filter(Product.sku == '51213').first()
     vida = VidaXl()
     data = parser_shopify_to_vidaxl(data)
-    vida.create_order(data)
+    new_order = vida.create_order(data)
+    assert new_order
+    orders = vida.get_documents()
+    assert orders
