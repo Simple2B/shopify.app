@@ -60,11 +60,27 @@ def retry_post_request(url, data, auth=None, headers=None):
 class VidaXl(object):
     def __init__(self):
         self.basic_auth = HTTPBasicAuth(conf.VIDAXL_USER_NAME, conf.VIDAXL_API_KEY)
-        self.sandbox_auth = HTTPBasicAuth(conf.VIDAXL_USER_NAME, conf.VIDAXL_SANDBOX_PASSWORD)
+        self.sandbox_auth = HTTPBasicAuth(
+            conf.VIDAXL_USER_NAME, conf.VIDAXL_SANDBOX_PASSWORD
+        )
         self.base_url = f"{conf.VIDAXL_API_BASE_URL}/api_customer/products"
 
-    def get_documents(self):
-        response = retry_get_request(f'{conf.VIDAXL_API_BASE_URL}/api_customer/orders.json', auth=self.basic_auth)
+    def get_orders(self):
+        response = retry_get_request(
+            f"{conf.VIDAXL_API_BASE_URL}/api_customer/orders.json", auth=self.basic_auth
+        )
+        if response.status_code == 200:
+            log(log.INFO, "%s", response.text)
+            return json.loads(response.text)
+        else:
+            log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
+            return None
+
+    def get_invoice(self, order_id):
+        response = retry_get_request(
+            f"{conf.VIDAXL_API_BASE_URL}/api_customer/orders/{order_id}/documents",
+            auth=self.basic_auth,
+        )
         if response.status_code == 200:
             log(log.INFO, "%s", response.text)
             return json.loads(response.text)
@@ -92,13 +108,17 @@ class VidaXl(object):
 
     def create_order(self, order_data):
         if order_data:
-            response = retry_post_request(f'{conf.VIDAXL_API_BASE_URL}/api_customer/orders', auth=self.basic_auth, data=order_data)
-            if response.status_code == 200:
+            response = retry_post_request(
+                f"{conf.VIDAXL_API_BASE_URL}/api_customer/orders",
+                auth=self.basic_auth,
+                data=order_data,
+            )
+            if response:
                 log(log.INFO, "%s", response.text)
                 log(log.INFO, "Order was created.")
                 return json.loads(response.text)
             else:
-                log(log.ERROR, "Invalid response, status code: [%s]", response.status_code)
+                log(log.ERROR, "Invalid response from VidaXL")
                 return None
 
     @property

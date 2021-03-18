@@ -1,8 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.controllers import shopify_auth_required, parser_shopify_to_vidaxl
-from app.logger import log
+from app.controllers import parser_shopify_to_vidaxl, delete_order
 from app.vida_xl import VidaXl
-import shopify
 
 hooks_blueprint = Blueprint("web_hooks", __name__)
 
@@ -19,9 +17,11 @@ def web_hook():
     # 'HTTP_X_SHOPIFY_WEBHOOK_ID':'bf21d054-b7b6-4258-ba60-31dd85363970'
     if "HTTP_X_SHOPIFY_ORDER_ID" not in headers:
         return jsonify("OK")
-    data = headers['werkzeug.request'].json
-    print(data)
+    data = headers["werkzeug.request"].json
     vida = VidaXl()
+    order_id = data["id"]
     data = parser_shopify_to_vidaxl(data)
-    vida.create_order(data)
+    new_order = vida.create_order(data)
+    if not new_order:
+        delete_order(order_id)
     return jsonify("OK")

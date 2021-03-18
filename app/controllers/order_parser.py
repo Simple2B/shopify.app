@@ -9,7 +9,7 @@ def order_parser():
     """
     new_data = []
     vida = VidaXl()
-    for order in vida.get_documents():
+    for order in vida.get_orders():
         new_order = {
             'id': order['order']['customer_order_reference'],
             'status': order['order']['status_order_name'],

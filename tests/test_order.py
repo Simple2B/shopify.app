@@ -26,7 +26,7 @@ def client():
         app_ctx.pop()
 
 
-def test_order(client):
+def test_creating_order(client):
     number = random.randint(1000000, 1000000000)
     data = {
         "id": number,
@@ -305,5 +305,16 @@ def test_order(client):
     data = parser_shopify_to_vidaxl(data)
     new_order = vida.create_order(data)
     assert new_order
+
+
+def test_get_orders(client):
+    vida = VidaXl()
     orders = vida.get_documents()
     assert orders
+
+
+def test_get_invoice(client):
+    vida = VidaXl()
+    order_id = 117664516
+    invoice = vida.get_invoice(order_id)
+    assert invoice
