@@ -58,7 +58,7 @@ def update(limit):
         f.write(f"{os.getpid()}\n")
     log(log.INFO, "---==START UPDATE==---")
     _update_vidaxl_products()
-    update_shop_products(limit)
+    _update_shop_products(limit)
     log(log.INFO, "---==FINISH UPDATE==---")
     os.remove(FILE_NAME)
 
@@ -85,9 +85,13 @@ def vida_product(sku):
     print(json.dumps(VidaXl().get_product(sku), indent=2))
 
 
-# @app.cli.command()
-# @click.option("--limit", default=0, help="Max. Number of products for update.")
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_products(limit):
+    _update_shop_products(limit)
+
+
+def _update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from datetime import datetime
     from app.controllers import (
