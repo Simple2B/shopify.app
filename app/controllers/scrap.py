@@ -24,7 +24,7 @@ def check_soup(vidaxl_id: int):
     try:
         soup = BeautifulSoup(get_html(vidaxl_id), "html.parser")
         return soup
-    except urllib.error.HTTPError:
+    except TypeError:
         # log(log.WARNING, "urllib.error.HTTPError")
         return None
 
