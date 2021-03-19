@@ -1,5 +1,8 @@
 from app.models import Category, Shop, Configuration
 from app.logger import log
+from config import BaseConfig as conf
+
+CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 
 
 def update_categories(shop_id: int, file):
@@ -46,7 +49,7 @@ def get_categories_configuration_tree(shop_id):
     for category in shop.categories:
         children = data["nodes"]
         path = ""
-        for sub_name in category.path.split("/"):
+        for sub_name in category.path.split(CATEGORY_SPLITTER):
             path += sub_name
             if sub_name not in [c["text"] for c in children]:
                 node_index += 1

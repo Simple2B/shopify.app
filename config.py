@@ -50,6 +50,8 @@ class BaseConfig(object):
     ADMIN_ROUND_TO = os.environ.get("ADMIN_ROUND_TO", 99)
     ADMIN_CSV_URL = os.environ.get("ADMIN_CSV_URL", "")
 
+    CATEGORY_SPLITTER = os.environ.get("CATEGORY_SPLITTER", "/")
+
     @staticmethod
     def configure(app):
         # Implement this method to do further configuration on your app.

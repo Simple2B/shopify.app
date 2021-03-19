@@ -18,6 +18,7 @@ from app.vida_xl import VidaXl
 from config import BaseConfig as conf
 
 NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210.png"
+CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
@@ -54,7 +55,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             for key in csv_prod
             if key.startswith("Image ") and csv_prod[key] != ""
         ]
-        log(log.DEBUG, "Get images (%d)", len(images))
+        # log(log.DEBUG, "Get images (%d)", len(images))
         vidaxl_id = csv_prod["EAN"]
         prod = Product.query.filter(Product.sku == sku).first()
         if prod:
@@ -208,8 +209,8 @@ def update_product_db(prod, update_date=None):
 
 
 def in_selected_category(shop, category_path):
-    selected_categories = [r.path.split("/") for r in shop.categories]
-    path = category_path.split("/")
+    selected_categories = [r.path.split(CATEGORY_SPLITTER) for r in shop.categories]
+    path = category_path.split(CATEGORY_SPLITTER)
     for rule in selected_categories:
         rule_len = len(rule)
         if rule_len > len(path):
@@ -241,7 +242,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                             shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
-                        collection_name = product.category_path.split("/")[0]
+                        collection_name = product.category_path.split(CATEGORY_SPLITTER)[0]
                         log(
                             log.INFO,
                             "New product [%s] --> [%s]. Store: [%s]",
@@ -550,7 +551,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                             shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
-                        collection_name = product.category_path.split("/")[0]
+                        collection_name = product.category_path.split(CATEGORY_SPLITTER)[0]
                         log(
                             log.INFO,
                             "New product [%s] --> [%s]. Store - [%s]",
