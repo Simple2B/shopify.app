@@ -129,7 +129,6 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
                     Description(product_id=product.id, text=description).save(False)
-                    # log(log.DEBUG, "download_vidaxl_product_from_csv: Add new product[%d: %s] to db", product.id, title)
 
             if not i % 1000:
                 log(log.DEBUG, "download_vidaxl_product_from_csv: processed: %d items", i)
