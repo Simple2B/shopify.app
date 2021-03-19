@@ -1,6 +1,7 @@
-import requests
+import tempfile
 import csv
 from datetime import datetime
+import requests
 import shopify
 from app.models import (
     Configuration,
@@ -24,26 +25,37 @@ CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 def download_vidaxl_product_from_csv(csv_url, limit=None):
 
     def read_products_from_csv():
-        r = requests.get(csv_url, stream=True)
-        if r.encoding is None:
-            r.encoding = 'utf-8'
-        if limit is not None:
-            row_count = 0
-        csv_reader = csv.reader(r.iter_lines(decode_unicode=True))
-        keys = []
-        try:
-            for row in csv_reader:
-                if not keys:
-                    keys = row
-                else:
-                    csv_prod = {i[0]: i[1] for i in zip(keys, row)}
-                    yield csv_prod
-                    if limit is not None:
-                        row_count += 1
-                        if row_count >= limit:
-                            break
-        except requests.exceptions.ChunkedEncodingError as e:
-            log(log.ERROR, "read_products_from_csv: [%s]", e)
+
+        with tempfile.NamedTemporaryFile(mode="w+") as file:
+            with requests.get(csv_url, stream=True) as r:
+                r.raise_for_status()
+                if r.encoding is None:
+                    r.encoding = 'utf-8'
+                for line in r.iter_lines(decode_unicode=True):
+                    file.write(line)
+                    file.write("\n")
+
+            # r = requests.get(csv_url, stream=True)
+            # if r.encoding is None:
+            #     r.encoding = 'utf-8'
+            file.seek(0)
+            if limit is not None:
+                row_count = 0
+            csv_reader = csv.reader(file)
+            keys = []
+            try:
+                for row in csv_reader:
+                    if not keys:
+                        keys = row
+                    else:
+                        csv_prod = {i[0]: i[1] for i in zip(keys, row)}
+                        yield csv_prod
+                        if limit is not None:
+                            row_count += 1
+                            if row_count >= limit:
+                                break
+            except requests.exceptions.ChunkedEncodingError as e:
+                log(log.ERROR, "read_products_from_csv: [%s]", e)
 
     try:
         update_date = datetime.now()
@@ -83,12 +95,6 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if quantity != prod.qty:
                         prod.qty = quantity
                         prod.is_changed = True
-                    if not prod.description:
-                        Description(product_id=prod.id, text=description).save(False)
-                    else:
-                        if description != prod_description.text:
-                            Description.query.filter(Description.product_id == prod.id).delete()
-                            Description(product_id=prod.id, text=description).save(False)
 
                     if prod.is_deleted:
                         prod.is_deleted = False
@@ -97,6 +103,13 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if prod.is_changed:
                         prod.updated = update_date
                         prod.save(False)
+
+                    if not prod.description:
+                        Description(product_id=prod.id, text=description).save(False)
+                    else:
+                        if description != prod_description.text:
+                            Description.query.filter(Description.product_id == prod.id).delete()
+                            Description(product_id=prod.id, text=description).save()
 
                     if len(images) != len(prod.images):
                         # update images
