@@ -538,7 +538,9 @@ def upload_products_to_store_by_category(limit=None):  # 6
         with shopify.Session.temp(
             shop.name, conf.VERSION_API, shop.private_app_access_token
         ):
-            collection_names = {c.title: c.id for c in shopify.CustomCollection.find()}
+            custom_collections = shopify.CustomCollection.find()
+            assert custom_collections
+            collection_names = {c.title: c.id for c in custom_collections}
             products = Product.query.filter(
                 Product.is_deleted == False  # noqa E712
             ).all()
