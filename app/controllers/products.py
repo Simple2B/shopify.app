@@ -29,7 +29,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             r.encoding = 'utf-8'
         if limit is not None:
             row_count = 0
-        csv_reader = csv.reader(r.iter_lines())
+        csv_reader = csv.reader(r.iter_lines(decode_unicode=True))
         keys = []
         try:
             for row in csv_reader:
@@ -63,12 +63,13 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             vidaxl_id = csv_prod["EAN"]
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
+                prod_description = Description.query.filter(Description.product_id == prod.id).first()
                 if quantity <= 0:
                     if not prod.is_deleted:
                         # delete product
                         prod.is_deleted = True
                         prod.is_changed = True
-                        prod.save()
+                        prod.save(False)
                 else:
                     if title != prod.title:
                         prod.title = title
@@ -83,11 +84,11 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         prod.qty = quantity
                         prod.is_changed = True
                     if not prod.description:
-                        Description(product_id=prod.id, text=description).save()
+                        Description(product_id=prod.id, text=description).save(False)
                     else:
-                        if description != prod.description[0].text:
+                        if description != prod_description.text:
                             Description.query.filter(Description.product_id == prod.id).delete()
-                            Description(product_id=prod.id, text=description).save()
+                            Description(product_id=prod.id, text=description).save(False)
 
                     if prod.is_deleted:
                         prod.is_deleted = False
@@ -95,7 +96,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
 
                     if prod.is_changed:
                         prod.updated = update_date
-                        prod.save()
+                        prod.save(False)
 
                     if len(images) != len(prod.images):
                         # update images
@@ -111,13 +112,14 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         category_path=category_path,
                         price=price,
                         qty=quantity,
-                    ).save(False)
+                    ).save()
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
-                    Description(product_id=product.id, text=description).save()
-                    log(log.DEBUG, "download_vidaxl_product_from_csv: Add new product[%d: %s] to db", product.id, title)
+                    Description(product_id=product.id, text=description).save(False)
+                    # log(log.DEBUG, "download_vidaxl_product_from_csv: Add new product[%d: %s] to db", product.id, title)
 
             if not i % 1000:
+                log(log.DEBUG, "download_vidaxl_product_from_csv: processed: %d items", i)
                 db.session.commit()
     finally:
         db.session.commit()
