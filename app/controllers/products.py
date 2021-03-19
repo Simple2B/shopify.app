@@ -111,7 +111,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                 for image in images:
                     Image(product_id=product.id, url=image).save()
                 Description(product_id=product.id, text=description).save()
-                log(log.DEBUG, "Add new product[%d: %s] to db", product.id, title)
+                log(log.DEBUG, "download_vidaxl_product_from_csv: Add new product[%d: %s] to db", product.id, title)
 
 
 def download_vidaxl_product_by_api(limit=None):
