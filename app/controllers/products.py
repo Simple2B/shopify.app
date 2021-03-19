@@ -629,3 +629,66 @@ def upload_products_to_store_by_category(limit=None):  # 6
             shop,
             (datetime.now() - begin_time).seconds,
         )
+
+
+def change_vida_prefix_title(limit=None):  # 7
+    """[Update products title in the stores]"""
+    for shop in Shop.query.all():
+        log(log.INFO, "Update products title in shop: %s", shop.name)
+        begin_time = datetime.now()
+        updated_product_count = 0
+        with shopify.Session.temp(
+            shop.name, conf.VERSION_API, shop.private_app_access_token
+        ):
+            for shop_product in shop.products:
+                product = shop_product.product
+                if in_selected_category(shop, product.category_path):
+                    LEAVE_VIDAXL_PREFIX = Configuration.get_value(
+                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
+                        )
+                    title = product.title
+                    if not LEAVE_VIDAXL_PREFIX:
+                        title = (
+                            title.replace("vidaXL ", "")
+                            if title.startswith("vidaXL ")
+                            else title
+                        )
+                    if product.title != title:
+                        try:
+                            shopify_product = shopify.Product.find(
+                                shop_product.shop_product_id
+                            )
+                            shopify_product.title = title
+                            shopify_product.save()
+                            product.title = title
+                            product.save()
+                        except Exception:
+                            log(
+                                log.ERROR,
+                                "change_vida_prefix_title: Product %s not present in shop [%s]",
+                                product,
+                                shop,
+                            )
+                        log(
+                            log.INFO,
+                            "Product title %s was changed in [%s]",
+                            shop_product,
+                            shop
+                        )
+                updated_product_count += 1
+                if limit is not None and updated_product_count >= limit:
+                    break
+        log(
+            log.INFO,
+            "Updated %d products in %s in %d seconds",
+            updated_product_count,
+            shop,
+            (datetime.now() - begin_time).seconds,
+        )
+
+
+
+
+
+
+

@@ -98,6 +98,7 @@ def update_shop_products(limit):
         change_product_price,
         delete_products_from_store_exclude_category,
         delete_vidaxl_product_from_store,
+        change_vida_prefix_title
     )
     from app.logger import log
 
@@ -110,7 +111,7 @@ def update_shop_products(limit):
     update_products_vidaxl_to_store(limit)
 
     change_product_price(limit)
-
+    change_vida_prefix_title(limit)
     upload_new_products_vidaxl_to_store(limit)
 
     log(log.INFO, "Full loop ended in %d seconds", (datetime.now() - begin).seconds)
