@@ -29,89 +29,98 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             r.encoding = 'utf-8'
         if limit is not None:
             row_count = 0
-        csv_reader = csv.reader(r.iter_lines(decode_unicode=True))
+        csv_reader = csv.reader(r.iter_lines())
         keys = []
-        for row in csv_reader:
-            if not keys:
-                keys = row
-            else:
-                csv_prod = {i[0]: i[1] for i in zip(keys, row)}
-                yield csv_prod
-                if limit is not None:
-                    row_count += 1
-                    if row_count >= limit:
-                        break
-
-    update_date = datetime.now()
-    for csv_prod in read_products_from_csv():
-        sku = csv_prod["SKU"]
-        title = csv_prod["Product_title"]
-        price = float(csv_prod["B2B price"])
-        quantity = float(csv_prod["Stock"])
-        category_path = csv_prod["Category"]
-        description = csv_prod["HTML_description"]
-        images = [
-            csv_prod[key]
-            for key in csv_prod
-            if key.startswith("Image ") and csv_prod[key] != ""
-        ]
-        # log(log.DEBUG, "Get images (%d)", len(images))
-        vidaxl_id = csv_prod["EAN"]
-        prod = Product.query.filter(Product.sku == sku).first()
-        if prod:
-            if quantity <= 0:
-                if not prod.is_deleted:
-                    # delete product
-                    prod.is_deleted = True
-                    prod.is_changed = True
-                    prod.save()
-            else:
-                if title != prod.title:
-                    prod.title = title
-                    prod.is_changed = True
-                if category_path != prod.category_path:
-                    prod.category_path = category_path
-                    prod.is_changed = True
-                if price != prod.price:
-                    prod.price = price
-                    prod.is_changed = True
-                if quantity != prod.qty:
-                    prod.qty = quantity
-                    prod.is_changed = True
-                if not prod.description:
-                    Description(product_id=prod.id, text=description).save()
+        try:
+            for row in csv_reader:
+                if not keys:
+                    keys = row
                 else:
-                    if description != prod.description[0].text:
-                        Description.query.filter(Description.product_id == prod.id).delete()
+                    csv_prod = {i[0]: i[1] for i in zip(keys, row)}
+                    yield csv_prod
+                    if limit is not None:
+                        row_count += 1
+                        if row_count >= limit:
+                            break
+        except requests.exceptions.ChunkedEncodingError as e:
+            log(log.ERROR, "read_products_from_csv: [%s]", e)
+
+    try:
+        update_date = datetime.now()
+        for i, csv_prod in enumerate(read_products_from_csv()):
+            sku = csv_prod["SKU"]
+            title = csv_prod["Product_title"]
+            price = float(csv_prod["B2B price"])
+            quantity = float(csv_prod["Stock"])
+            category_path = csv_prod["Category"]
+            description = csv_prod["HTML_description"]
+            images = [
+                csv_prod[key]
+                for key in csv_prod
+                if key.startswith("Image ") and csv_prod[key] != ""
+            ]
+            # log(log.DEBUG, "Get images (%d)", len(images))
+            vidaxl_id = csv_prod["EAN"]
+            prod = Product.query.filter(Product.sku == sku).first()
+            if prod:
+                if quantity <= 0:
+                    if not prod.is_deleted:
+                        # delete product
+                        prod.is_deleted = True
+                        prod.is_changed = True
+                        prod.save()
+                else:
+                    if title != prod.title:
+                        prod.title = title
+                        prod.is_changed = True
+                    if category_path != prod.category_path:
+                        prod.category_path = category_path
+                        prod.is_changed = True
+                    if price != prod.price:
+                        prod.price = price
+                        prod.is_changed = True
+                    if quantity != prod.qty:
+                        prod.qty = quantity
+                        prod.is_changed = True
+                    if not prod.description:
                         Description(product_id=prod.id, text=description).save()
+                    else:
+                        if description != prod.description[0].text:
+                            Description.query.filter(Description.product_id == prod.id).delete()
+                            Description(product_id=prod.id, text=description).save()
 
-                if prod.is_deleted:
-                    prod.is_deleted = False
-                    prod.is_changed = True
+                    if prod.is_deleted:
+                        prod.is_deleted = False
+                        prod.is_changed = True
 
-                if prod.is_changed:
-                    prod.updated = update_date
-                    prod.save()
+                    if prod.is_changed:
+                        prod.updated = update_date
+                        prod.save()
 
-                if len(images) != len(prod.images):
-                    # update images
-                    Image.query.filter(Image.product_id == prod.id).delete()
+                    if len(images) != len(prod.images):
+                        # update images
+                        Image.query.filter(Image.product_id == prod.id).delete()
+                        for image in images:
+                            Image(product_id=prod.id, url=image).save(False)
+            else:
+                if quantity > 0:
+                    product = Product(
+                        vidaxl_id=vidaxl_id,
+                        sku=sku,
+                        title=title,
+                        category_path=category_path,
+                        price=price,
+                        qty=quantity,
+                    ).save(False)
                     for image in images:
-                        Image(product_id=prod.id, url=image).save()
-        else:
-            if quantity > 0:
-                product = Product(
-                    vidaxl_id=vidaxl_id,
-                    sku=sku,
-                    title=title,
-                    category_path=category_path,
-                    price=price,
-                    qty=quantity,
-                ).save()
-                for image in images:
-                    Image(product_id=product.id, url=image).save()
-                Description(product_id=product.id, text=description).save()
-                log(log.DEBUG, "download_vidaxl_product_from_csv: Add new product[%d: %s] to db", product.id, title)
+                        Image(product_id=product.id, url=image).save(False)
+                    Description(product_id=product.id, text=description).save()
+                    log(log.DEBUG, "download_vidaxl_product_from_csv: Add new product[%d: %s] to db", product.id, title)
+
+            if not i % 1000:
+                db.session.commit()
+    finally:
+        db.session.commit()
 
 
 def download_vidaxl_product_by_api(limit=None):
