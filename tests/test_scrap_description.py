@@ -1,7 +1,7 @@
 import pytest
 from app.controllers import scrap_description
 from app import create_app, db
-from app.models import Description, Product
+from app.models import Product
 from .utils import fill_db_by_test_data
 
 
@@ -27,6 +27,6 @@ def test_scrap_description(client):
     description = scrap_description(product)
     assert description
     assert "This memory foam neck pillow will surely bring you" in description
-    desc = Description.query.filter(Description.product_id == product.id).first()
-    assert desc
-    assert desc.text == description
+    product = Product.query.first()
+    assert product
+    assert product.description == description

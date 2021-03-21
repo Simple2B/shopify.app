@@ -9,7 +9,6 @@ from app.models import (
     Shop,
     ShopProduct,
     Image,
-    Description,
 )
 from app import db
 from .price import get_price
@@ -23,14 +22,13 @@ CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
-
     def read_products_from_csv():
 
         with tempfile.NamedTemporaryFile(mode="w+") as file:
             with requests.get(csv_url, stream=True) as r:
                 r.raise_for_status()
                 if r.encoding is None:
-                    r.encoding = 'utf-8'
+                    r.encoding = "utf-8"
                 for line in r.iter_lines(decode_unicode=True):
                     file.write(line)
                     file.write("\n")
@@ -75,7 +73,6 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             vidaxl_id = int(csv_prod["EAN"])
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
-                prod_description = Description.query.filter(Description.product_id == prod.id).first()
                 if quantity <= 0:
                     if not prod.is_deleted:
                         # delete product
@@ -95,6 +92,9 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if quantity != prod.qty:
                         prod.qty = quantity
                         prod.is_changed = True
+                    if prod.description != description:
+                        prod.description = description
+                        prod.is_changed = True
 
                     if prod.is_deleted:
                         prod.is_deleted = False
@@ -103,13 +103,6 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if prod.is_changed:
                         prod.updated = update_date
                         prod.save(False)
-
-                    if not prod.description:
-                        Description(product_id=prod.id, text=description).save(False)
-                    else:
-                        if description != prod_description.text:
-                            Description.query.filter(Description.product_id == prod.id).delete()
-                            Description(product_id=prod.id, text=description).save()
 
                     if len(images) != len(prod.images):
                         # update images
@@ -125,13 +118,17 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         category_path=category_path,
                         price=price,
                         qty=quantity,
+                        description=description,
                     ).save()
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
-                    Description(product_id=product.id, text=description).save(False)
 
             if not i % 1000:
-                log(log.DEBUG, "download_vidaxl_product_from_csv: processed: %d items", i)
+                log(
+                    log.DEBUG,
+                    "download_vidaxl_product_from_csv: processed: %d items",
+                    i,
+                )
                 db.session.commit()
     finally:
         db.session.commit()
@@ -265,7 +262,9 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                             shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
-                        collection_name = product.category_path.split(CATEGORY_SPLITTER)[0]
+                        collection_name = product.category_path.split(
+                            CATEGORY_SPLITTER
+                        )[0]
                         log(
                             log.INFO,
                             "New product [%s] --> [%s]. Store: [%s]",
@@ -576,7 +575,9 @@ def upload_products_to_store_by_category(limit=None):  # 6
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                             shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
-                        collection_name = product.category_path.split(CATEGORY_SPLITTER)[0]
+                        collection_name = product.category_path.split(
+                            CATEGORY_SPLITTER
+                        )[0]
                         log(
                             log.INFO,
                             "New product [%s] --> [%s]. Store - [%s]",
