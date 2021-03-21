@@ -1,5 +1,6 @@
 import tempfile
 import csv
+import hashlib
 from datetime import datetime
 import requests
 import shopify
@@ -22,14 +23,21 @@ CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
+    log(log.INFO, "Download file: [%s]", csv_url)
+
+    class NoNeedUpdate(Exception):
+        pass
+
     def read_products_from_csv():
 
         with tempfile.NamedTemporaryFile(mode="w+") as file:
+            hash_md5 = hashlib.md5()
             with requests.get(csv_url, stream=True) as r:
                 r.raise_for_status()
                 if r.encoding is None:
                     r.encoding = "utf-8"
                 for line in r.iter_lines(decode_unicode=True):
+                    hash_md5.update(line.encode())
                     file.write(line)
                     file.write("\n")
 
@@ -37,6 +45,13 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             # if r.encoding is None:
             #     r.encoding = 'utf-8'
             file.seek(0)
+            file_hash = hash_md5.hexdigest()
+            log(log.INFO, "CSV file hash: %s", file_hash)
+            prev_check_sum = Configuration.get_common_value("CSV_CHECK_SUM")
+            if prev_check_sum:
+                log(log.INFO, "Previous hash: %s", prev_check_sum)
+                if file_hash == prev_check_sum:
+                    raise NoNeedUpdate()
             if limit is not None:
                 row_count = 0
             csv_reader = csv.reader(file)
@@ -52,6 +67,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                             row_count += 1
                             if row_count >= limit:
                                 break
+                Configuration.set_common_value("CSV_CHECK_SUM", file_hash)
             except requests.exceptions.ChunkedEncodingError as e:
                 log(log.ERROR, "read_products_from_csv: [%s]", e)
 
@@ -100,9 +116,8 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         prod.is_deleted = False
                         prod.is_changed = True
 
-                    if prod.is_changed:
-                        prod.updated = update_date
-                        prod.save(False)
+                    prod.updated = update_date
+                    prod.save(False)
 
                     if len(images) != len(prod.images):
                         # update images
@@ -130,6 +145,24 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     i,
                 )
                 db.session.commit()
+        marked_to_delete_number = 0
+        for product in (
+            Product.query.filter(Product.updated < update_date)
+            .filter(Product.is_deleted == False)  # noqa E712
+            .all()
+        ):
+            product.is_deleted = True
+            product.is_changed = True
+            product.save()
+            marked_to_delete_number += 1
+        if marked_to_delete_number:
+            log(
+                log.INFO,
+                "download_vidaxl_product_from_csv: %d products marked as deleted",
+                marked_to_delete_number,
+            )
+    except NoNeedUpdate:
+        log(log.INFO, "download_vidaxl_product_from_csv: No need update")
     finally:
         db.session.commit()
 

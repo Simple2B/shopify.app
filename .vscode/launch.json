@@ -68,7 +68,7 @@
             "jinja": true
         },
         {
-            "name": "Python: Flask_test_memo",
+            "name": "update",
             "type": "python",
             "request": "launch",
             "module": "flask",
@@ -78,9 +78,7 @@
                 "FLASK_DEBUG": "1"
             },
             "args": [
-                "run",
-                "-p", "8091",
-                "-h", "0.0.0.0"
+                "update",
             ],
             "jinja": true
         },

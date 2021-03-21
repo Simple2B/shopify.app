@@ -11,7 +11,7 @@ class Configuration(db.Model, ModelMixin):
     __tablename__ = "configurations"
 
     id = db.Column(db.Integer, primary_key=True)
-    shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=True)
     name = db.Column(db.String, default="unknown name")
     value = db.Column(db.String, default="")
     value_type = db.Column(db.String, default="")
@@ -25,6 +25,17 @@ class Configuration(db.Model, ModelMixin):
             Configuration.query.filter(Configuration.shop_id == shop_id)
             .filter(Configuration.name == name)
             .filter(Configuration.path == path)
+            .first()
+        )
+        if conf:
+            return Configuration.get_typed_value(conf.value, conf.value_type)
+        return current_app.config.get("ADMIN_" + name, None)
+
+    @staticmethod
+    def get_common_value(name: str):
+        conf = (
+            Configuration.query.filter(Configuration.shop_id == None)  # noqa E711
+            .filter(Configuration.name == name)
             .first()
         )
         if conf:
@@ -59,6 +70,33 @@ class Configuration(db.Model, ModelMixin):
                 value=str(value),
                 value_type=value_type,
                 path=path,
+            ).save()
+
+    @staticmethod
+    def set_common_value(name: str, value):
+        value_type = "str"
+        if isinstance(value, bool):
+            value_type = "bool"
+        elif isinstance(value, float):
+            value_type = "float"
+        elif isinstance(value, int):
+            value_type = "int"
+
+        conf = (
+            Configuration.query.filter(Configuration.shop_id == None)  # noqa E711
+            .filter(Configuration.name == name)
+            .first()
+        )
+        if conf:
+            if Configuration.get_typed_value(conf.value, conf.value_type) != value:
+                conf.value = str(value)
+                conf.value_type = value_type
+                conf.save()
+        else:
+            Configuration(
+                name=name,
+                value=str(value),
+                value_type=value_type,
             ).save()
 
     @staticmethod

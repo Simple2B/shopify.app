@@ -168,14 +168,11 @@ def update_price(limit):
 def info():
     """Get App Info"""
     import json
-    from app.models import Product, Shop
+    from app.models import Product, Shop, Configuration
 
     all_products = Product.query
     shops = {s.id: s.name for s in Shop.query.all()}
-
-    print(
-        json.dumps(
-            {
+    data = {
                 "Vida products:": all_products.count(),
                 "New products:": all_products.filter(
                     Product.is_new == True  # noqa E712
@@ -186,8 +183,15 @@ def info():
                 "Deleted products:": all_products.filter(
                     Product.is_deleted == True
                 ).count(),
-                "Shops:": shops,
-            },
+            }
+    csv_check_sum = Configuration.get_common_value("CSV_CHECK_SUM")
+    if csv_check_sum:
+        data["CSV check sum:"] = csv_check_sum
+    if shops:
+        data["Shops:"] = shops
+    print(
+        json.dumps(
+            data,
             indent=2,
         )
     )
