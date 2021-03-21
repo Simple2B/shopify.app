@@ -45,6 +45,8 @@ def scrappy():
 def update(limit):
     """Update ALL"""
     import getpass
+    from datetime import datetime
+    begin = datetime.now()
     FILE_NAME = f"/tmp/UPDATING_{getpass.getuser()}"
     try:
         with open(FILE_NAME, "r") as f:
@@ -62,6 +64,7 @@ def update(limit):
     update_shop_products(limit)
     log(log.INFO, "---==FINISH UPDATE==---")
     os.remove(FILE_NAME)
+    log(log.INFO, "Updated in %d seconds", (datetime.now() - begin).seconds)
 
 
 @app.cli.command()
@@ -90,7 +93,6 @@ def vida_product(sku):
 # @click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_products(limit):
     """Upload all products to Shop(s)"""
-    from datetime import datetime
     from app.controllers import (
         upload_new_products_vidaxl_to_store,
         upload_products_to_store_by_category,
@@ -99,9 +101,6 @@ def update_shop_products(limit):
         delete_products_from_store_exclude_category,
         delete_vidaxl_product_from_store,
     )
-    from app.logger import log
-
-    begin = datetime.now()
     limit = limit if limit else None
     delete_products_from_store_exclude_category(limit)
     delete_vidaxl_product_from_store(limit)
@@ -112,8 +111,6 @@ def update_shop_products(limit):
     change_product_price(limit)
 
     upload_new_products_vidaxl_to_store(limit)
-
-    log(log.INFO, "Full loop ended in %d seconds", (datetime.now() - begin).seconds)
 
 
 @app.cli.command()
