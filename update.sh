@@ -8,6 +8,6 @@ FULL_PATH=$(realpath $0)
 DIR_PATH=$(dirname $FULL_PATH)
 # echo $DIR_PATH
 cd $DIR_PATH
-source .venv/bin/activate
 USER=`whoami`
-flask update 2>&1 | tee -a /tmp/update-all-${USER}.log
+LOG_FILE=/tmp/update-all-${USER}.log
+docker-compose exec app flask update 2>&1 | tee -a $LOG_FILE

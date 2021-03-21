@@ -72,7 +72,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                 if key.startswith("Image ") and csv_prod[key] != ""
             ]
             # log(log.DEBUG, "Get images (%d)", len(images))
-            vidaxl_id = csv_prod["EAN"]
+            vidaxl_id = int(csv_prod["EAN"])
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
                 prod_description = Description.query.filter(Description.product_id == prod.id).first()
