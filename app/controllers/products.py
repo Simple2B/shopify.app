@@ -161,6 +161,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                 "download_vidaxl_product_from_csv: %d products marked as deleted",
                 marked_to_delete_number,
             )
+        Configuration.set_common_value("LAST_VIDAXL_PROD_UPDATED", update_date)
     except NoNeedUpdate:
         log(log.INFO, "download_vidaxl_product_from_csv: No need update")
     finally:

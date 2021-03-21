@@ -1,3 +1,4 @@
+from datetime import datetime
 from app import db
 from app.models.utils import ModelMixin
 from sqlalchemy.orm import relationship
@@ -81,6 +82,9 @@ class Configuration(db.Model, ModelMixin):
             value_type = "float"
         elif isinstance(value, int):
             value_type = "int"
+        elif isinstance(value, datetime):
+            value_type = "datetime"
+            value = value.isoformat()
 
         conf = (
             Configuration.query.filter(Configuration.shop_id == None)  # noqa E711
@@ -106,6 +110,7 @@ class Configuration(db.Model, ModelMixin):
             "float": lambda x: float(x),
             "int": lambda x: int(x),
             "str": lambda x: str(x),
+            "datetime": lambda x: datetime.fromisoformat(x),
         }
 
         if value_type not in switch:

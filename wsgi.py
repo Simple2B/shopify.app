@@ -187,6 +187,9 @@ def info():
     csv_check_sum = Configuration.get_common_value("CSV_CHECK_SUM")
     if csv_check_sum:
         data["CSV check sum:"] = csv_check_sum
+    vida_updated = Configuration.get_common_value("LAST_VIDAXL_PROD_UPDATED")
+    if vida_updated:
+        data["Last VidaXl Products updated: %s", str(vida_updated)]
     if shops:
         data["Shops:"] = shops
     print(
