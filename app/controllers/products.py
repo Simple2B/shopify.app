@@ -624,6 +624,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
             products = Product.query.filter(
                 Product.is_deleted == False  # noqa E712
             ).all()
+            total_products = len(products)
             for product in products:
                 if in_selected_category(shop, product.category_path):
                     shop_products = [
@@ -701,9 +702,16 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 shopify.InventoryLevel.set(
                                     location_id, inventory_item_id, product.qty
                                 )
-                        updated_product_count += 1
-                        if limit is not None and updated_product_count >= limit:
-                            break
+            updated_product_count += 1
+            if not updated_product_count % 1000:
+                log(
+                    log.DEBUG,
+                    "upload_products_to_store_by_category: processed: %d(%d) items",
+                    updated_product_count,
+                    total_products,
+                )
+            if limit is not None and updated_product_count >= limit:
+                break
         log(
             log.INFO,
             "Upload %d products in [%s] in %d seconds",
@@ -716,7 +724,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
 def change_vida_prefix_title(limit=None):  # 7
     """[Update products title in the stores]"""
     for shop in Shop.query.all():
-        total_products = shop.products.count()
+        total_products = len(shop.products)
         log(log.INFO, "Update %d products title in shop: %s", shop.name)
         begin_time = datetime.now()
         updated_product_count = 0
