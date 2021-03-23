@@ -1,5 +1,6 @@
 import tempfile
 import csv
+import hashlib
 from datetime import datetime
 import requests
 import shopify
@@ -9,7 +10,6 @@ from app.models import (
     Shop,
     ShopProduct,
     Image,
-    Description,
 )
 from app import db
 from .price import get_price
@@ -23,15 +23,21 @@ CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
+    log(log.INFO, "Download file: [%s]", csv_url)
+
+    class NoNeedUpdate(Exception):
+        pass
 
     def read_products_from_csv():
 
         with tempfile.NamedTemporaryFile(mode="w+") as file:
+            hash_md5 = hashlib.md5()
             with requests.get(csv_url, stream=True) as r:
                 r.raise_for_status()
                 if r.encoding is None:
-                    r.encoding = 'utf-8'
+                    r.encoding = "utf-8"
                 for line in r.iter_lines(decode_unicode=True):
+                    hash_md5.update(line.encode())
                     file.write(line)
                     file.write("\n")
 
@@ -39,6 +45,13 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             # if r.encoding is None:
             #     r.encoding = 'utf-8'
             file.seek(0)
+            file_hash = hash_md5.hexdigest()
+            log(log.INFO, "CSV file hash: %s", file_hash)
+            prev_check_sum = Configuration.get_common_value("CSV_CHECK_SUM")
+            if prev_check_sum:
+                log(log.INFO, "Previous hash: %s", prev_check_sum)
+                if file_hash == prev_check_sum:
+                    raise NoNeedUpdate()
             if limit is not None:
                 row_count = 0
             csv_reader = csv.reader(file)
@@ -54,6 +67,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                             row_count += 1
                             if row_count >= limit:
                                 break
+                Configuration.set_common_value("CSV_CHECK_SUM", file_hash)
             except requests.exceptions.ChunkedEncodingError as e:
                 log(log.ERROR, "read_products_from_csv: [%s]", e)
 
@@ -72,10 +86,9 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                 if key.startswith("Image ") and csv_prod[key] != ""
             ]
             # log(log.DEBUG, "Get images (%d)", len(images))
-            vidaxl_id = csv_prod["EAN"]
+            vidaxl_id = int(csv_prod["EAN"])
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
-                prod_description = Description.query.filter(Description.product_id == prod.id).first()
                 if quantity <= 0:
                     if not prod.is_deleted:
                         # delete product
@@ -95,21 +108,16 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if quantity != prod.qty:
                         prod.qty = quantity
                         prod.is_changed = True
+                    if prod.description != description:
+                        prod.description = description
+                        prod.is_changed = True
 
                     if prod.is_deleted:
                         prod.is_deleted = False
                         prod.is_changed = True
 
-                    if prod.is_changed:
-                        prod.updated = update_date
-                        prod.save(False)
-
-                    if not prod.description:
-                        Description(product_id=prod.id, text=description).save(False)
-                    else:
-                        if description != prod_description.text:
-                            Description.query.filter(Description.product_id == prod.id).delete()
-                            Description(product_id=prod.id, text=description).save()
+                    prod.updated = update_date
+                    prod.save(False)
 
                     if len(images) != len(prod.images):
                         # update images
@@ -125,14 +133,37 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         category_path=category_path,
                         price=price,
                         qty=quantity,
+                        description=description,
                     ).save()
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
-                    Description(product_id=product.id, text=description).save(False)
 
             if not i % 1000:
-                log(log.DEBUG, "download_vidaxl_product_from_csv: processed: %d items", i)
+                log(
+                    log.DEBUG,
+                    "download_vidaxl_product_from_csv: processed: %d items",
+                    i,
+                )
                 db.session.commit()
+        marked_to_delete_number = 0
+        for product in (
+            Product.query.filter(Product.updated < update_date)
+            .filter(Product.is_deleted == False)  # noqa E712
+            .all()
+        ):
+            product.is_deleted = True
+            product.is_changed = True
+            product.save()
+            marked_to_delete_number += 1
+        if marked_to_delete_number:
+            log(
+                log.INFO,
+                "download_vidaxl_product_from_csv: %d products marked as deleted",
+                marked_to_delete_number,
+            )
+        Configuration.set_common_value("LAST_VIDAXL_PROD_UPDATED", update_date)
+    except NoNeedUpdate:
+        log(log.INFO, "download_vidaxl_product_from_csv: No need update")
     finally:
         db.session.commit()
 
@@ -249,100 +280,114 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
     begin_time = datetime.now()
     products = Product.query.filter(Product.is_new == True).all()  # noqa E712
     updated_product_count = 0
-    for product in products:
-        for shop in Shop.query.all():
-            with shopify.Session.temp(
-                shop.name, conf.VERSION_API, shop.private_app_access_token
-            ):
+    total_products = len(products)
+    try:
+        for product in products:
+            for shop in Shop.query.all():
                 if in_selected_category(shop, product.category_path):
-                    shop_products = [
-                        sp for sp in product.shop_products if sp.shop_id == shop.id
-                    ]
-                    if not shop_products:
-                        collection_names = {
-                            c.title: c.id for c in shopify.CustomCollection.find()
-                        }
-                        LEAVE_VIDAXL_PREFIX = Configuration.get_value(
-                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
-                        )
-                        collection_name = product.category_path.split(CATEGORY_SPLITTER)[0]
-                        log(
-                            log.INFO,
-                            "New product [%s] --> [%s]. Store: [%s]",
-                            product.title,
-                            collection_name,
-                            shop,
-                        )
-                        if collection_name not in collection_names:
-                            collection = shopify.CustomCollection.create(
-                                dict(title=collection_name)
+                    with shopify.Session.temp(
+                        shop.name, conf.VERSION_API, shop.private_app_access_token
+                    ):
+                        shop_products = [
+                            sp for sp in product.shop_products if sp.shop_id == shop.id
+                        ]
+                        if not shop_products:
+                            collection_names = {
+                                c.title: c.id for c in shopify.CustomCollection.find()
+                            }
+                            LEAVE_VIDAXL_PREFIX = Configuration.get_value(
+                                shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                             )
-                            collection_names[collection_name] = collection.id
-                        collection_id = collection_names[collection_name]
-
-                        log(log.DEBUG, "price: %s", product.price)
-                        title = product.title
-                        if not LEAVE_VIDAXL_PREFIX:
-                            title = (
-                                title.replace("vidaXL ", "")
-                                if title.startswith("vidaXL ")
-                                else title
+                            collection_name = product.category_path.split(
+                                CATEGORY_SPLITTER
+                            )[0]
+                            log(
+                                log.INFO,
+                                "New product [%s] --> [%s]. Store: [%s]",
+                                product.title,
+                                collection_name,
+                                shop,
                             )
-                        price = get_price(product, shop.id)
-                        description = scrap_description(product)
-                        if not description:
-                            description = "<p>No description</p>"
-                        images = scrap_img(product)
-                        if not images:
-                            images = [{"src": NO_PHOTO_IMG}]
-                        else:
-                            images = [{"src": img} for img in images]
-                        shop_prod = shopify.Product.create(
-                            dict(
-                                title=title,
-                                body_html=description,
-                                variants=[dict(price=price, sku=product.sku)],
-                                images=images,
-                            )
-                        )
-                        assert shop_prod
-                        ShopProduct(
-                            shop_product_id=shop_prod.id,
-                            shop_id=shop.id,
-                            product_id=product.id,
-                            price=price,
-                        ).save()
-                        collect = shopify.Collect.create(
-                            dict(product_id=shop_prod.id, collection_id=collection_id)
-                        )
-                        assert collect
-                        inventory_item_id = shop_prod.variants[0].inventory_item_id
-                        inv_levels = shopify.InventoryLevel.find(
-                            inventory_item_ids=inventory_item_id
-                        )
-                        if inv_levels:
-                            items = shopify.InventoryItem.find(ids=inventory_item_id)
-                            for item in items:
-                                item.tracked = True
-                                item.save()
-                            for inv_level in inv_levels:
-                                location_id = inv_level.location_id
-                                inv_level.available = product.qty
-                                shopify.InventoryLevel.set(
-                                    location_id, inventory_item_id, product.qty
+                            if collection_name not in collection_names:
+                                collection = shopify.CustomCollection.create(
+                                    dict(title=collection_name)
                                 )
-                        log(
-                            log.INFO,
-                            "Product %s was uploaded in %s",
-                            product,
-                            shop,
-                        )
-        product.is_new = False
-        product.is_changed = False
-        product.save()
-        updated_product_count += 1
-        if limit is not None and updated_product_count >= limit:
-            return
+                                collection_names[collection_name] = collection.id
+                            collection_id = collection_names[collection_name]
+
+                            log(log.DEBUG, "price: %s", product.price)
+                            title = product.title
+                            if not LEAVE_VIDAXL_PREFIX:
+                                title = (
+                                    title.replace("vidaXL ", "")
+                                    if title.startswith("vidaXL ")
+                                    else title
+                                )
+                            price = get_price(product, shop.id)
+                            description = scrap_description(product)
+                            if not description:
+                                description = "<p>No description</p>"
+                            images = scrap_img(product)
+                            if not images:
+                                images = [{"src": NO_PHOTO_IMG}]
+                            else:
+                                images = [{"src": img} for img in images]
+                            shop_prod = shopify.Product.create(
+                                dict(
+                                    title=title,
+                                    body_html=description,
+                                    variants=[dict(price=price, sku=product.sku)],
+                                    images=images,
+                                )
+                            )
+                            assert shop_prod
+                            ShopProduct(
+                                shop_product_id=shop_prod.id,
+                                shop_id=shop.id,
+                                product_id=product.id,
+                                price=price,
+                            ).save()
+                            collect = shopify.Collect.create(
+                                dict(product_id=shop_prod.id, collection_id=collection_id)
+                            )
+                            assert collect
+                            inventory_item_id = shop_prod.variants[0].inventory_item_id
+                            inv_levels = shopify.InventoryLevel.find(
+                                inventory_item_ids=inventory_item_id
+                            )
+                            if inv_levels:
+                                items = shopify.InventoryItem.find(ids=inventory_item_id)
+                                for item in items:
+                                    item.tracked = True
+                                    item.save()
+                                for inv_level in inv_levels:
+                                    location_id = inv_level.location_id
+                                    inv_level.available = product.qty
+                                    shopify.InventoryLevel.set(
+                                        location_id, inventory_item_id, product.qty
+                                    )
+                            log(
+                                log.INFO,
+                                "Product %s was uploaded in %s",
+                                product,
+                                shop,
+                            )
+            product.is_new = False
+            product.is_changed = False
+            product.save(False)
+            updated_product_count += 1
+            if not updated_product_count % 1000:
+                log(
+                    log.DEBUG,
+                    "upload_new_products_vidaxl_to_store: processed: %d(%d) items",
+                    updated_product_count,
+                    total_products,
+                )
+                db.session.commit()
+            if limit is not None and updated_product_count >= limit:
+                break
+    finally:
+        db.session.commit()
     log(
         log.INFO,
         "Upload %d new products in %d seconds",
@@ -360,63 +405,75 @@ def update_products_vidaxl_to_store(limit=None):  # 2
         .all()
     )
     updated_product_count = 0
-    for product in products:
-        for shop in Shop.query.all():
-            with shopify.Session.temp(
-                shop.name, conf.VERSION_API, shop.private_app_access_token
-            ):
+    total_products = len(products)
+    try:
+        for product in products:
+            for shop in Shop.query.all():
                 if in_selected_category(shop, product.category_path):
-                    shop_products = [
-                        sp for sp in product.shop_products if sp.shop_id == shop.id
-                    ]
-                    if shop_products:
-                        LEAVE_VIDAXL_PREFIX = Configuration.get_value(
-                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
-                        )
-                        title = product.title
-                        if not LEAVE_VIDAXL_PREFIX:
-                            title = (
-                                title.replace("vidaXL ", "")
-                                if title.startswith("vidaXL ")
-                                else title
+                    with shopify.Session.temp(
+                        shop.name, conf.VERSION_API, shop.private_app_access_token
+                    ):
+                        shop_products = [
+                            sp for sp in product.shop_products if sp.shop_id == shop.id
+                        ]
+                        if shop_products:
+                            LEAVE_VIDAXL_PREFIX = Configuration.get_value(
+                                shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                             )
-                        description = scrap_description(product)
-                        if not description:
-                            description = "<p>No description</p>"
-                        images = scrap_img(product)
-                        if not images:
-                            images = [{"src": NO_PHOTO_IMG}]
-                        else:
-                            images = [{"src": img} for img in images]
-                        price = get_price(product, shop.id)
-                        try:
-                            shopify_product = shopify.Product.find(
-                                shop_products[0].shop_product_id
-                            )
-                            shopify_product.title = title
-                            shopify_product.body_html = description
-                            shopify_product.variants[0].price = price
-                            shopify_product.variants[0].sku = product.sku
-                            shopify_product.images = images
-                            shopify_product.save()
-                        except Exception:
+                            title = product.title
+                            if not LEAVE_VIDAXL_PREFIX:
+                                title = (
+                                    title.replace("vidaXL ", "")
+                                    if title.startswith("vidaXL ")
+                                    else title
+                                )
+                            description = scrap_description(product)
+                            if not description:
+                                description = "<p>No description</p>"
+                            images = scrap_img(product)
+                            if not images:
+                                images = [{"src": NO_PHOTO_IMG}]
+                            else:
+                                images = [{"src": img} for img in images]
+                            price = get_price(product, shop.id)
+                            try:
+                                shopify_product = shopify.Product.find(
+                                    shop_products[0].shop_product_id
+                                )
+                                shopify_product.title = title
+                                shopify_product.body_html = description
+                                shopify_product.variants[0].price = price
+                                shopify_product.variants[0].sku = product.sku
+                                shopify_product.images = images
+                                shopify_product.save()
+                            except Exception:
+                                log(
+                                    log.ERROR,
+                                    "update_products_vidaxl_to_store: Product %s not present in shop [%s]",
+                                    product,
+                                    shop,
+                                )
                             log(
-                                log.ERROR,
-                                "update_products_vidaxl_to_store: Product %s not present in shop [%s]",
+                                log.INFO,
+                                "Product %s was updated in %s",
                                 product,
                                 shop,
                             )
-                        log(
-                            log.INFO,
-                            "Product %s was updated in %s",
-                            product,
-                            shop,
-                        )
-        product.is_changed = False
-        product.save()
-        updated_product_count += 1
-        if limit is not None and updated_product_count >= limit:
-            break
+            product.is_changed = False
+            product.save(False)
+            updated_product_count += 1
+            if not updated_product_count % 1000:
+                log(
+                    log.DEBUG,
+                    "update_products_vidaxl_to_store: processed: %d(%d) items",
+                    updated_product_count,
+                    total_products,
+                )
+                db.session.commit()
+            if limit is not None and updated_product_count >= limit:
+                break
+    finally:
+        db.session.commit()
     log(
         log.INFO,
         "Updated %d products in %d seconds",
@@ -576,7 +633,9 @@ def upload_products_to_store_by_category(limit=None):  # 6
                         LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                             shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                         )
-                        collection_name = product.category_path.split(CATEGORY_SPLITTER)[0]
+                        collection_name = product.category_path.split(
+                            CATEGORY_SPLITTER
+                        )[0]
                         log(
                             log.INFO,
                             "New product [%s] --> [%s]. Store - [%s]",

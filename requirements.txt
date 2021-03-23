@@ -13,6 +13,7 @@ WTForms
 requests
 beautifulsoup4
 shopifyapi
+psycopg2-binary
 
 flake8
 black
