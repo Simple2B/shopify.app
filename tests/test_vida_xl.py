@@ -1,10 +1,7 @@
 import pytest
 
 from requests.auth import HTTPBasicAuth
-from app.controllers import download_products
 from app import create_app, db
-from app.models import Product
-from app.vida_xl import VidaXl
 
 from config import TestingConfig as conf
 

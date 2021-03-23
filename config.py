@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from app.logger import log
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(base_dir, ".env"))
@@ -55,7 +56,7 @@ class BaseConfig(object):
     @staticmethod
     def configure(app):
         # Implement this method to do further configuration on your app.
-        pass
+        log.set_level(int(os.environ.get("LOG_LEVEL", log.DEBUG)))
 
 
 class DevelopmentConfig(BaseConfig):
@@ -97,7 +98,7 @@ class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL", "sqlite:///" + os.path.join(base_dir, "database.sqlite3")
     )
-    WTF_CSRF_ENABLED = True
+    # WTF_CSRF_ENABLED = True
 
 
 config = dict(

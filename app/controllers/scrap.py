@@ -4,7 +4,7 @@ from datetime import datetime
 from urllib.request import Request, urlopen
 from flask import current_app
 from bs4 import BeautifulSoup
-from app.models import Product, Image, Description
+from app.models import Product, Image
 from app.logger import log
 from config import BaseConfig as conf
 
@@ -75,9 +75,8 @@ def scrap_description(product):
     Returns:
         [str]: [<p> description </p>, <ul> specification_list </ul>]
     """
-    description = product.description
-    if description:
-        return description[0].text
+    if product.description:
+        return product.description
     timeout = current_app.config["SLEEP_TIME"]
     attempts = int(current_app.config["NUMBER_OF_REPETITIONS"])
     for i in range(attempts):
@@ -87,7 +86,8 @@ def scrap_description(product):
             description = block.p
             specification_list = block.ul
             full_description = f'{description}{specification_list}'
-            Description(product_id=product.id, text=full_description).save()
+            product.description = full_description
+            product.save()
             return full_description
         log(
             log.INFO,
