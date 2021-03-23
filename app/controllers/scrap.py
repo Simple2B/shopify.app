@@ -25,7 +25,7 @@ def check_soup(vidaxl_id: int):
         soup = BeautifulSoup(get_html(vidaxl_id), "html.parser")
         return soup
     except TypeError:
-        # log(log.WARNING, "urllib.error.HTTPError")
+        log(log.WARNING, "Wrong parser data")
         return None
 
 
