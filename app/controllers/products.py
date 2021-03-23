@@ -634,7 +634,8 @@ def upload_products_to_store_by_category(limit=None):  # 6
 def change_vida_prefix_title(limit=None):  # 7
     """[Update products title in the stores]"""
     for shop in Shop.query.all():
-        log(log.INFO, "Update products title in shop: %s", shop.name)
+        total_products = shop.products.count()
+        log(log.INFO, "Update %d products title in shop: %s", shop.name)
         begin_time = datetime.now()
         updated_product_count = 0
         with shopify.Session.temp(
@@ -676,6 +677,13 @@ def change_vida_prefix_title(limit=None):  # 7
                             shop
                         )
                 updated_product_count += 1
+                if not updated_product_count % 1000:
+                    log(
+                        log.DEBUG,
+                        "change_vida_prefix_title: processed: %d(%d) items",
+                        updated_product_count,
+                        total_products,
+                    )
                 if limit is not None and updated_product_count >= limit:
                     break
         log(
@@ -685,10 +693,3 @@ def change_vida_prefix_title(limit=None):  # 7
             shop,
             (datetime.now() - begin_time).seconds,
         )
-
-
-
-
-
-
-
