@@ -10,7 +10,7 @@ class ShopProduct(db.Model, ModelMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=False)
-    shop_product_id = db.Column(db.Integer, nullable=False)
+    shop_product_id = db.Column(db.BigInteger, nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     price = db.Column(db.Float, nullable=False)
 
