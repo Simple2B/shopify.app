@@ -597,6 +597,7 @@ def delete_products_from_store_exclude_category(limit=None):  # 5
                         log(log.INFO, "%s was deleted from [%s]", product, shop)
                     except Exception:
                         log(log.ERROR, "%s *NOT IN* [%s]", product, shop)
+                        shop_product.delete()
                     deleted_product_count += 1
                     if limit is not None and deleted_product_count >= limit:
                         break
