@@ -59,7 +59,11 @@ def scrap_price(item_id: int):
         [int]: [Price]
     """
     try:
-        soup = BeautifulSoup(get_html(item_id), "html.parser")
+        html = get_html(item_id)
+        if not html:
+            log(log.ERROR, "scrap_price: request page failed")
+            return None
+        soup = BeautifulSoup(html, "html.parser")
     except urllib.error.HTTPError as e:
         log(log.ERROR, "Invalid response [%s]", e)
         return None

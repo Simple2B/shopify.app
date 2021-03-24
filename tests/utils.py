@@ -1,7 +1,7 @@
 import os
 from random import randint
 from app import db
-from app.models import Shop, Product, Category, Image, Description
+from app.models import Shop, Product, Category, Image
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FOLDER = os.path.join(BASE_DIR, "data")
@@ -35,8 +35,8 @@ def fill_db_by_test_data():
             price=((i + 1) * 1.01),
             qty=i + 1,
             vidaxl_id=35084 + i,
+            description=description
         ).save(commit=False)
-        Description(product_id=i+1, text=description).save(commit=False)
         Image(product_id=i + 1, url=randint(0, len(images))).save(commit=False)
 
     Category(shop_id=shop.id, path=categories[1]).save(commit=False)

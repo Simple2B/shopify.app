@@ -4,12 +4,10 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import HTTPException
 from flask_migrate import Migrate
-from app.logger import log
 
 # instantiate extensions
 db = SQLAlchemy()
 migrate = Migrate()
-log.set_level(log.DEBUG)
 
 
 def create_app(environment="development"):
