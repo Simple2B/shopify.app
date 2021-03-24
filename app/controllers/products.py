@@ -725,7 +725,7 @@ def change_vida_prefix_title(limit=None):  # 7
     """[Update products title in the stores]"""
     for shop in Shop.query.all():
         total_products = len(shop.products)
-        log(log.INFO, "Update %d products title in shop: %s", shop.name)
+        log(log.INFO, "Update %d products title in shop: %s", total_products, shop.name)
         begin_time = datetime.now()
         updated_product_count = 0
         with shopify.Session.temp(
