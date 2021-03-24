@@ -28,6 +28,7 @@ def get_context():
 # @click.confirmation_option(prompt="Drop all database tables?")
 def create_db():
     """Create new database."""
+    db.drop_all()
     db.create_all()
 
 
