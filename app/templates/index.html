@@ -60,9 +60,9 @@
               </div>
             </div>
           </div>
-          <div class="row">
-            {{form.submit(class='btn col-sm-5')}}
-            <a class="btn btn-primary btn-danger col-sm-5 reset" href="{{ url_for('admin.reset_conf', shop_id=shop_id)}}" role="button">Reset</a>
+          <div class="row justify-content-between px-3">
+            {{form.submit(class='btn col-sm-4 mx-auto')}}
+            <a class="btn btn-primary btn-danger col-sm-4 mx-auto" href="{{ url_for('admin.reset_conf', shop_id=shop_id)}}" role="button">Reset</a>
           </div>
         </div>
       </form>
