@@ -28,6 +28,13 @@ class Configuration(db.Model, ModelMixin):
             .filter(Configuration.path == path)
             .first()
         )
+        if not conf:
+            conf = (
+                Configuration.query.filter(Configuration.shop_id == shop_id)
+                .filter(Configuration.name == name)
+                .filter(Configuration.path == "/")
+                .first()
+            )
         if conf:
             return Configuration.get_typed_value(conf.value, conf.value_type)
         return current_app.config.get("ADMIN_" + name, None)
