@@ -25,11 +25,16 @@ def get_context():
 
 
 @app.cli.command()
-# @click.confirmation_option(prompt="Drop all database tables?")
 def create_db():
     """Create new database."""
-    db.drop_all()
     db.create_all()
+
+
+@app.cli.command()
+@click.confirmation_option(prompt="Drop all database tables?")
+def drop_db():
+    """Drop database."""
+    db.drop_all()
 
 
 @app.cli.command()
