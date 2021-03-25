@@ -309,12 +309,12 @@ def test_creating_order(client):
 
 def test_get_orders(client):
     vida = VidaXl()
-    orders = vida.get_documents()
+    orders = vida.get_orders()
     assert orders
 
 
-def test_get_invoice(client):
-    vida = VidaXl()
-    order_id = 117664516
-    invoice = vida.get_invoice(order_id)
-    assert invoice
+# def test_get_invoice(client):
+#     vida = VidaXl()
+#     order_id = 117664516
+#     invoice = vida.get_invoice(order_id)
+#     assert invoice
