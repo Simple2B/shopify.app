@@ -82,3 +82,10 @@
     overflow: auto;
     max-height: 35vh;
 }
+
+/* Button Reset */
+
+.reset {
+    display: inline-block !important;
+    align-self: flex-end !important;
+}

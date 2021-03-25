@@ -61,6 +61,7 @@
             </div>
           </div>
         </div>
+        <a class="btn btn-primary btn-danger reset" href="{{ url_for('admin.reset_conf', shop_id=shop_id)}}" role="button">Reset</a>
         {{form.submit(class='btn')}}
       </form>
     </div>
