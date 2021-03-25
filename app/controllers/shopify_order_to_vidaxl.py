@@ -23,6 +23,7 @@ def parser_shopify_to_vidaxl(data):
     post_code = ship_address["zip"]
     country = ship_address["country"]
     name = ship_address["name"]
+    phone = ship_address.get('phone', '')
     address_book = {
         "address": addr1,
         "address2": addr2,
@@ -31,7 +32,7 @@ def parser_shopify_to_vidaxl(data):
         "postal_code": post_code,
         "country": country,
         "name": name,
-        "phone": "0684541247",
+        "phone": phone,
         "comments": ""
     }
     # product parameters
