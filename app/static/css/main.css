@@ -94,3 +94,9 @@
     padding: 5px;
 }
 
+/* Button Reset */
+
+.reset {
+    display: inline-block !important;
+    align-self: flex-end !important;
+}

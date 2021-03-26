@@ -1,3 +1,5 @@
+from sqlalchemy import or_
+from app import db
 from app.models import Category, Shop, Configuration
 from app.logger import log
 from config import BaseConfig as conf
@@ -106,3 +108,16 @@ def apply_categories_configuration_tree(shop_id: int, data: dict):
     children = data["nodes"]
     path = ""
     apply_node(children, path)
+
+
+def reset_config_parameters(shop_id):
+    """[Delete configurations from DB by shop]
+
+    Args:
+        shop_id ([int]): [Shop ID]
+    """
+    configs = Configuration.query.filter(Configuration.shop_id == shop_id).filter(
+        or_(Configuration.name == v for v in PARAMETERS)).all()
+    for config in configs:
+        config.delete()
+    log(log.INFO, "Configs was deleted in Shop ID[%d]", shop_id)

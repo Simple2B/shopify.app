@@ -1,7 +1,7 @@
 import os
 from random import randint
 from app import db
-from app.models import Shop, Product, Category, Image
+from app.models import Shop, Product, Category, Image, Configuration
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FOLDER = os.path.join(BASE_DIR, "data")
@@ -41,5 +41,8 @@ def fill_db_by_test_data():
 
     Category(shop_id=shop.id, path=categories[1]).save(commit=False)
     Category(shop_id=shop.id, path=categories[2]).save(commit=False)
+    Configuration.set_value(shop_id=shop.id, name='MARGIN_PERCENT', value='20', path=categories[0])
+    Configuration.set_value(shop_id=shop.id, name='ROUND_TO', value='95', path=categories[1])
+    Configuration.set_value(shop_id=shop.id, name='LEAVE_VIDAXL_PREFIX', value=True, path=categories[2])
 
     db.session.commit()

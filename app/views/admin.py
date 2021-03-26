@@ -9,6 +9,8 @@ from flask import (
     request,
     send_file,
 )
+from flask.helpers import url_for
+from werkzeug.utils import redirect
 from app.forms import ConfigurationForm
 from app.models import Configuration, Product, Shop
 from app.logger import log
@@ -20,7 +22,8 @@ from app.controllers import (
     apply_categories_configuration_tree,
     set_csv_url,
     get_csv_url,
-    order_parser
+    order_parser,
+    reset_config_parameters,
 )
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -43,8 +46,7 @@ def admin(shop_id):
         if "category_rules_file" in request.files:
             update_categories(shop_id, request.files["category_rules_file"])
         apply_categories_configuration_tree(
-            shop_id,
-            json.loads(form.categories_tree.data)
+            shop_id, json.loads(form.categories_tree.data)
         )
         flash("Configuration saved", "success")
         log(log.INFO, "Configuration saved")
@@ -67,7 +69,9 @@ def admin(shop_id):
         get_categories_configuration_tree(shop_id), indent=2
     )
     orders = order_parser()
-    return render_template("index.html", form=form, orders=orders, **request.args)
+    return render_template(
+        "index.html", form=form, orders=orders, shop_id=shop_id, **request.args
+    )
 
 
 @admin_blueprint.route("/all_categories", methods=["GET"])
@@ -94,4 +98,20 @@ def all_categories():
         mimetype="text/txt",
         cache_timeout=0,
         last_modified=datetime.now(),
+    )
+
+
+@admin_blueprint.route("/<int:shop_id>/reset", methods=["GET"])
+def reset_conf(shop_id):
+    shop = Shop.query.get(shop_id)
+    reset_config_parameters(shop_id)
+    reset_message = True
+    return redirect(
+        url_for(
+            "admin.admin",
+            shop_id=shop_id,
+            shop=shop.name,
+            reset_message=reset_message,
+            **request.args
+        )
     )
