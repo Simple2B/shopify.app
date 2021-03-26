@@ -31,6 +31,7 @@ class BaseConfig(object):
     )
     VIDAXL_USER_NAME = os.environ.get("VIDAXL_USER_NAME", "")
     VIDAXL_API_KEY = os.environ.get("VIDAXL_API_KEY", "")
+    VIDAXL_SANDBOX_PASSWORD = os.environ.get("VIDAXL_SANDBOX_PASSWORD", "")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False

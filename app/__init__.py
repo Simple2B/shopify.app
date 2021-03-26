@@ -17,6 +17,7 @@ def create_app(environment="development"):
         admin_blueprint,
         shopify_blueprint,
         main_blueprint,
+        hooks_blueprint,
     )
 
     # Instantiate app.
@@ -35,6 +36,7 @@ def create_app(environment="development"):
     app.register_blueprint(admin_blueprint)
     app.register_blueprint(shopify_blueprint)
     app.register_blueprint(main_blueprint)
+    app.register_blueprint(hooks_blueprint)
 
     # Error handlers.
     @app.errorhandler(HTTPException)

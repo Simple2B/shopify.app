@@ -597,6 +597,7 @@ def delete_products_from_store_exclude_category(limit=None):  # 5
                         log(log.INFO, "%s was deleted from [%s]", product, shop)
                     except Exception:
                         log(log.ERROR, "%s *NOT IN* [%s]", product, shop)
+                        shop_product.delete()
                     deleted_product_count += 1
                     if limit is not None and deleted_product_count >= limit:
                         break
@@ -619,7 +620,6 @@ def upload_products_to_store_by_category(limit=None):  # 6
             shop.name, conf.VERSION_API, shop.private_app_access_token
         ):
             custom_collections = shopify.CustomCollection.find()
-            assert custom_collections
             collection_names = {c.title: c.id for c in custom_collections}
             products = Product.query.filter(
                 Product.is_deleted == False  # noqa E712

@@ -25,10 +25,16 @@ def get_context():
 
 
 @app.cli.command()
-# @click.confirmation_option(prompt="Drop all database tables?")
 def create_db():
     """Create new database."""
     db.create_all()
+
+
+@app.cli.command()
+@click.confirmation_option(prompt="Drop all database tables?")
+def drop_db():
+    """Drop database."""
+    db.drop_all()
 
 
 @app.cli.command()
@@ -61,7 +67,7 @@ def update(limit):
         f.write(f"{os.getpid()}\n")
     log(log.INFO, "---==START UPDATE==---")
     _update_vidaxl_products()
-    update_shop_products(limit)
+    _update_shop_products(limit)
     log(log.INFO, "---==FINISH UPDATE==---")
     os.remove(FILE_NAME)
     log(log.INFO, "Updated in %d seconds", (datetime.now() - begin).seconds)
@@ -89,9 +95,13 @@ def vida_product(sku):
     print(json.dumps(VidaXl().get_product(sku), indent=2))
 
 
-# @app.cli.command()
-# @click.option("--limit", default=0, help="Max. Number of products for update.")
+@app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
 def update_shop_products(limit):
+    _update_shop_products(limit)
+
+
+def _update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from app.controllers import (
         upload_new_products_vidaxl_to_store,

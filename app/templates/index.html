@@ -66,6 +66,20 @@
           </div>
         </div>
       </form>
+      <table class="order-table">
+        <tr class="cells">
+          <th class="cells">Order ID</th>
+          <th class="cells">Status</th>
+          <th class="cells">Tracking URL</th>
+        </tr>
+        {% for item in orders %}
+        <tr class="cells">
+          <td class="cells">{{ item.id }}</td>
+          <td class="cells">{{ item.status }}</td>
+          <td class="cells">{{ item.tracking_url }}</td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
   </div>
 </div>

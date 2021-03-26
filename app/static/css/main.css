@@ -83,6 +83,17 @@
     max-height: 35vh;
 }
 
+.order-table {
+    border: 2px solid black;
+    margin: 30px;
+
+}
+
+.cells {
+    border: 1px solid darkslategray;
+    padding: 5px;
+}
+
 /* Button Reset */
 
 .reset {
