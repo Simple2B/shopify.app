@@ -102,5 +102,5 @@ def all_categories():
 def reset_conf(shop_id):
     shop = Shop.query.get(shop_id)
     reset_config_parameters(shop_id)
-    flash('Configurations was reseted !')
-    return redirect(url_for('admin.admin', shop_id=shop_id, shop=shop.name, **request.args))
+    reset_message = True
+    return redirect(url_for('admin.admin', shop_id=shop_id, shop=shop.name, reset_message=reset_message, **request.args))

@@ -120,5 +120,4 @@ def reset_config_parameters(shop_id):
         or_(Configuration.name == v for v in PARAMETERS)).all()
     for config in configs:
         config.delete()
-    db.session.commit()
     log(log.INFO, "Configs was deleted in Shop ID[%d]", shop_id)
