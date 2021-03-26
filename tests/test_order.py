@@ -1,9 +1,7 @@
 import pytest
-import random
 
 from app import create_app, db
 from .utils import fill_db_by_test_data
-from app.vida_xl import VidaXl
 from app.controllers import parser_shopify_to_vidaxl
 
 # from config import TestingConfig as conf
@@ -27,9 +25,8 @@ def client():
 
 
 def test_creating_order(client):
-    number = random.randint(1000000, 1000000000)
     data = {
-        "id": number,
+        "id": 123456789,
         "email": "tsyboom@gmail.com",
         "closed_at": None,
         "created_at": "2021-03-15T16:53:11+02:00",
@@ -301,20 +298,30 @@ def test_creating_order(client):
             },
         },
     }
-    vida = VidaXl()
     data = parser_shopify_to_vidaxl(data)
-    new_order = vida.create_order(data)
-    assert new_order
-
-
-def test_get_orders(client):
-    vida = VidaXl()
-    orders = vida.get_orders()
-    assert orders
-
-
-# def test_get_invoice(client):
-#     vida = VidaXl()
-#     order_id = 117664516
-#     invoice = vida.get_invoice(order_id)
-#     assert invoice
+    assert data
+    if data == {
+        "customer_order_reference": 123456789,
+        "comments_customer": "Please deliver asap",
+        "addressbook": {"country": "FR"},
+        "order_products": [
+            {
+                "product_code": "10107",
+                "quantity": 1,
+                "addressbook": {
+                    "address": "Burgemeester Oudlaan 50",
+                    "address2": "",
+                    "city": "Rotterdam",
+                    "province": "",
+                    "postal_code": "3062 PP",
+                    "country": "NL",
+                    "name": "John Stuck",
+                    "phone": None,
+                    "comments": "",
+                },
+            }
+        ],
+    }:
+        assert True
+    else:
+        assert False
