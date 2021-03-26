@@ -10,5 +10,10 @@ DIR_PATH=$(dirname $FULL_PATH)
 cd $DIR_PATH
 source .venv/bin/activate
 USER=`whoami`
-LOG_FILE=/tmp/update-all-${USER}.log
+DATE=`date '+%Y-%m-%d'`
+LOG_FILE=/tmp/update-all-${USER}-${DATE}.log
+echo logfile: $LOG_FILE
+echo updating...
 flask update 2>&1 | tee -a $LOG_FILE
+echo delete old logs...
+find /tmp/update-all-${USER}* -type f -mtime +3 -exec rm -f {} \;
