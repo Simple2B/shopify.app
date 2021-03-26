@@ -15,6 +15,7 @@ from .categories import (
     update_categories,
     get_categories_configuration_tree,
     apply_categories_configuration_tree,
+    reset_config_parameters
 )
 from .shop import update_access_token, set_csv_url, get_csv_url
 from .price import get_price
