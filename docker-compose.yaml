@@ -3,19 +3,17 @@ services:
   db:
     image: postgres
     restart: always
-    container_name: db
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: shop_db
     ports:
-      - 127.0.0.1:5432:5432
+      - 127.0.0.1:${LOCAL_DB_PORT}:5432
 
   app:
     build: .
     restart: always
-    container_name: app
     ports:
       - 127.0.0.1:${LOCAL_PORT}:5000
     command: flask run -h 0.0.0.0
