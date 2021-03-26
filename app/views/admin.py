@@ -22,7 +22,7 @@ from app.controllers import (
     apply_categories_configuration_tree,
     set_csv_url,
     get_csv_url,
-    reset
+    reset_config_parameters
 )
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -101,6 +101,6 @@ def all_categories():
 @admin_blueprint.route("/<int:shop_id>/reset", methods=["GET"])
 def reset_conf(shop_id):
     shop = Shop.query.get(shop_id)
-    reset(shop_id)
+    reset_config_parameters(shop_id)
     flash('Configurations was reseted !')
     return redirect(url_for('admin.admin', shop_id=shop_id, shop=shop.name, **request.args))

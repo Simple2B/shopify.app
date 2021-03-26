@@ -110,7 +110,7 @@ def apply_categories_configuration_tree(shop_id: int, data: dict):
     apply_node(children, path)
 
 
-def reset(shop_id):
+def reset_config_parameters(shop_id):
     """[Delete configurations from DB by shop]
 
     Args:

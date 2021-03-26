@@ -5,7 +5,7 @@ import pytest
 from app import create_app, db
 from app.models import Shop
 from .utils import fill_db_by_test_data
-from app.controllers import reset
+from app.controllers import reset_config_parameters
 from app.controllers.categories import PARAMETERS
 
 
@@ -31,7 +31,7 @@ def test_reset_config(client):
     configs = Configuration.query.filter(Configuration.shop_id == shop.id).filter(
         or_(Configuration.name == v for v in PARAMETERS)).all()
     assert configs
-    reset(shop.id)
+    reset_config_parameters(shop.id)
     configs = Configuration.query.filter(Configuration.shop_id == shop.id).filter(
         or_(Configuration.name == v for v in PARAMETERS)).all()
     assert not configs
