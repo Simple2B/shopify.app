@@ -20,7 +20,7 @@ class BaseConfig(object):
     WEBHOOK_APP_UNINSTALL_URL = os.environ.get("WEBHOOK_APP_UNINSTALL_URL", "")
     INSTALL_REDIRECT_URL = os.environ.get("INSTALL_REDIRECT_URL", "")
     ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN", "")
-    NUMBER_OF_REPETITIONS = os.environ.get("NUMBER_OF_REPETITIONS", "10")
+    NUMBER_OF_REPETITIONS = os.environ.get("NUMBER_OF_REPETITIONS", "5")
     SLEEP_TIME = float(os.environ.get("SLEEP_TIME", "1"))
     HOST_NAME = os.environ.get("HOST_NAME", "localhost")
     SHOPIFY_PRIVATE_APP_PASSWORD = os.environ.get("SHOPIFY_PRIVATE_APP_PASSWORD", "")
@@ -37,8 +37,8 @@ class BaseConfig(object):
     WTF_CSRF_ENABLED = False
 
     # Retry policy
-    RETRY_ATTEMPTS_NUMBER = 5
-    RETRY_TIMEOUT = 5
+    RETRY_ATTEMPTS_NUMBER = 3
+    RETRY_TIMEOUT = 2
 
     # Configuration parameters
     ADMIN_LEAVE_VIDAXL_PREFIX = os.environ.get("LEAVE_VIDAXL_PREFIX", "Y") in (
