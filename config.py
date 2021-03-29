@@ -38,7 +38,7 @@ class BaseConfig(object):
 
     # Retry policy
     RETRY_ATTEMPTS_NUMBER = 3
-    RETRY_TIMEOUT = 2
+    RETRY_TIMEOUT = 3
 
     # Configuration parameters
     ADMIN_LEAVE_VIDAXL_PREFIX = os.environ.get("LEAVE_VIDAXL_PREFIX", "Y") in (
