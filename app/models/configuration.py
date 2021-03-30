@@ -4,7 +4,11 @@ from app.models.utils import ModelMixin
 from sqlalchemy.orm import relationship
 
 from flask import current_app
+from config import BaseConfig as conf
 from app.logger import log
+
+
+CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
 
 
 class Configuration(db.Model, ModelMixin):
@@ -22,6 +26,8 @@ class Configuration(db.Model, ModelMixin):
 
     @staticmethod
     def get_value(shop_id: int, name: str, path="/"):
+        if CATEGORY_SPLITTER != '/' and CATEGORY_SPLITTER in path:
+            path = path.replace(CATEGORY_SPLITTER, '/')
         conf = (
             Configuration.query.filter(Configuration.shop_id == shop_id)
             .filter(Configuration.name == name)
