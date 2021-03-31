@@ -1,3 +1,4 @@
+# flake8: noqa E501
 import pytest
 
 from app import create_app, db
