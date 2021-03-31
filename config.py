@@ -37,8 +37,8 @@ class BaseConfig(object):
     WTF_CSRF_ENABLED = False
 
     # Retry policy
-    RETRY_ATTEMPTS_NUMBER = 3
-    RETRY_TIMEOUT = 3
+    RETRY_ATTEMPTS_NUMBER = os.environ.get("RETRY_ATTEMPTS_NUMBER", "3")
+    RETRY_TIMEOUT = os.environ.get("RETRY_TIMEOUT", "3")
 
     # Configuration parameters
     ADMIN_LEAVE_VIDAXL_PREFIX = os.environ.get("LEAVE_VIDAXL_PREFIX", "Y") in (
