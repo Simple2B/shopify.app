@@ -1,5 +1,4 @@
 from sqlalchemy import or_
-from app import db
 from app.models import Category, Shop, Configuration
 from app.logger import log
 from config import BaseConfig as conf
