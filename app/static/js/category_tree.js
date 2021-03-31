@@ -40,13 +40,17 @@ function getTree() {
   return [g_treeData];
 }
 
+function saveDataToNode(node) {
+  node.LEAVE_VIDAXL_PREFIX = $("#LEAVE_VIDAXL_PREFIX").prop("checked");
+  node.MOM_SELECTOR = $("#MOM_SELECTOR").prop("checked");
+  node.MARGIN_PERCENT = parseFloat($("#MARGIN_PERCENT").val());
+  node.ROUND_TO = parseInt($("#ROUND_TO").val(), 10);
+}
+
 function saveData(index) {
-  let data = getNodeByIndex(index);
-  if (data) {
-    data.LEAVE_VIDAXL_PREFIX = $("#LEAVE_VIDAXL_PREFIX").prop("checked");
-    data.MOM_SELECTOR = $("#MOM_SELECTOR").prop("checked");
-    data.MARGIN_PERCENT = parseFloat($("#MARGIN_PERCENT").val());
-    data.ROUND_TO = parseInt($("#ROUND_TO").val(), 10);
+  const node = getNodeByIndex(index);
+  if (node) {
+    saveDataToNode(node);
   }
 }
 
@@ -79,4 +83,15 @@ loadData(0);
 $("#submit").click(function () {
   saveData(g_currentSelectedIndex);
   hidden_field.value = JSON.stringify(g_treeData);
+});
+
+$("#apply-for-children").click(function() {
+  const rootNode = getNodeByIndex(g_currentSelectedIndex);
+  function applyValuesForSubNodes(node) {
+    if (!node) return;
+    saveDataToNode(node);
+    if (!node.nodes || node.nodes.length == 0) return;
+    node.nodes.forEach((node) => applyValuesForSubNodes(node));
+  }
+  applyValuesForSubNodes(rootNode);
 });

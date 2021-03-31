@@ -6,4 +6,5 @@
     "cSpell.words": [
         "vidaxl"
     ],
+    "python.pythonPath": ".venv/bin/python",
 }
