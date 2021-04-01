@@ -336,7 +336,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 dict(
                                     title=title,
                                     body_html=description,
-                                    variants=[dict(price=price, sku=product.sku)],
+                                    variants=[dict(price=price, sku=product.sku, cost=product.price)],
                                     images=images,
                                 )
                             )
@@ -444,6 +444,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                 shopify_product.body_html = description
                                 shopify_product.variants[0].price = price
                                 shopify_product.variants[0].sku = product.sku
+                                shopify_product.variants[0].cost = product.price
                                 shopify_product.images = images
                                 shopify_product.save()
                             except Exception:
@@ -672,7 +673,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             dict(
                                 title=title,
                                 body_html=description,
-                                variants=[dict(price=price, sku=product.sku)],
+                                variants=[dict(price=price, sku=product.sku, cost=product.price)],
                                 images=images,
                             )
                         )
