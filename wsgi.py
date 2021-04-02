@@ -47,6 +47,13 @@ def scrappy():
 
 
 @app.cli.command()
+def update_2b2_price():
+    """Update b2b price"""
+    from app.controllers import set_b2b_price_in_shopify
+    set_b2b_price_in_shopify()
+
+
+@app.cli.command()
 @click.option("--limit", default=0, help="Number of products.")
 def update(limit):
     """Update ALL"""

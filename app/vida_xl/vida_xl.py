@@ -8,8 +8,8 @@ from config import BaseConfig as conf
 
 
 def retry_get_request(url, auth=None, headers=None):
-    time_sleep = conf.RETRY_TIMEOUT
-    for attempt_no in range(conf.RETRY_ATTEMPTS_NUMBER):
+    time_sleep = int(conf.RETRY_TIMEOUT)
+    for attempt_no in range(int(conf.RETRY_ATTEMPTS_NUMBER)):
         try:
             res = requests.get(url, auth=auth, headers=headers)
             if not res.ok:
@@ -27,14 +27,14 @@ def retry_get_request(url, auth=None, headers=None):
             return res
         except Exception as err:
             log(log.WARNING, "Get request error: [%s] attempt: %d", err, attempt_no + 1)
-            time.sleep(conf.RETRY_TIMEOUT)
+            time.sleep(int(conf.RETRY_TIMEOUT))
     log(log.ERROR, "Get request error")
     return None
 
 
 def retry_post_request(url, data, auth=None, headers=None):
-    time_sleep = conf.RETRY_TIMEOUT
-    for attempt_no in range(conf.RETRY_ATTEMPTS_NUMBER):
+    time_sleep = int(conf.RETRY_TIMEOUT)
+    for attempt_no in range(int(conf.RETRY_ATTEMPTS_NUMBER)):
         try:
             res = requests.post(url, auth=auth, headers=headers, json=data)
             if not res.ok:
@@ -52,7 +52,7 @@ def retry_post_request(url, data, auth=None, headers=None):
             return res
         except Exception as err:
             log(log.WARNING, "Get request error: [%s] attempt: %d", err, attempt_no + 1)
-            time.sleep(conf.RETRY_TIMEOUT)
+            time.sleep(int(conf.RETRY_TIMEOUT))
     log(log.ERROR, "Post request error")
     return None
 

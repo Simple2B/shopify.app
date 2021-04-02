@@ -9,7 +9,8 @@ from .products import (
     delete_vidaxl_product_from_store,
     delete_products_from_store_exclude_category,
     change_product_price,
-    change_vida_prefix_title
+    change_vida_prefix_title,
+    set_b2b_price_in_shopify
 )
 from .categories import (
     update_categories,
