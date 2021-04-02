@@ -346,26 +346,11 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 shop_id=shop.id,
                                 product_id=product.id,
                                 price=price,
-                            ).save()
+                            ).save(False)
                             collect = shopify.Collect.create(
                                 dict(product_id=shop_prod.id, collection_id=collection_id)
                             )
                             assert collect
-                            inventory_item_id = shop_prod.variants[0].inventory_item_id
-                            inv_levels = shopify.InventoryLevel.find(
-                                inventory_item_ids=inventory_item_id
-                            )
-                            if inv_levels:
-                                items = shopify.InventoryItem.find(ids=inventory_item_id)
-                                for item in items:
-                                    item.tracked = True
-                                    item.save()
-                                for inv_level in inv_levels:
-                                    location_id = inv_level.location_id
-                                    inv_level.available = product.qty
-                                    shopify.InventoryLevel.set(
-                                        location_id, inventory_item_id, product.qty
-                                    )
                             log(
                                 log.INFO,
                                 "Product %s was uploaded in %s",
@@ -486,7 +471,6 @@ def update_products_vidaxl_to_store(limit=None):  # 2
 def delete_vidaxl_product_from_store(limit=None):  # 3
     """[Delete VidaXL product from stores]"""
     begin_time = datetime.now()
-    # TODO: consider select from shop_products
     products = (
         Product.query.filter(Product.is_changed == True)  # noqa E712
         .filter(Product.is_deleted == True)  # noqa E712
@@ -651,7 +635,6 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             )
                             collection_names[collection_name] = collection.id
                         collection_id = collection_names[collection_name]
-
                         log(log.DEBUG, "price: %s", product.price)
                         title = product.title
                         if not LEAVE_VIDAXL_PREFIX:
@@ -683,26 +666,10 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             shop_id=shop.id,
                             product_id=product.id,
                             price=price,
-                        ).save()
-                        collect = shopify.Collect.create(
+                        ).save(False)
+                        shopify.Collect.create(
                             dict(product_id=shop_prod.id, collection_id=collection_id)
                         )
-                        assert collect
-                        inventory_item_id = shop_prod.variants[0].inventory_item_id
-                        inv_levels = shopify.InventoryLevel.find(
-                            inventory_item_ids=inventory_item_id
-                        )
-                        if inv_levels:
-                            items = shopify.InventoryItem.find(ids=inventory_item_id)
-                            for item in items:
-                                item.tracked = True
-                                item.save()
-                            for inv_level in inv_levels:
-                                location_id = inv_level.location_id
-                                inv_level.available = product.qty
-                                shopify.InventoryLevel.set(
-                                    location_id, inventory_item_id, product.qty
-                                )
             updated_product_count += 1
             if not updated_product_count % 1000:
                 log(
@@ -777,6 +744,46 @@ def change_vida_prefix_title(limit=None):  # 7
                     )
                 if limit is not None and updated_product_count >= limit:
                     break
+        log(
+            log.INFO,
+            "Updated %d products in %s in %d seconds",
+            updated_product_count,
+            shop,
+            (datetime.now() - begin_time).seconds,
+        )
+
+
+def set_b2b_price_in_shopify():  # CAUTION ! Not for use
+    """[Update b2b price in the stores]"""
+    for shop in Shop.query.all():
+        log(log.INFO, "Update b2b price in shop: %s", shop.name)
+        begin_time = datetime.now()
+        updated_product_count = 0
+        with shopify.Session.temp(
+            shop.name, conf.VERSION_API, shop.private_app_access_token
+        ):
+            for shop_product in shop.products:
+                product = shop_product.product
+                try:
+                    shopify_product = shopify.Product.find(
+                        shop_product.shop_product_id
+                    )
+                    shopify_product.variants[0].cost = product.price
+                    shopify_product.save()
+                except Exception:
+                    log(
+                        log.ERROR,
+                        "change_product_price: Product %s not present in shop [%s]",
+                        product,
+                        shop,
+                    )
+                log(
+                    log.INFO,
+                    "Product b2b price [%s] was changed in [%s]",
+                    shop_product,
+                    shop,
+                )
+            updated_product_count += 1
         log(
             log.INFO,
             "Updated %d products in %s in %d seconds",
