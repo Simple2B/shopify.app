@@ -597,96 +597,100 @@ def delete_products_from_store_exclude_category(limit=None):  # 5
 
 def upload_products_to_store_by_category(limit=None):  # 6
     """Upload products to stores by categories"""
-    for shop in Shop.query.all():
-        log(log.INFO, "Upload products to stores by categories: %s", shop.name)
-        begin_time = datetime.now()
-        updated_product_count = 0
-        with shopify.Session.temp(
-            shop.name, conf.VERSION_API, shop.private_app_access_token
-        ):
-            custom_collections = shopify.CustomCollection.find()
-            collection_names = {c.title: c.id for c in custom_collections}
-            products = Product.query.filter(
-                Product.is_deleted == False  # noqa E712
-            ).all()
-            total_products = len(products)
-            for product in products:
-                if in_selected_category(shop, product.category_path):
-                    shop_products = [
-                        sp for sp in product.shop_products if sp.shop_id == shop.id
-                    ]
-                    if not shop_products:
-                        LEAVE_VIDAXL_PREFIX = Configuration.get_value(
-                            shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
-                        )
-                        collection_name = product.category_path.split(
-                            CATEGORY_SPLITTER
-                        )[0]
-                        log(
-                            log.INFO,
-                            "New product [%s] --> [%s]. Store - [%s]",
-                            product.title,
-                            collection_name,
-                            shop,
-                        )
-                        if collection_name not in collection_names:
-                            collection = shopify.CustomCollection.create(
-                                dict(title=collection_name)
+    try:
+        for shop in Shop.query.all():
+            log(log.INFO, "Upload products to stores by categories: %s", shop.name)
+            begin_time = datetime.now()
+            updated_product_count = 0
+            with shopify.Session.temp(
+                shop.name, conf.VERSION_API, shop.private_app_access_token
+            ):
+                custom_collections = shopify.CustomCollection.find()
+                collection_names = {c.title: c.id for c in custom_collections}
+                products = Product.query.filter(
+                    Product.is_deleted == False  # noqa E712
+                ).all()
+                total_products = len(products)
+                for product in products:
+                    if in_selected_category(shop, product.category_path):
+                        shop_products = [
+                            sp for sp in product.shop_products if sp.shop_id == shop.id
+                        ]
+                        if not shop_products:
+                            LEAVE_VIDAXL_PREFIX = Configuration.get_value(
+                                shop.id, "LEAVE_VIDAXL_PREFIX", path=product.category_path
                             )
-                            collection_names[collection_name] = collection.id
-                        collection_id = collection_names[collection_name]
-                        log(log.DEBUG, "price: %s", product.price)
-                        title = product.title
-                        if not LEAVE_VIDAXL_PREFIX:
-                            title = (
-                                title.replace("vidaXL ", "")
-                                if title.startswith("vidaXL ")
-                                else title
+                            collection_name = product.category_path.split(
+                                CATEGORY_SPLITTER
+                            )[0]
+                            log(
+                                log.INFO,
+                                "New product [%s] --> [%s]. Store - [%s]",
+                                product.title,
+                                collection_name,
+                                shop,
                             )
-                        price = get_price(product, shop.id)
-                        description = scrap_description(product)
-                        if not description:
-                            description = "<p>No description</p>"
-                        images = scrap_img(product)
-                        if not images:
-                            images = [{"src": NO_PHOTO_IMG}]
-                        else:
-                            images = [{"src": img} for img in images]
-                        shop_prod = shopify.Product.create(
-                            dict(
-                                title=title,
-                                body_html=description,
-                                variants=[dict(price=price, sku=product.sku, cost=product.price)],
-                                images=images,
+                            if collection_name not in collection_names:
+                                collection = shopify.CustomCollection.create(
+                                    dict(title=collection_name)
+                                )
+                                collection_names[collection_name] = collection.id
+                            collection_id = collection_names[collection_name]
+                            log(log.DEBUG, "price: %s", product.price)
+                            title = product.title
+                            if not LEAVE_VIDAXL_PREFIX:
+                                title = (
+                                    title.replace("vidaXL ", "")
+                                    if title.startswith("vidaXL ")
+                                    else title
+                                )
+                            price = get_price(product, shop.id)
+                            description = scrap_description(product)
+                            if not description:
+                                description = "<p>No description</p>"
+                            images = scrap_img(product)
+                            if not images:
+                                images = [{"src": NO_PHOTO_IMG}]
+                            else:
+                                images = [{"src": img} for img in images]
+                            shop_prod = shopify.Product.create(
+                                dict(
+                                    title=title,
+                                    body_html=description,
+                                    variants=[dict(price=price, sku=product.sku, cost=product.price)],
+                                    images=images,
+                                )
                             )
-                        )
-                        assert shop_prod
-                        ShopProduct(
-                            shop_product_id=shop_prod.id,
-                            shop_id=shop.id,
-                            product_id=product.id,
-                            price=price,
-                        ).save(False)
-                        shopify.Collect.create(
-                            dict(product_id=shop_prod.id, collection_id=collection_id)
-                        )
-            updated_product_count += 1
-            if not updated_product_count % 1000:
-                log(
-                    log.DEBUG,
-                    "upload_products_to_store_by_category: processed: %d(%d) items",
-                    updated_product_count,
-                    total_products,
-                )
-            if limit is not None and updated_product_count >= limit:
-                break
+                            assert shop_prod
+                            ShopProduct(
+                                shop_product_id=shop_prod.id,
+                                shop_id=shop.id,
+                                product_id=product.id,
+                                price=price,
+                            ).save(False)
+                            shopify.Collect.create(
+                                dict(product_id=shop_prod.id, collection_id=collection_id)
+                            )
+                updated_product_count += 1
+                if not updated_product_count % 1000:
+                    log(
+                        log.DEBUG,
+                        "upload_products_to_store_by_category: processed: %d(%d) items",
+                        updated_product_count,
+                        total_products,
+                    )
+                    db.session.commit()
+                if limit is not None and updated_product_count >= limit:
+                    break
         log(
-            log.INFO,
-            "Upload %d products in [%s] in %d seconds",
-            updated_product_count,
-            shop,
-            (datetime.now() - begin_time).seconds,
-        )
+                log.INFO,
+                "Upload %d products in [%s] in %d seconds",
+                updated_product_count,
+                shop,
+                (datetime.now() - begin_time).seconds,
+            )
+    finally:
+        db.session.commit()
 
 
 def change_vida_prefix_title(limit=None):  # 7
