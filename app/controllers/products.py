@@ -671,17 +671,17 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             shopify.Collect.create(
                                 dict(product_id=shop_prod.id, collection_id=collection_id)
                             )
-                updated_product_count += 1
-                if not updated_product_count % 1000:
-                    log(
-                        log.DEBUG,
-                        "upload_products_to_store_by_category: processed: %d(%d) items",
-                        updated_product_count,
-                        total_products,
-                    )
-                    db.session.commit()
-                if limit is not None and updated_product_count >= limit:
-                    break
+                    updated_product_count += 1
+                    if not updated_product_count % 1000:
+                        log(
+                            log.DEBUG,
+                            "upload_products_to_store_by_category: processed: %d(%d) items",
+                            updated_product_count,
+                            total_products,
+                        )
+                        db.session.commit()
+                    if limit is not None and updated_product_count >= limit:
+                        break
         log(
                 log.INFO,
                 "Upload %d products in [%s] in %d seconds",
