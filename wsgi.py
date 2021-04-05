@@ -54,6 +54,13 @@ def update_2b2_price():
 
 
 @app.cli.command()
+def update_tags():
+    """Updating shop product's tags only"""
+    from app.controllers import set_tags
+    set_tags()
+
+
+@app.cli.command()
 @click.option("--limit", default=0, help="Number of products.")
 def update(limit):
     """Update ALL"""
