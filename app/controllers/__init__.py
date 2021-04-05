@@ -10,7 +10,8 @@ from .products import (
     delete_products_from_store_exclude_category,
     change_product_price,
     change_vida_prefix_title,
-    set_b2b_price_in_shopify
+    set_b2b_price_in_shopify,
+    set_tags
 )
 from .categories import (
     update_categories,

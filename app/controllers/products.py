@@ -802,13 +802,51 @@ def set_b2b_price_in_shopify():  # CAUTION ! Not for use
                 except Exception:
                     log(
                         log.ERROR,
-                        "change_product_price: Product %s not present in shop [%s]",
+                        "set_b2b_price_in_shopify: Product %s not present in shop [%s]",
                         product,
                         shop,
                     )
                 log(
                     log.INFO,
                     "Product b2b price [%s] was changed in [%s]",
+                    shop_product,
+                    shop,
+                )
+            updated_product_count += 1
+        log(
+            log.INFO,
+            "Updated %d products in %s in %d seconds",
+            updated_product_count,
+            shop,
+            (datetime.now() - begin_time).seconds,
+        )
+
+
+def set_tags():  # CAUTION ! Not for use
+    """[Update tags for product in the stores]"""
+    for shop in Shop.query.all():
+        log(log.INFO, "Update tags in shop: %s", shop.name)
+        begin_time = datetime.now()
+        updated_product_count = 0
+        with shopify.Session.temp(
+            shop.name, conf.VERSION_API, shop.private_app_access_token
+        ):
+            for shop_product in shop.products:
+                product = shop_product.product
+                try:
+                    shopify_product = shopify.Product.find(shop_product.shop_product_id)
+                    shopify_product.tags = product.category_path.split(CATEGORY_SPLITTER)
+                    shopify_product.save()
+                except Exception:
+                    log(
+                        log.ERROR,
+                        "set_tags: Product %s not present in shop [%s]",
+                        product,
+                        shop,
+                    )
+                log(
+                    log.INFO,
+                    "Product tags [%s] was changed in [%s]",
                     shop_product,
                     shop,
                 )
