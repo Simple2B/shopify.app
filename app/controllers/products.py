@@ -275,6 +275,20 @@ def in_selected_category(shop, category_path):
     return False
 
 
+def get_all_collections():
+    count = shopify.CustomCollection.count()
+    collections = []
+    if count > 0:
+        page = shopify.CustomCollection.find()
+        collections.extend(page)
+        log(log.INFO, f'{collections}')
+        while page.has_next_page():
+            page = page.next_page()
+            collections.extend(page)
+    log(log.INFO, f'{collections}')
+    return collections
+
+
 def upload_new_products_vidaxl_to_store(limit=None):  # 1
     """Upload new products from VidaXL to stores by categories"""
     begin_time = datetime.now()
@@ -293,7 +307,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                         ]
                         if not shop_products:
                             collection_names = {
-                                c.title: c.id for c in shopify.CustomCollection.find()
+                                c.title: c.id for c in get_all_collections()
                             }
                             LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                                 shop.id,
@@ -302,7 +316,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                             )
                             collection_name = product.category_path.split(
                                 CATEGORY_SPLITTER
-                            )[0]
+                            )[-1]
                             log(
                                 log.INFO,
                                 "New product [%s] --> [%s]. Store: [%s]",
@@ -621,8 +635,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
             with shopify.Session.temp(
                 shop.name, conf.VERSION_API, shop.private_app_access_token
             ):
-                custom_collections = shopify.CustomCollection.find()
-                collection_names = {c.title: c.id for c in custom_collections}
+                collection_names = {c.title: c.id for c in get_all_collections()}
                 products = Product.query.filter(
                     Product.is_deleted == False  # noqa E712
                 ).all()
@@ -640,7 +653,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             )
                             collection_name = product.category_path.split(
                                 CATEGORY_SPLITTER
-                            )[0]
+                            )[-1]
                             log(
                                 log.INFO,
                                 "New product [%s] --> [%s]. Store - [%s]",
@@ -835,7 +848,9 @@ def set_tags():  # CAUTION ! Not for use
                 product = shop_product.product
                 try:
                     shopify_product = shopify.Product.find(shop_product.shop_product_id)
-                    shopify_product.tags = product.category_path.split(CATEGORY_SPLITTER)
+                    shopify_product.tags = product.category_path.split(
+                        CATEGORY_SPLITTER
+                    )
                     shopify_product.save()
                 except Exception:
                     log(
@@ -847,6 +862,52 @@ def set_tags():  # CAUTION ! Not for use
                 log(
                     log.INFO,
                     "Product tags [%s] was changed in [%s]",
+                    shop_product,
+                    shop,
+                )
+            updated_product_count += 1
+        log(
+            log.INFO,
+            "Updated %d products in %s in %d seconds",
+            updated_product_count,
+            shop,
+            (datetime.now() - begin_time).seconds,
+        )
+
+
+def set_categories():  # CAUTION ! Not for use
+    """[Update product category in the stores]"""
+    for shop in Shop.query.all():
+        log(log.INFO, "Update categories in shop: %s", shop.name)
+        begin_time = datetime.now()
+        updated_product_count = 0
+        with shopify.Session.temp(
+            shop.name, conf.VERSION_API, shop.private_app_access_token
+        ):
+            collection_names = {c.title: c.id for c in get_all_collections()}
+            for shop_product in shop.products:
+                product = shop_product.product
+                collection_name = product.category_path.split(CATEGORY_SPLITTER)[-1]
+                if collection_name not in collection_names:
+                    collection = shopify.CustomCollection.create(
+                        dict(title=collection_name)
+                    )
+                    collection_names[collection_name] = collection.id
+                collection_id = collection_names[collection_name]
+                try:
+                    shopify.Collect.create(
+                        dict(product_id=shop_product.id, collection_id=collection_id)
+                    )
+                except Exception:
+                    log(
+                        log.ERROR,
+                        "set_categories: Product %s not present in shop [%s]",
+                        product,
+                        shop,
+                    )
+                log(
+                    log.INFO,
+                    "Product categories [%s] was changed in [%s]",
                     shop_product,
                     shop,
                 )

@@ -11,7 +11,8 @@ from .products import (
     change_product_price,
     change_vida_prefix_title,
     set_b2b_price_in_shopify,
-    set_tags
+    set_tags,
+    set_categories
 )
 from .categories import (
     update_categories,
