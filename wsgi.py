@@ -55,7 +55,7 @@ def update_2b2_price():
 
 @app.cli.command()
 def update_tags():
-    """Update tags"""
+    """Updating shop product's tags only"""
     from app.controllers import set_tags
     set_tags()
 

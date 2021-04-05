@@ -41,14 +41,16 @@ def test_update_db(client):
 def test_experiments_with_csv():
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as csv_file:
         try:
-            csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(['Name', 'Sphere', 'Date'])
-            csv_writer.writerow(['John Smith', 'Accounting', 'November'])
-            csv_writer.writerow(['Erica Meyers', 'IT', 'March'])
+            csv_writer = csv.writer(
+                csv_file, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
+            )
+            csv_writer.writerow(["Name", "Sphere", "Date"])
+            csv_writer.writerow(["John Smith", "Accounting", "November"])
+            csv_writer.writerow(["Erica Meyers", "IT", "March"])
             csv_file.close()
             with open(csv_file.name, "rb") as f:
                 csv_dict_reader = csv.DictReader(
-                    TextIOWrapper(f, encoding='utf-8'), delimiter=","
+                    TextIOWrapper(f, encoding="utf-8"), delimiter=","
                 )
                 for row in csv_dict_reader:
                     assert csv_dict_reader
@@ -57,13 +59,14 @@ def test_experiments_with_csv():
 
 
 @pytest.mark.skipif(not conf.SHOPIFY_DOMAIN, reason="Shopify store is not configured")
-def test_product_conut(client):
+def test_product_count(client):
     from config import BaseConfig as conf
     import requests
-    url = f'{conf.SHOPIFY_DOMAIN}/admin/api/2021-01/products/count.json'
+
+    url = f"{conf.SHOPIFY_DOMAIN}/admin/api/2021-01/products/count.json"
     headers = {
-        'User-Agent': 'Mozilla/5.0',
-        "X-Shopify-Access-Token": conf.SHOPIFY_PRIVATE_APP_PASSWORD
+        "User-Agent": "Mozilla/5.0",
+        "X-Shopify-Access-Token": conf.SHOPIFY_PRIVATE_APP_PASSWORD,
     }
     response = requests.get(url, headers=headers)
     assert response
