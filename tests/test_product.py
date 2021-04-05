@@ -56,6 +56,7 @@ def test_experiments_with_csv():
             os.remove(csv_file.name)
 
 
+@pytest.mark.skipif(not conf.SHOPIFY_DOMAIN, reason="Shopify store is not configured")
 def test_product_conut(client):
     from config import BaseConfig as conf
     import requests
