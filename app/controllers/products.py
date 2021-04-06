@@ -291,11 +291,10 @@ def get_all_collections():
     if count > 0:
         page = shopify.CustomCollection.find()
         collections.extend(page)
-        log(log.INFO, f'{collections}')
         while page.has_next_page():
             page = page.next_page()
             collections.extend(page)
-    log(log.INFO, f'{collections}')
+    log(log.INFO, 'All collections: %s', collections)
     return collections
 
 
@@ -362,8 +361,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 dict(
                                     title=title,
                                     body_html=description,
-                                    tags=product.category_path.split(CATEGORY_SPLITTER)
-                                    + product.category_path_ids.split(CATEGORY_SPLITTER),
+                                    tags=product.tags,
                                     variants=[
                                         dict(
                                             price=price,
@@ -466,9 +464,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                 )
                                 shopify_product.title = title
                                 shopify_product.body_html = description
-                                shopify_product.tags = product.category_path.split(
-                                    CATEGORY_SPLITTER
-                                ) + product.category_path_ids.split(CATEGORY_SPLITTER)
+                                shopify_product.tags = product.tags
                                 shopify_product.variants[0].price = price
                                 shopify_product.variants[0].sku = product.sku
                                 shopify_product.variants[0].cost = product.price
@@ -701,8 +697,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 dict(
                                     title=title,
                                     body_html=description,
-                                    tags=product.category_path.split(CATEGORY_SPLITTER)
-                                    + product.category_path_ids.split(CATEGORY_SPLITTER),
+                                    tags=product.tags,
                                     variants=[
                                         dict(
                                             price=price,
@@ -863,11 +858,7 @@ def set_tags():  # CAUTION ! Not for use
                 product = shop_product.product
                 try:
                     shopify_product = shopify.Product.find(shop_product.shop_product_id)
-                    shopify_product.tags = product.category_path.split(
-                        CATEGORY_SPLITTER
-                    ) + product.category_path_ids.split(
-                        CATEGORY_SPLITTER
-                    )
+                    shopify_product.tags = product.tags
                     shopify_product.save()
                 except Exception:
                     log(
@@ -959,11 +950,7 @@ def custom_update():  # CAUTION ! Not for use
                 collection_id = collection_names[collection_name]
                 try:
                     shopify_product = shopify.Product.find(shop_product.shop_product_id)
-                    shopify_product.tags = product.category_path.split(
-                        CATEGORY_SPLITTER
-                    ) + product.category_path_ids.split(
-                        CATEGORY_SPLITTER
-                    )
+                    shopify_product.tags = product.tags
                     shopify_product.variants[0].barcode = product.ean
                     shopify_product.save()
                     shopify.Collect.create(
