@@ -936,3 +936,57 @@ def set_categories():  # CAUTION ! Not for use
             shop,
             (datetime.now() - begin_time).seconds,
         )
+
+
+def custom_update():  # CAUTION ! Not for use
+    """[Update product category, set tags, set barcode]"""
+    for shop in Shop.query.all():
+        log(log.INFO, "Custom update in shop: %s", shop.name)
+        begin_time = datetime.now()
+        updated_product_count = 0
+        with shopify.Session.temp(
+            shop.name, conf.VERSION_API, shop.private_app_access_token
+        ):
+            collection_names = {c.title: c.id for c in get_all_collections()}
+            for shop_product in shop.products:
+                product = shop_product.product
+                collection_name = product.category_path.split(CATEGORY_SPLITTER)[-1]
+                if collection_name not in collection_names:
+                    collection = shopify.CustomCollection.create(
+                        dict(title=collection_name)
+                    )
+                    collection_names[collection_name] = collection.id
+                collection_id = collection_names[collection_name]
+                try:
+                    shopify_product = shopify.Product.find(shop_product.shop_product_id)
+                    shopify_product.tags = product.category_path.split(
+                        CATEGORY_SPLITTER
+                    ) + product.category_path_ids.split(
+                        CATEGORY_SPLITTER
+                    )
+                    shopify_product.variants[0].barcode = product.ean
+                    shopify_product.save()
+                    shopify.Collect.create(
+                        dict(product_id=shop_product.id, collection_id=collection_id)
+                    )
+                except Exception:
+                    log(
+                        log.ERROR,
+                        "custom_update: Product %s not present in shop [%s]",
+                        product,
+                        shop,
+                    )
+                log(
+                    log.INFO,
+                    "Data [%s] was changed in [%s]",
+                    shop_product,
+                    shop,
+                )
+            updated_product_count += 1
+        log(
+            log.INFO,
+            "Updated %d products in %s in %d seconds",
+            updated_product_count,
+            shop,
+            (datetime.now() - begin_time).seconds,
+        )

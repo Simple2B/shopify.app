@@ -12,7 +12,8 @@ from .products import (
     change_vida_prefix_title,
     set_b2b_price_in_shopify,
     set_tags,
-    set_categories
+    set_categories,
+    custom_update
 )
 from .categories import (
     update_categories,
