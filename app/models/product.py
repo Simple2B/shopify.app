@@ -17,8 +17,10 @@ class Product(db.Model, ModelMixin):
     is_deleted = db.Column(db.Boolean, default=False)
     title = db.Column(db.String(256))
     category_path = db.Column(db.String, default="")
+    category_path_ids = db.Column(db.String, default="")
     price = db.Column(db.Float, default=0.0)
     qty = db.Column(db.Integer, default=-1)
+    ean = db.Column(db.BigInteger, default=0)
     updated = db.Column(db.DateTime, default=datetime.now)
     description = db.Column(db.String)
 

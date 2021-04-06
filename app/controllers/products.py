@@ -80,6 +80,8 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             quantity = float(csv_prod["Stock"])
             category_path = csv_prod["Category"]
             description = csv_prod["HTML_description"]
+            ean = csv_prod['EAN']
+            path_ids = csv_prod['Category_id_path']
             images = [
                 csv_prod[key]
                 for key in csv_prod
@@ -111,6 +113,12 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if prod.description != description:
                         prod.description = description
                         prod.is_changed = True
+                    if prod.ean != ean:
+                        prod.ean = ean
+                        prod.is_changed = True
+                    if prod.path_ids != path_ids:
+                        prod.path_ids = path_ids
+                        prod.is_changed = True
 
                     if prod.is_deleted:
                         prod.is_deleted = False
@@ -134,6 +142,8 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         price=price,
                         qty=quantity,
                         description=description,
+                        ean=ean,
+                        category_path_ids=path_ids
                     ).save()
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
@@ -352,12 +362,14 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 dict(
                                     title=title,
                                     body_html=description,
-                                    tags=product.category_path.split(CATEGORY_SPLITTER),
+                                    tags=product.category_path.split(CATEGORY_SPLITTER)
+                                    + product.category_path_ids.split(CATEGORY_SPLITTER),
                                     variants=[
                                         dict(
                                             price=price,
                                             sku=product.sku,
                                             cost=product.price,
+                                            barcode=product.ean
                                         )
                                     ],
                                     images=images,
@@ -456,10 +468,11 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                 shopify_product.body_html = description
                                 shopify_product.tags = product.category_path.split(
                                     CATEGORY_SPLITTER
-                                )
+                                ) + product.category_path_ids.split(CATEGORY_SPLITTER)
                                 shopify_product.variants[0].price = price
                                 shopify_product.variants[0].sku = product.sku
                                 shopify_product.variants[0].cost = product.price
+                                shopify_product.variants[0].barcode = product.ean
                                 shopify_product.images = images
                                 shopify_product.save()
                             except Exception:
@@ -688,12 +701,14 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 dict(
                                     title=title,
                                     body_html=description,
-                                    tags=product.category_path.split(CATEGORY_SPLITTER),
+                                    tags=product.category_path.split(CATEGORY_SPLITTER)
+                                    + product.category_path_ids.split(CATEGORY_SPLITTER),
                                     variants=[
                                         dict(
                                             price=price,
                                             sku=product.sku,
                                             cost=product.price,
+                                            barcode=product.ean
                                         )
                                     ],
                                     images=images,
@@ -849,6 +864,8 @@ def set_tags():  # CAUTION ! Not for use
                 try:
                     shopify_product = shopify.Product.find(shop_product.shop_product_id)
                     shopify_product.tags = product.category_path.split(
+                        CATEGORY_SPLITTER
+                    ) + product.category_path_ids.split(
                         CATEGORY_SPLITTER
                     )
                     shopify_product.save()
