@@ -80,8 +80,8 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             quantity = float(csv_prod["Stock"])
             category_path = csv_prod["Category"]
             description = csv_prod["HTML_description"]
-            ean = csv_prod['EAN']
-            path_ids = csv_prod['Category_id_path']
+            ean = csv_prod["EAN"]
+            path_ids = csv_prod["Category_id_path"]
             images = [
                 csv_prod[key]
                 for key in csv_prod
@@ -143,7 +143,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                         qty=quantity,
                         description=description,
                         ean=ean,
-                        category_path_ids=path_ids
+                        category_path_ids=path_ids,
                     ).save()
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
@@ -294,7 +294,7 @@ def get_all_collections():
         while page.has_next_page():
             page = page.next_page()
             collections.extend(page)
-    log(log.INFO, 'All collections: %s', collections)
+    log(log.INFO, "All collections: %s", collections)
     return collections
 
 
@@ -367,7 +367,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                             price=price,
                                             sku=product.sku,
                                             cost=product.price,
-                                            barcode=product.ean
+                                            barcode=product.ean,
                                         )
                                     ],
                                     images=images,
@@ -703,7 +703,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                             price=price,
                                             sku=product.sku,
                                             cost=product.price,
-                                            barcode=product.ean
+                                            barcode=product.ean,
                                         )
                                     ],
                                     images=images,
