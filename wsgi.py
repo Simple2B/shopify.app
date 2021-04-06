@@ -61,6 +61,20 @@ def update_tags():
 
 
 @app.cli.command()
+def update_categories():
+    """Updating shop product's categories only"""
+    from app.controllers import set_categories
+    set_categories()
+
+
+@app.cli.command()
+def custom_update():
+    """Update product category, set tags, set barcode"""
+    from app.controllers import custom_update
+    custom_update()
+
+
+@app.cli.command()
 @click.option("--limit", default=0, help="Number of products.")
 def update(limit):
     """Update ALL"""
