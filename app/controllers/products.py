@@ -1,6 +1,7 @@
 import tempfile
 import csv
 import hashlib
+import json
 from datetime import datetime
 import requests
 import shopify
@@ -931,6 +932,33 @@ def set_categories():  # CAUTION ! Not for use
 
 def custom_update():  # CAUTION ! Not for use
     """[Update product category, set tags, set barcode]"""
+    class ProcessedId(object):
+        FILE_PATH = "custom_update_ids.json"
+
+        def __init__(self):
+            self.ids = []
+            self._read_from_file()
+
+        def _read_from_file(self):
+            try:
+                with open(ProcessedId.FILE_PATH, "r") as file:
+                    self.ids = json.load(file)
+            except FileNotFoundError:
+                pass
+
+        def _save(self):
+            with open(ProcessedId.FILE_PATH, "w") as file:
+                json.dump(self.ids, file, indent=2)
+
+        def add_id(self, id):
+            self.ids += [id]
+            self._save()
+
+        def is_done(self, id):
+            return id in self.ids
+
+    processed_ids = ProcessedId()
+
     for shop in Shop.query.all():
         log(log.INFO, "Custom update in shop: %s", shop.name)
         begin_time = datetime.now()
@@ -940,6 +968,8 @@ def custom_update():  # CAUTION ! Not for use
         ):
             collection_names = {c.title: c.id for c in get_all_collections()}
             for shop_product in shop.products:
+                if processed_ids.is_done(shop_product.id):
+                    continue
                 product = shop_product.product
                 collection_name = product.category_path.split(CATEGORY_SPLITTER)[-1]
                 if collection_name not in collection_names:
@@ -956,6 +986,7 @@ def custom_update():  # CAUTION ! Not for use
                     shopify.Collect.create(
                         dict(product_id=shop_product.id, collection_id=collection_id)
                     )
+                    processed_ids.add_id(shop_product.id)
                 except Exception:
                     log(
                         log.ERROR,
@@ -969,6 +1000,7 @@ def custom_update():  # CAUTION ! Not for use
                     shop_product,
                     shop,
                 )
+
             updated_product_count += 1
         log(
             log.INFO,
