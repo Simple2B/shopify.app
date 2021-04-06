@@ -2,6 +2,7 @@ import tempfile
 import csv
 import hashlib
 import json
+import time
 from datetime import datetime
 import requests
 import shopify
@@ -968,6 +969,7 @@ def custom_update():  # CAUTION ! Not for use
         ):
             collection_names = {c.title: c.id for c in get_all_collections()}
             for shop_product in shop.products:
+                time.sleep(1)
                 if processed_ids.is_done(shop_product.id):
                     continue
                 product = shop_product.product
