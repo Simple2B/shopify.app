@@ -116,8 +116,8 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
                     if prod.ean != ean:
                         prod.ean = ean
                         prod.is_changed = True
-                    if prod.path_ids != path_ids:
-                        prod.path_ids = path_ids
+                    if prod.category_path_ids != path_ids:
+                        prod.category_path_ids = path_ids
                         prod.is_changed = True
 
                     if prod.is_deleted:
