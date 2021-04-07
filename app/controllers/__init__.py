@@ -13,7 +13,8 @@ from .products import (
     set_b2b_price_in_shopify,
     set_tags,
     set_categories,
-    custom_update
+    custom_update,
+    fix_shop_product_db
 )
 from .categories import (
     update_categories,

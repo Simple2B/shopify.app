@@ -201,6 +201,14 @@ def update_price(limit):
 
 
 @app.cli.command()
+@click.option("--limit", default=0, help="Max. Number of products for update.")
+def fix_shop_products(limit):
+    """Fing product in shop if it not present in the DB"""
+    from app.controllers import fix_shop_product_db
+    fix_shop_product_db()
+
+
+@app.cli.command()
 def info():
     """Get App Info"""
     import json

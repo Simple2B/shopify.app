@@ -300,6 +300,45 @@ def get_all_collections():
     return collections
 
 
+def get_all_products():
+    count = shopify.Product.count()
+    if count > 0:
+        page = shopify.Product.find()
+        for prod in page:
+            yield prod
+        while page.has_next_page():
+            page = page.next_page()
+            for prod in page:
+                yield prod
+
+
+def fix_shop_product_db():
+    for shop in Shop.query.all():
+        with shopify.Session.temp(shop.name, conf.VERSION_API, shop.private_app_access_token):
+            prod_total_count = shopify.Product.count()
+            not_found_count = 0
+            prod_count = 0
+            prods = []
+            for prod in get_all_products():
+                prod_count += 1
+                shop_prod = ShopProduct.query.filter(ShopProduct.shop_product_id == prod.id).first()
+                if not shop_prod:
+                    not_found_count += 1
+                    log(log.INFO, "[%s] not found in DB %d(%d) not found: %d", prod.id, prod_count, prod_total_count, not_found_count)
+                    prod.destroy()
+                else:
+                    prods += [prod.id]
+            prod_count = 0
+            prod_total_count = len(shop.products)
+            not_found_count = 0
+            for shop_prod in shop.products:
+                prod_count += 1
+                if shop_prod.shop_product_id not in prods:
+                    not_found_count += 1
+                    log(log.INFO, "[%s] not found in STORE %d(%d) not found: %d", shop_prod.shop_product_id, prod_count, prod_total_count, not_found_count)
+                    shop_prod.delete()
+
+
 def upload_new_products_vidaxl_to_store(limit=None):  # 1
     """Upload new products from VidaXL to stores by categories"""
     begin_time = datetime.now()

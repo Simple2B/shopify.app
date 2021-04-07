@@ -70,3 +70,17 @@ def test_product_count(client):
     }
     response = requests.get(url, headers=headers)
     assert response
+
+
+@pytest.mark.skipif(not conf.SHOPIFY_DOMAIN, reason="Shopify store is not configured")
+def test_product_is(client):
+    from config import BaseConfig as conf
+    import requests
+
+    url = f"{conf.SHOPIFY_DOMAIN}/admin/api/2021-01/products/6645352300710.json"
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "X-Shopify-Access-Token": conf.SHOPIFY_PRIVATE_APP_PASSWORD,
+    }
+    response = requests.get(url, headers=headers)
+    assert response
