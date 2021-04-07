@@ -986,7 +986,7 @@ def custom_update():  # CAUTION ! Not for use
                     shopify_product.variants[0].barcode = product.ean
                     shopify_product.save()
                     shopify.Collect.create(
-                        dict(product_id=shop_product.id, collection_id=collection_id)
+                        dict(product_id=shop_product.shop_product_id, collection_id=collection_id)
                     )
                     processed_ids.add_id(shop_product.id)
                 except Exception:
