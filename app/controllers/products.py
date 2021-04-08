@@ -969,9 +969,9 @@ def custom_update():  # CAUTION ! Not for use
         ):
             collection_names = {c.title: c.id for c in get_all_collections()}
             for shop_product in shop.products:
-                time.sleep(2)
                 if processed_ids.is_done(shop_product.id):
                     continue
+                time.sleep(2)
                 product = shop_product.product
                 collection_name = product.category_path.split(CATEGORY_SPLITTER)[-1]
                 if collection_name not in collection_names:
