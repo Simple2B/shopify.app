@@ -974,13 +974,13 @@ def custom_update():  # CAUTION ! Not for use
                 time.sleep(2)
                 product = shop_product.product
                 collection_name = product.category_path.split(CATEGORY_SPLITTER)[-1]
-                if collection_name not in collection_names:
-                    collection = shopify.CustomCollection.create(
-                        dict(title=collection_name)
-                    )
-                    collection_names[collection_name] = collection.id
-                collection_id = collection_names[collection_name]
                 try:
+                    if collection_name not in collection_names:
+                        collection = shopify.CustomCollection.create(
+                            dict(title=collection_name)
+                        )
+                        collection_names[collection_name] = collection.id
+                    collection_id = collection_names[collection_name]
                     shopify_product = shopify.Product.find(shop_product.shop_product_id)
                     shopify_product.tags = product.tags
                     shopify_product.variants[0].barcode = product.ean
