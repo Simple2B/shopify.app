@@ -82,7 +82,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             quantity = float(csv_prod["Stock"])
             category_path = csv_prod["Category"]
             description = csv_prod["HTML_description"]
-            ean = csv_prod["EAN"]
+            ean = int(csv_prod["EAN"])
             path_ids = csv_prod["Category_id_path"]
             images = [
                 csv_prod[key]
