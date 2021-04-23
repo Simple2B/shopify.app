@@ -9,7 +9,7 @@ class Category(db.Model, ModelMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=False)
-    path = db.Column(db.String, default="?", convert_unicode=True, _expect_unicode=True)
+    path = db.Column(db.String, default="?")
 
     shop = relationship("Shop")
 
