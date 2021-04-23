@@ -37,10 +37,15 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             with requests.get(csv_url, stream=True) as r:
                 r.raise_for_status()
                 if r.encoding is None:
-                    r.encoding = "utf-8"
-                for line in r.iter_lines(decode_unicode=True):
-                    hash_md5.update(line.encode())
-                    file.write(line)
+                    r.encoding = "windows-1252"
+                for line in r.iter_lines():
+                    hash_md5.update(line)
+                    string_line = None
+                    try:
+                        string_line = line.decode()
+                    except UnicodeDecodeError:
+                        string_line = line.decode("windows-1252")
+                    file.write(string_line)
                     file.write("\n")
 
             # r = requests.get(csv_url, stream=True)
