@@ -34,8 +34,6 @@ class Product(db.Model, ModelMixin):
     def tags(self):
         tags = []
         tags += self.category_path.split(CATEGORY_SPLITTER)
-        if self.category_path_ids:
-            tags += self.category_path_ids.split(CATEGORY_SPLITTER)
         return tags
 
     def __repr__(self) -> str:
