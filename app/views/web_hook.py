@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.controllers import parser_shopify_to_vidaxl, delete_order
+from app.controllers import parser_shopify_to_vidaxl, delete_order, order_parser
 from app.vida_xl import VidaXl
 
 hooks_blueprint = Blueprint("web_hooks", __name__)
@@ -23,5 +23,10 @@ def web_hook():
     data = parser_shopify_to_vidaxl(data)
     new_order = vida.create_order(data)
     if not new_order:
-        delete_order(order_id)
+        order = False
+        for i in order_parser():
+            if i['id'] == str(order_id):
+                order = True
+        if not order:
+            delete_order(order_id)
     return jsonify("OK")
