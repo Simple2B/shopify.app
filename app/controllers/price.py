@@ -115,7 +115,7 @@ def price_generator(purchase_price, margin, mom_price=None, mom=None, round_to=N
             new_price = float(purchase_price) * (float(margin) / 100 + 1)
         else:
             if mom_price > 1:
-                new_price = str(mom_price - 1)[:-2] + str(round_to)
+                new_price = float(str(mom_price - 1)[:-2] + str(round_to))
             else:
                 new_price = float(purchase_price) * (float(margin) / 100 + 1)
     elif margin:
