@@ -120,4 +120,4 @@ def price_generator(purchase_price, margin, mom_price=None, mom=None, round_to=N
                 new_price = float(purchase_price) * (float(margin) / 100 + 1)
     elif margin:
         new_price = float(purchase_price) * (float(margin) / 100 + 1)
-    return round(float(new_price * 1.21), 2)
+    return round(float(new_price * conf.TAX_COEFFICIENT), 2)

@@ -54,6 +54,8 @@ class BaseConfig(object):
 
     CATEGORY_SPLITTER = os.environ.get("CATEGORY_SPLITTER", "/")
 
+    TAX_COEFFICIENT = os.environ.get("TAX_COEFFICIENT", 1.21)
+
     @staticmethod
     def configure(app):
         # Implement this method to do further configuration on your app.
