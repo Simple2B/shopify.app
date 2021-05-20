@@ -26,6 +26,7 @@ class Product(db.Model, ModelMixin):
     ean = db.Column(db.BigInteger, default=0)
     updated = db.Column(db.DateTime, default=datetime.now)
     description = db.Column(db.String)
+    vendor = db.Column(db.String)
 
     shop_products = relationship("ShopProduct")
     images = relationship("Image")

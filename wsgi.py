@@ -54,6 +54,13 @@ def update_2b2_price():
 
 
 @app.cli.command()
+def update_vendor_and_qty():
+    """Update vendor and qty"""
+    from app.controllers import set_vendor_and_qty
+    set_vendor_and_qty()
+
+
+@app.cli.command()
 def update_tags():
     """Updating shop product's tags only"""
     from app.controllers import set_tags

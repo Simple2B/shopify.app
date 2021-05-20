@@ -89,6 +89,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             description = csv_prod["HTML_description"]
             ean = int(csv_prod["EAN"])
             path_ids = csv_prod["Category_id_path"]
+            vendor = csv_prod["Brand"]
             images = [
                 csv_prod[key]
                 for key in csv_prod
@@ -98,60 +99,61 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             vidaxl_id = int(csv_prod["EAN"])
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
-                if quantity <= 0:
-                    if not prod.is_deleted:
-                        # delete product
-                        prod.is_deleted = True
-                        prod.is_changed = True
-                        prod.save(False)
-                else:
-                    if title != prod.title:
-                        prod.title = title
-                        prod.is_changed = True
-                    if category_path != prod.category_path:
-                        prod.category_path = category_path
-                        prod.is_changed = True
-                    if price != prod.price:
-                        prod.price = price
-                        prod.is_changed = True
-                    if prod.description != description:
-                        prod.description = description
-                        prod.is_changed = True
-                    if prod.ean != ean:
-                        prod.ean = ean
-                        prod.is_changed = True
-                    if prod.category_path_ids != path_ids:
-                        prod.category_path_ids = path_ids
-                        prod.is_changed = True
+                if vendor != prod.vendor:
+                    prod.vendor = vendor
+                    prod.is_changed = True
+                if quantity == 0 and prod.qty > 0:
+                    prod.qty = quantity
+                    prod.is_changed = True
+                elif quantity > 0 and prod.qty == 0:
+                    prod.qty = quantity
+                    prod.is_changed = True
+                if title != prod.title:
+                    prod.title = title
+                    prod.is_changed = True
+                if category_path != prod.category_path:
+                    prod.category_path = category_path
+                    prod.is_changed = True
+                if price != prod.price:
+                    prod.price = price
+                    prod.is_changed = True
+                if prod.description != description:
+                    prod.description = description
+                    prod.is_changed = True
+                if prod.ean != ean:
+                    prod.ean = ean
+                    prod.is_changed = True
+                if prod.category_path_ids != path_ids:
+                    prod.category_path_ids = path_ids
+                    prod.is_changed = True
 
-                    if prod.is_deleted:
-                        prod.is_deleted = False
-                        prod.is_changed = True
+                if prod.is_deleted:
+                    prod.is_deleted = False
+                    prod.is_changed = True
 
-                    prod.updated = update_date
-                    prod.save(False)
+                prod.updated = update_date
+                prod.save(False)
 
-                    if len(images) != len(prod.images):
-                        # update images
-                        Image.query.filter(Image.product_id == prod.id).delete()
-                        for image in images:
-                            Image(product_id=prod.id, url=image).save(False)
-            else:
-                if quantity > 0:
-                    product = Product(
-                        vidaxl_id=vidaxl_id,
-                        sku=sku,
-                        title=title,
-                        category_path=category_path,
-                        price=price,
-                        qty=quantity,
-                        description=description,
-                        ean=ean,
-                        category_path_ids=path_ids,
-                    ).save()
+                if len(images) != len(prod.images):
+                    # update images
+                    Image.query.filter(Image.product_id == prod.id).delete()
                     for image in images:
-                        Image(product_id=product.id, url=image).save(False)
-
+                        Image(product_id=prod.id, url=image).save(False)
+            else:
+                product = Product(
+                    vidaxl_id=vidaxl_id,
+                    sku=sku,
+                    title=title,
+                    category_path=category_path,
+                    price=price,
+                    qty=quantity,
+                    description=description,
+                    ean=ean,
+                    category_path_ids=path_ids,
+                    vendor=vendor,
+                ).save()
+                for image in images:
+                    Image(product_id=product.id, url=image).save(False)
             if not i % 1000:
                 log(
                     log.DEBUG,
@@ -165,7 +167,7 @@ def download_vidaxl_product_from_csv(csv_url, limit=None):
             .filter(Product.is_deleted == False)  # noqa E712
             .all()
         ):
-            product.is_deleted = True
+            product.qty = 0
             product.is_changed = True
             product.save()
             marked_to_delete_number += 1
@@ -365,12 +367,12 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 dict(
                                     title=title,
                                     body_html=description,
+                                    vendor=product.vendor,
                                     tags=product.tags,
                                     variants=[
                                         dict(
                                             price=price,
                                             sku=product.sku,
-                                            cost=product.price,
                                             barcode=product.ean,
                                         )
                                     ],
@@ -390,6 +392,24 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 )
                             )
                             assert collect
+                            inventory_item_id = shop_prod.variants[0].inventory_item_id
+                            inv_levels = shopify.InventoryLevel.find(
+                                inventory_item_ids=inventory_item_id
+                            )
+                            if inv_levels:
+                                items = shopify.InventoryItem.find(
+                                    ids=inventory_item_id
+                                )
+                                for item in items:
+                                    item.tracked = True
+                                    item.cost = product.price
+                                    item.save()
+                                for inv_level in inv_levels:
+                                    location_id = inv_level.location_id
+                                    inv_level.available = product.qty
+                                    shopify.InventoryLevel.set(
+                                        location_id, inventory_item_id, product.qty
+                                    )
                             log(
                                 log.INFO,
                                 "Product %s was uploaded in %s",
@@ -471,10 +491,29 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                 shopify_product.tags = product.tags
                                 shopify_product.variants[0].price = price
                                 shopify_product.variants[0].sku = product.sku
-                                shopify_product.variants[0].cost = product.price
                                 shopify_product.variants[0].barcode = product.ean
                                 shopify_product.images = images
                                 shopify_product.save()
+                                inventory_item_id = shopify_product.variants[
+                                    0
+                                ].inventory_item_id
+                                inv_levels = shopify.InventoryLevel.find(
+                                    inventory_item_ids=inventory_item_id
+                                )
+                                if inv_levels:
+                                    items = shopify.InventoryItem.find(
+                                        ids=inventory_item_id
+                                    )
+                                    for item in items:
+                                        item.tracked = True
+                                        item.cost = product.price
+                                        item.save()
+                                    for inv_level in inv_levels:
+                                        location_id = inv_level.location_id
+                                        inv_level.available = product.qty
+                                        shopify.InventoryLevel.set(
+                                            location_id, inventory_item_id, product.qty
+                                        )
                             except Exception:
                                 log(
                                     log.ERROR,
@@ -574,6 +613,17 @@ def change_product_price(limit=None):  # 4
                             shop_product.shop_product_id
                         )
                         shopify_product.variants[0].price = price
+                        inventory_item_id = shopify_product.variants[
+                            0
+                        ].inventory_item_id
+                        inv_levels = shopify.InventoryLevel.find(
+                            inventory_item_ids=inventory_item_id
+                        )
+                        if inv_levels:
+                            items = shopify.InventoryItem.find(ids=inventory_item_id)
+                            for item in items:
+                                item.cost = product.price
+                                item.save()
                         shopify_product.save()
                         shop_product.price = price
                         shop_product.save()
@@ -701,12 +751,12 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 dict(
                                     title=title,
                                     body_html=description,
+                                    vendor=product.vendor,
                                     tags=product.tags,
                                     variants=[
                                         dict(
                                             price=price,
                                             sku=product.sku,
-                                            cost=product.price,
                                             barcode=product.ean,
                                         )
                                     ],
@@ -725,6 +775,24 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                     product_id=shop_prod.id, collection_id=collection_id
                                 )
                             )
+                            inventory_item_id = shop_prod.variants[0].inventory_item_id
+                            inv_levels = shopify.InventoryLevel.find(
+                                inventory_item_ids=inventory_item_id
+                            )
+                            if inv_levels:
+                                items = shopify.InventoryItem.find(
+                                    ids=inventory_item_id
+                                )
+                                for item in items:
+                                    item.tracked = True
+                                    item.cost = product.price
+                                    item.save()
+                                for inv_level in inv_levels:
+                                    location_id = inv_level.location_id
+                                    inv_level.available = product.qty
+                                    shopify.InventoryLevel.set(
+                                        location_id, inventory_item_id, product.qty
+                                    )
                     updated_product_count += 1
                     if not updated_product_count % 1000:
                         log(
@@ -887,6 +955,67 @@ def set_tags():  # CAUTION ! Not for use
         )
 
 
+def set_vendor_and_qty():  # CAUTION ! Not for use
+    """[Update vendor and qty for product in the stores]"""
+    for shop in Shop.query.all():
+        log(log.INFO, "Update vendor and qty in shop: %s", shop.name)
+        begin_time = datetime.now()
+        updated_product_count = 0
+        with shopify.Session.temp(
+            shop.name, conf.VERSION_API, shop.private_app_access_token
+        ):
+            for shop_product in shop.products:
+                product = shop_product.product
+                try:
+                    price = get_price(product, shop.id)
+                    shopify_product = shopify.Product.find(shop_product.shop_product_id)
+                    shopify_product.vendor = product.vendor
+                    shopify_product.variants[0].price = price
+                    shopify_product.variants[0].inventory_management = "shopify"
+                    shopify_product.variants[0].inventory_quantity = int(product.qty)
+                    inventory_item_id = shopify_product.variants[0].inventory_item_id
+                    inv_levels = shopify.InventoryLevel.find(
+                        inventory_item_ids=inventory_item_id
+                    )
+                    inv_levels[0].available = product.qty
+                    shopify_product.save()
+                    shop_product.price = price
+                    shop_product.save()
+                    if inv_levels:
+                        items = shopify.InventoryItem.find(ids=inventory_item_id)
+                        for item in items:
+                            item.tracked = True
+                            item.cost = product.price
+                            item.save()
+                        for inv_level in inv_levels:
+                            location_id = inv_level.location_id
+                            shopify.InventoryLevel.set(
+                                location_id, inventory_item_id, product.qty
+                            )
+                    time.sleep(1)
+                except Exception:
+                    log(
+                        log.ERROR,
+                        "set_vendor_and_qty: Product %s not present in shop [%s]",
+                        product,
+                        shop,
+                    )
+                log(
+                    log.INFO,
+                    "Product vendor and qty [%s] was changed in [%s]",
+                    shop_product,
+                    shop,
+                )
+            updated_product_count += 1
+        log(
+            log.INFO,
+            "Updated %d products in %s in %d seconds",
+            updated_product_count,
+            shop,
+            (datetime.now() - begin_time).seconds,
+        )
+
+
 def set_categories():  # CAUTION ! Not for use
     """[Update product category in the stores]"""
     for shop in Shop.query.all():
@@ -935,6 +1064,7 @@ def set_categories():  # CAUTION ! Not for use
 
 def custom_update():  # CAUTION ! Not for use
     """[Update product category, set tags, set barcode]"""
+
     class ProcessedId(object):
         FILE_PATH = "custom_update_ids.json"
 
@@ -988,7 +1118,10 @@ def custom_update():  # CAUTION ! Not for use
                     shopify_product.variants[0].barcode = product.ean
                     shopify_product.save()
                     shopify.Collect.create(
-                        dict(product_id=shop_product.shop_product_id, collection_id=collection_id)
+                        dict(
+                            product_id=shop_product.shop_product_id,
+                            collection_id=collection_id,
+                        )
                     )
                     processed_ids.add_id(shop_product.id)
                 except Exception:
