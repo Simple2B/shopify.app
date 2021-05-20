@@ -420,7 +420,7 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
             product.is_changed = False
             product.save(False)
             updated_product_count += 1
-            if not updated_product_count % 1000:
+            if not updated_product_count % 100:
                 log(
                     log.DEBUG,
                     "upload_new_products_vidaxl_to_store: processed: %d(%d) items",
@@ -530,7 +530,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
             product.is_changed = False
             product.save(False)
             updated_product_count += 1
-            if not updated_product_count % 1000:
+            if not updated_product_count % 100:
                 log(
                     log.DEBUG,
                     "update_products_vidaxl_to_store: processed: %d(%d) items",
@@ -794,7 +794,7 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                         location_id, inventory_item_id, product.qty
                                     )
                     updated_product_count += 1
-                    if not updated_product_count % 1000:
+                    if not updated_product_count % 100:
                         log(
                             log.DEBUG,
                             "upload_products_to_store_by_category: processed: %d(%d) items",
@@ -861,7 +861,7 @@ def change_vida_prefix_title(limit=None):  # 7
                             shop,
                         )
                 updated_product_count += 1
-                if not updated_product_count % 1000:
+                if not updated_product_count % 100:
                     log(
                         log.DEBUG,
                         "change_vida_prefix_title: processed: %d(%d) items",
