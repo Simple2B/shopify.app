@@ -114,8 +114,7 @@ def update(limit):
 
 
 @app.cli.command()
-@click.option("--limit", default=0, help="Number of products.")
-def only_update_shop_products(limit):
+def only_update_shop_products():
     """ Only Shop Products Update"""
     import getpass
     from datetime import datetime
@@ -141,8 +140,7 @@ def only_update_shop_products(limit):
 
 
 @app.cli.command()
-@click.option("--limit", default=0, help="Number of products.")
-def only_add_delete_shop_products(limit):
+def only_add_delete_shop_products():
     """Only add/delete Shop Products"""
     import getpass
     from datetime import datetime
@@ -204,10 +202,10 @@ def _add_delete_products_in_shopify():
         delete_products_from_store_exclude_category,
     )
 
-    upload_new_products_vidaxl_to_store
-    upload_products_to_store_by_category
-    delete_products_from_store_exclude_category
-    delete_vidaxl_product_from_store
+    upload_new_products_vidaxl_to_store()
+    upload_products_to_store_by_category()
+    delete_products_from_store_exclude_category()
+    delete_vidaxl_product_from_store()
 
 
 def _update_only_shop_products():
@@ -218,9 +216,9 @@ def _update_only_shop_products():
         change_vida_prefix_title,
     )
 
-    update_products_vidaxl_to_store
-    change_product_price
-    change_vida_prefix_title
+    update_products_vidaxl_to_store()
+    change_product_price()
+    change_vida_prefix_title()
 
 
 def _update_shop_products(limit):
