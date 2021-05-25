@@ -73,7 +73,7 @@ def download_vidaxl_product_from_xml(xml_url):
         return images
     try:
         update_date = datetime.now()
-
+        marked_to_delete_number = 0
         for i, xml_prod in enumerate(read_products_from_xml()):
             sku = xml_prod.find('SKU').text
             title = xml_prod.find('Title').text
@@ -116,9 +116,10 @@ def download_vidaxl_product_from_xml(xml_url):
                     prod.category_path_ids = path_ids
                     prod.is_changed = True
 
-                if prod.is_deleted:
-                    prod.is_deleted = False
+                if price == 0.0 and quantity == 0:
+                    prod.deleted = True
                     prod.is_changed = True
+                    marked_to_delete_number += 1
 
                 prod.updated = update_date
                 prod.save(False)
@@ -150,7 +151,7 @@ def download_vidaxl_product_from_xml(xml_url):
                     i,
                 )
                 db.session.commit()
-        marked_to_delete_number = 0
+
         for product in (
             Product.query.filter(Product.updated < update_date)
             .filter(Product.is_deleted == False)  # noqa E712
@@ -159,7 +160,6 @@ def download_vidaxl_product_from_xml(xml_url):
             product.qty = 0
             product.is_changed = True
             product.save()
-            marked_to_delete_number += 1
         if marked_to_delete_number:
             log(
                 log.INFO,
@@ -470,32 +470,18 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                             sp for sp in product.shop_products if sp.shop_id == shop.id
                         ]
                         if not shop_products:
-                            collection_names = {
-                                c.title: c.id for c in get_all_collections()
-                            }
                             LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                                 shop.id,
                                 "LEAVE_VIDAXL_PREFIX",
                                 path=product.category_path,
                             )
-                            collection_name = product.category_path.split(
-                                CATEGORY_SPLITTER
-                            )[-1]
                             log(
                                 log.INFO,
                                 "New product [%s] --> [%s]. Store: [%s]",
                                 product.title,
-                                collection_name,
+                                "price: %s", product.price,
                                 shop,
                             )
-                            if collection_name not in collection_names:
-                                collection = shopify.CustomCollection.create(
-                                    dict(title=collection_name)
-                                )
-                                collection_names[collection_name] = collection.id
-                            collection_id = collection_names[collection_name]
-
-                            log(log.DEBUG, "price: %s", product.price)
                             title = product.title
                             if not LEAVE_VIDAXL_PREFIX:
                                 title = (
@@ -535,12 +521,6 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 product_id=product.id,
                                 price=price,
                             ).save(False)
-                            collect = shopify.Collect.create(
-                                dict(
-                                    product_id=shop_prod.id, collection_id=collection_id
-                                )
-                            )
-                            assert collect
                             inventory_item_id = shop_prod.variants[0].inventory_item_id
                             inv_levels = shopify.InventoryLevel.find(
                                 inventory_item_ids=inventory_item_id
@@ -847,7 +827,6 @@ def upload_products_to_store_by_category(limit=None):  # 6
             with shopify.Session.temp(
                 shop.name, conf.VERSION_API, shop.private_app_access_token
             ):
-                collection_names = {c.title: c.id for c in get_all_collections()}
                 products = Product.query.filter(
                     Product.is_deleted == False  # noqa E712
                 ).all()
@@ -863,23 +842,13 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 "LEAVE_VIDAXL_PREFIX",
                                 path=product.category_path,
                             )
-                            collection_name = product.category_path.split(
-                                CATEGORY_SPLITTER
-                            )[-1]
                             log(
                                 log.INFO,
                                 "New product [%s] --> [%s]. Store - [%s]",
                                 product.title,
-                                collection_name,
+                                "price: %s", product.price,
                                 shop,
                             )
-                            if collection_name not in collection_names:
-                                collection = shopify.CustomCollection.create(
-                                    dict(title=collection_name)
-                                )
-                                collection_names[collection_name] = collection.id
-                            collection_id = collection_names[collection_name]
-                            log(log.DEBUG, "price: %s", product.price)
                             title = product.title
                             if not LEAVE_VIDAXL_PREFIX:
                                 title = (
@@ -919,11 +888,6 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 product_id=product.id,
                                 price=price,
                             ).save(False)
-                            shopify.Collect.create(
-                                dict(
-                                    product_id=shop_prod.id, collection_id=collection_id
-                                )
-                            )
                             inventory_item_id = shop_prod.variants[0].inventory_item_id
                             inv_levels = shopify.InventoryLevel.find(
                                 inventory_item_ids=inventory_item_id

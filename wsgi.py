@@ -50,6 +50,7 @@ def scrappy():
 def update_2b2_price():
     """Update b2b price"""
     from app.controllers import set_b2b_price_in_shopify
+
     set_b2b_price_in_shopify()
 
 
@@ -57,6 +58,7 @@ def update_2b2_price():
 def update_vendor_and_qty():
     """Update vendor and qty"""
     from app.controllers import set_vendor_and_qty
+
     set_vendor_and_qty()
 
 
@@ -64,6 +66,7 @@ def update_vendor_and_qty():
 def update_tags():
     """Updating shop product's tags only"""
     from app.controllers import set_tags
+
     set_tags()
 
 
@@ -71,6 +74,7 @@ def update_tags():
 def update_categories():
     """Updating shop product's categories only"""
     from app.controllers import set_categories
+
     set_categories()
 
 
@@ -78,6 +82,7 @@ def update_categories():
 def custom_update():
     """Update product category, set tags, set barcode"""
     from app.controllers import custom_update
+
     custom_update()
 
 
@@ -87,13 +92,13 @@ def update(limit):
     """Update ALL"""
     import getpass
     from datetime import datetime
+
     begin = datetime.now()
     FILE_NAME = f"/tmp/UPDATING_{getpass.getuser()}"
     try:
         with open(FILE_NAME, "r") as f:
             pid = int(f.readline())
             if process_exists(pid):
-                # log(log.WARNING, "Updating in progress...")
                 return
     except IOError:
         pass
@@ -109,7 +114,60 @@ def update(limit):
 
 
 @app.cli.command()
-# @click.option("--limit", default=0, help="Number of products.")
+@click.option("--limit", default=0, help="Number of products.")
+def only_update_shop_products(limit):
+    """ Only Shop Products Update"""
+    import getpass
+    from datetime import datetime
+
+    begin = datetime.now()
+    FILE_NAME = f"/tmp/UPDATING_{getpass.getuser()}"
+    try:
+        with open(FILE_NAME, "r") as f:
+            pid = int(f.readline())
+            if process_exists(pid):
+                return
+    except IOError:
+        pass
+
+    with open(FILE_NAME, "w") as f:
+        f.write(f"{os.getpid()}\n")
+    log(log.INFO, "---==START UPDATE==---")
+    _update_vidaxl_products()
+    _update_only_shop_products()
+    log(log.INFO, "---==FINISH UPDATE==---")
+    os.remove(FILE_NAME)
+    log(log.INFO, "Updated in %d seconds", (datetime.now() - begin).seconds)
+
+
+@app.cli.command()
+@click.option("--limit", default=0, help="Number of products.")
+def only_add_delete_shop_products(limit):
+    """Only add/delete Shop Products"""
+    import getpass
+    from datetime import datetime
+
+    begin = datetime.now()
+    FILE_NAME = f"/tmp/UPDATING_{getpass.getuser()}"
+    try:
+        with open(FILE_NAME, "r") as f:
+            pid = int(f.readline())
+            if process_exists(pid):
+                return
+    except IOError:
+        pass
+
+    with open(FILE_NAME, "w") as f:
+        f.write(f"{os.getpid()}\n")
+    log(log.INFO, "---==START UPDATE==---")
+    _update_vidaxl_products()
+    _add_delete_products_in_shopify()
+    log(log.INFO, "---==FINISH UPDATE==---")
+    os.remove(FILE_NAME)
+    log(log.INFO, "Updated in %d seconds", (datetime.now() - begin).seconds)
+
+
+@app.cli.command()
 def update_vidaxl_products():
     """Update all products from VidaXl"""
     _update_vidaxl_products()
@@ -117,6 +175,7 @@ def update_vidaxl_products():
 
 def _update_vidaxl_products():
     from app.controllers import download_products
+
     download_products()
 
 
@@ -136,6 +195,34 @@ def update_shop_products(limit):
     _update_shop_products(limit)
 
 
+def _add_delete_products_in_shopify():
+    """Only add/delete shop products"""
+    from app.controllers import (
+        upload_new_products_vidaxl_to_store,
+        upload_products_to_store_by_category,
+        delete_vidaxl_product_from_store,
+        delete_products_from_store_exclude_category,
+    )
+
+    upload_new_products_vidaxl_to_store
+    upload_products_to_store_by_category
+    delete_products_from_store_exclude_category
+    delete_vidaxl_product_from_store
+
+
+def _update_only_shop_products():
+    """Only update shop products"""
+    from app.controllers import (
+        update_products_vidaxl_to_store,
+        change_product_price,
+        change_vida_prefix_title,
+    )
+
+    update_products_vidaxl_to_store
+    change_product_price
+    change_vida_prefix_title
+
+
 def _update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from app.controllers import (
@@ -145,8 +232,9 @@ def _update_shop_products(limit):
         change_product_price,
         delete_products_from_store_exclude_category,
         delete_vidaxl_product_from_store,
-        change_vida_prefix_title
+        change_vida_prefix_title,
     )
+
     limit = limit if limit else None
     delete_products_from_store_exclude_category(limit)
     delete_vidaxl_product_from_store(limit)
@@ -164,6 +252,7 @@ def _update_shop_products(limit):
 def update_shop_vx_new_products(limit):
     """Upload new VidaXl products to Shop(s)"""
     from app.controllers import upload_new_products_vidaxl_to_store
+
     upload_new_products_vidaxl_to_store(limit=limit if limit else None)
 
 
@@ -172,6 +261,7 @@ def update_shop_vx_new_products(limit):
 def update_shop_vx_delete_products(limit):
     """Upload deleted VidaXl products to Shop(s)"""
     from app.controllers import delete_vidaxl_product_from_store
+
     delete_vidaxl_product_from_store(limit=limit if limit else None)
 
 
@@ -180,6 +270,7 @@ def update_shop_vx_delete_products(limit):
 def update_shop_vx_changed_products(limit):
     """Upload changed VidaXl products to Shop(s)"""
     from app.controllers import update_products_vidaxl_to_store
+
     update_products_vidaxl_to_store(limit=limit if limit else None)
 
 
@@ -188,6 +279,7 @@ def update_shop_vx_changed_products(limit):
 def delete_products_from_store_exclude_category(limit):
     """Deletes product from shop for excluded categories"""
     from app.controllers import delete_products_from_store_exclude_category
+
     delete_products_from_store_exclude_category(limit=limit if limit else None)
 
 
@@ -196,6 +288,7 @@ def delete_products_from_store_exclude_category(limit):
 def upload_products_to_store_by_category(limit):
     """Update product in shops by categories"""
     from app.controllers import upload_products_to_store_by_category
+
     upload_products_to_store_by_category(limit=limit if limit else None)
 
 
@@ -204,6 +297,7 @@ def upload_products_to_store_by_category(limit):
 def update_price(limit):
     """Update product in shops by categories"""
     from app.controllers import change_product_price
+
     change_product_price(limit=limit if limit else None)
 
 
@@ -216,17 +310,13 @@ def info():
     all_products = Product.query
     shops = {s.id: s.name for s in Shop.query.all()}
     data = {
-                "Vida products:": all_products.count(),
-                "New products:": all_products.filter(
-                    Product.is_new == True  # noqa E712
-                ).count(),
-                "Changed products:": all_products.filter(
-                    Product.is_changed == True
-                ).count(),
-                "Deleted products:": all_products.filter(
-                    Product.is_deleted == True
-                ).count(),
-            }
+        "Vida products:": all_products.count(),
+        "New products:": all_products.filter(
+            Product.is_new == True  # noqa E712
+        ).count(),
+        "Changed products:": all_products.filter(Product.is_changed == True).count(),
+        "Deleted products:": all_products.filter(Product.is_deleted == True).count(),
+    }
     csv_check_sum = Configuration.get_common_value("CSV_CHECK_SUM")
     if csv_check_sum:
         data["CSV check sum:"] = csv_check_sum
