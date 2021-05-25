@@ -477,9 +477,8 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                             )
                             log(
                                 log.INFO,
-                                "New product [%s] --> [%s]. Store: [%s]",
+                                "New product [%s]. Store: [%s]",
                                 product.title,
-                                "price: %s", product.price,
                                 shop,
                             )
                             title = product.title
@@ -844,9 +843,8 @@ def upload_products_to_store_by_category(limit=None):  # 6
                             )
                             log(
                                 log.INFO,
-                                "New product [%s] --> [%s]. Store - [%s]",
+                                "New product [%s]. Store - [%s]",
                                 product.title,
-                                "price: %s", product.price,
                                 shop,
                             )
                             title = product.title
