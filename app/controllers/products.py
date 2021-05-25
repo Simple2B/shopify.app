@@ -3,6 +3,7 @@ import csv
 import hashlib
 import json
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime
 import requests
 import shopify
@@ -22,6 +23,154 @@ from config import BaseConfig as conf
 
 NO_PHOTO_IMG = f"https://{conf.HOST_NAME}/static/images/no-photo-polycar-300x210.png"
 CATEGORY_SPLITTER = conf.CATEGORY_SPLITTER
+
+
+def download_vidaxl_product_from_xml(xml_url):
+    log(log.INFO, "Download file: [%s]", xml_url)
+
+    class NoNeedUpdate(Exception):
+        pass
+
+    def read_products_from_xml():
+
+        with tempfile.NamedTemporaryFile(mode="w+") as file:
+            # with open(xml_url, 'r') as file:
+            hash_md5 = hashlib.md5()
+            with requests.get(xml_url, stream=True) as r:
+                r.raise_for_status()
+                if r.encoding is None:
+                    r.encoding = "windows-1252"
+                for line in r.iter_lines():
+                    hash_md5.update(line)
+                    string_line = None
+                    try:
+                        string_line = line.decode()
+                    except UnicodeDecodeError:
+                        string_line = line.decode("windows-1252")
+                    file.write(string_line)
+                    file.write("\n")
+            file.seek(0)
+            file_hash = hash_md5.hexdigest()
+            log(log.INFO, "CSV file hash: %s", file_hash)
+            prev_check_sum = Configuration.get_common_value("CSV_CHECK_SUM")
+            if prev_check_sum:
+                log(log.INFO, "Previous hash: %s", prev_check_sum)
+                if file_hash == prev_check_sum:
+                    raise NoNeedUpdate()
+            tree = ET.parse(file)
+            try:
+                for xml_prod in tree.findall('product'):
+                    yield xml_prod
+                Configuration.set_common_value("CSV_CHECK_SUM", file_hash)
+            except requests.exceptions.ChunkedEncodingError as e:
+                log(log.ERROR, "read_products_from_xml: [%s]", e)
+
+    def get_images(prod):
+        images = []
+        for i in range(1, 13):
+            if prod.find(f'Image_{i}').text:
+                images.append(prod.find(f'Image_{i}').text)
+        return images
+    try:
+        update_date = datetime.now()
+        marked_to_delete_number = 0
+        for i, xml_prod in enumerate(read_products_from_xml()):
+            sku = xml_prod.find('SKU').text
+            title = xml_prod.find('Title').text
+            price = float(xml_prod.find('B2B_price').text)
+            quantity = int(xml_prod.find('Stock').text)
+            category_path = xml_prod.find('Category').text
+            description = xml_prod.find('HTML_description').text
+            ean = int(xml_prod.find('EAN').text)
+            path_ids = xml_prod.find('Category_id_path').text
+            vendor = xml_prod.find('Brand').text
+            images = get_images(xml_prod)
+            vidaxl_id = int(xml_prod.find('EAN').text)
+            prod = Product.query.filter(Product.sku == sku).first()
+            if prod:
+                if vendor != prod.vendor:
+                    prod.vendor = vendor
+                    prod.is_changed = True
+                if quantity == 0 and prod.qty > 0:
+                    prod.qty = quantity
+                    prod.is_changed = True
+                elif quantity > 0 and prod.qty == 0:
+                    prod.qty = quantity
+                    prod.is_changed = True
+                if title != prod.title:
+                    prod.title = title
+                    prod.is_changed = True
+                if category_path != prod.category_path:
+                    prod.category_path = category_path
+                    prod.is_changed = True
+                if price != prod.price:
+                    prod.price = price
+                    prod.is_changed = True
+                if prod.description != description:
+                    prod.description = description
+                    prod.is_changed = True
+                if prod.ean != ean:
+                    prod.ean = ean
+                    prod.is_changed = True
+                if prod.category_path_ids != path_ids:
+                    prod.category_path_ids = path_ids
+                    prod.is_changed = True
+
+                if price == 0.0 and quantity == 0:
+                    prod.deleted = True
+                    prod.is_changed = True
+                    marked_to_delete_number += 1
+
+                prod.updated = update_date
+                prod.save(False)
+
+                if len(images) != len(prod.images):
+                    # update images
+                    Image.query.filter(Image.product_id == prod.id).delete()
+                    for image in images:
+                        Image(product_id=prod.id, url=image).save(False)
+            else:
+                product = Product(
+                    vidaxl_id=vidaxl_id,
+                    sku=sku,
+                    title=title,
+                    category_path=category_path,
+                    price=price,
+                    qty=quantity,
+                    description=description,
+                    ean=ean,
+                    category_path_ids=path_ids,
+                    vendor=vendor,
+                ).save()
+                for image in images:
+                    Image(product_id=product.id, url=image).save(False)
+            if not i % 1000:
+                log(
+                    log.DEBUG,
+                    "download_vidaxl_product_from_xml: processed: %d items",
+                    i,
+                )
+                db.session.commit()
+
+        for product in (
+            Product.query.filter(Product.updated < update_date)
+            .filter(Product.is_deleted == False)  # noqa E712
+            .all()
+        ):
+            product.qty = 0
+            product.is_changed = True
+            product.save()
+        if marked_to_delete_number:
+            log(
+                log.INFO,
+                "download_vidaxl_product_from_xml: %d products marked as deleted",
+                marked_to_delete_number,
+            )
+        Configuration.set_common_value("LAST_VIDAXL_PROD_UPDATED", update_date)
+    except NoNeedUpdate:
+        log(log.INFO, "download_vidaxl_product_from_xml: No need update")
+    finally:
+        db.session.commit()
 
 
 def download_vidaxl_product_from_csv(csv_url, limit=None):
@@ -216,7 +365,7 @@ def download_vidaxl_product_by_api(limit=None):
 def download_products(limit=None):
     csv_url = Configuration.get_value(1, "CSV_URL", path="/")
     if csv_url:
-        download_vidaxl_product_from_csv(csv_url, limit)
+        download_vidaxl_product_from_xml(csv_url)
     else:
         download_vidaxl_product_by_api(limit)
 
@@ -321,32 +470,18 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                             sp for sp in product.shop_products if sp.shop_id == shop.id
                         ]
                         if not shop_products:
-                            collection_names = {
-                                c.title: c.id for c in get_all_collections()
-                            }
                             LEAVE_VIDAXL_PREFIX = Configuration.get_value(
                                 shop.id,
                                 "LEAVE_VIDAXL_PREFIX",
                                 path=product.category_path,
                             )
-                            collection_name = product.category_path.split(
-                                CATEGORY_SPLITTER
-                            )[-1]
                             log(
                                 log.INFO,
                                 "New product [%s] --> [%s]. Store: [%s]",
                                 product.title,
-                                collection_name,
+                                "price: %s", product.price,
                                 shop,
                             )
-                            if collection_name not in collection_names:
-                                collection = shopify.CustomCollection.create(
-                                    dict(title=collection_name)
-                                )
-                                collection_names[collection_name] = collection.id
-                            collection_id = collection_names[collection_name]
-
-                            log(log.DEBUG, "price: %s", product.price)
                             title = product.title
                             if not LEAVE_VIDAXL_PREFIX:
                                 title = (
@@ -386,12 +521,6 @@ def upload_new_products_vidaxl_to_store(limit=None):  # 1
                                 product_id=product.id,
                                 price=price,
                             ).save(False)
-                            collect = shopify.Collect.create(
-                                dict(
-                                    product_id=shop_prod.id, collection_id=collection_id
-                                )
-                            )
-                            assert collect
                             inventory_item_id = shop_prod.variants[0].inventory_item_id
                             inv_levels = shopify.InventoryLevel.find(
                                 inventory_item_ids=inventory_item_id
@@ -698,7 +827,6 @@ def upload_products_to_store_by_category(limit=None):  # 6
             with shopify.Session.temp(
                 shop.name, conf.VERSION_API, shop.private_app_access_token
             ):
-                collection_names = {c.title: c.id for c in get_all_collections()}
                 products = Product.query.filter(
                     Product.is_deleted == False  # noqa E712
                 ).all()
@@ -714,23 +842,13 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 "LEAVE_VIDAXL_PREFIX",
                                 path=product.category_path,
                             )
-                            collection_name = product.category_path.split(
-                                CATEGORY_SPLITTER
-                            )[-1]
                             log(
                                 log.INFO,
                                 "New product [%s] --> [%s]. Store - [%s]",
                                 product.title,
-                                collection_name,
+                                "price: %s", product.price,
                                 shop,
                             )
-                            if collection_name not in collection_names:
-                                collection = shopify.CustomCollection.create(
-                                    dict(title=collection_name)
-                                )
-                                collection_names[collection_name] = collection.id
-                            collection_id = collection_names[collection_name]
-                            log(log.DEBUG, "price: %s", product.price)
                             title = product.title
                             if not LEAVE_VIDAXL_PREFIX:
                                 title = (
@@ -770,11 +888,6 @@ def upload_products_to_store_by_category(limit=None):  # 6
                                 product_id=product.id,
                                 price=price,
                             ).save(False)
-                            shopify.Collect.create(
-                                dict(
-                                    product_id=shop_prod.id, collection_id=collection_id
-                                )
-                            )
                             inventory_item_id = shop_prod.variants[0].inventory_item_id
                             inv_levels = shopify.InventoryLevel.find(
                                 inventory_item_ids=inventory_item_id
