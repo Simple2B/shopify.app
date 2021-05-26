@@ -643,6 +643,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                             location_id, inventory_item_id, product.qty
                                         )
                             except Exception:
+                                shop_products[0].delete()
                                 log(
                                     log.ERROR,
                                     "update_products_vidaxl_to_store: Product %s not present in shop [%s]",
