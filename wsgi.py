@@ -224,13 +224,13 @@ def _update_only_shop_products():
 def _update_shop_products(limit):
     """Upload all products to Shop(s)"""
     from app.controllers import (
-        upload_new_products_vidaxl_to_store,
-        upload_products_to_store_by_category,
         update_products_vidaxl_to_store,
         change_product_price,
         delete_products_from_store_exclude_category,
         delete_vidaxl_product_from_store,
         change_vida_prefix_title,
+        upload_new_products_vidaxl_to_store,
+        upload_products_to_store_by_category,
     )
 
     limit = limit if limit else None
