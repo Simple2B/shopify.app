@@ -234,14 +234,12 @@ def _update_shop_products(limit):
     )
 
     limit = limit if limit else None
+    update_products_vidaxl_to_store(limit)
     delete_products_from_store_exclude_category(limit)
     delete_vidaxl_product_from_store(limit)
-
-    upload_products_to_store_by_category(limit)
-    update_products_vidaxl_to_store(limit)
-
     change_product_price(limit)
     change_vida_prefix_title(limit)
+    upload_products_to_store_by_category(limit)
     upload_new_products_vidaxl_to_store(limit)
 
 
