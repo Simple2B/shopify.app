@@ -83,12 +83,13 @@ def download_vidaxl_product_from_xml(xml_url):
             description = xml_prod.find('HTML_description').text
             if not xml_prod.find('EAN').text:
                 ean = None
+                vidaxl_id = None
             else:
                 ean = int(xml_prod.find('EAN').text)
+                vidaxl_id = int(xml_prod.find('EAN').text)
             path_ids = xml_prod.find('Category_id_path').text
             vendor = xml_prod.find('Brand').text
             images = get_images(xml_prod)
-            vidaxl_id = int(xml_prod.find('EAN').text)
             prod = Product.query.filter(Product.sku == sku).first()
             if prod:
                 if vendor != prod.vendor:
