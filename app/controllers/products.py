@@ -81,7 +81,10 @@ def download_vidaxl_product_from_xml(xml_url):
             quantity = int(xml_prod.find('Stock').text)
             category_path = xml_prod.find('Category').text
             description = xml_prod.find('HTML_description').text
-            ean = None if not xml_prod["EAN"] else int(xml_prod.find('EAN').text)
+            if not xml_prod.find('EAN').text:
+                ean = None
+            else:
+                ean = int(xml_prod.find('EAN').text)
             path_ids = xml_prod.find('Category_id_path').text
             vendor = xml_prod.find('Brand').text
             images = get_images(xml_prod)
