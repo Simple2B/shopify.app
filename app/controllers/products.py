@@ -433,6 +433,8 @@ def update_product_db(prod, update_date=None):
 
 def in_selected_category(shop, category_path):
     selected_categories = [r.path.split(CATEGORY_SPLITTER) for r in shop.categories]
+    if not category_path:
+        return False
     path = category_path.split(CATEGORY_SPLITTER)
     for rule in selected_categories:
         rule_len = len(rule)
