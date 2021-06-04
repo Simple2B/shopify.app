@@ -95,10 +95,10 @@ def download_vidaxl_product_from_xml(xml_url):
                 if vendor != prod.vendor:
                     prod.vendor = vendor
                     prod.is_changed = True
-                if quantity == 0 and prod.qty > 0:
+                if quantity == 0 and prod.qty > 0 and quantity != prod.qty:
                     prod.qty = quantity
                     prod.is_changed = True
-                elif quantity > 0 and prod.qty == 0:
+                elif quantity > 0 and prod.qty == 0 and quantity != prod.qty:
                     prod.qty = quantity
                     prod.is_changed = True
                 if title != prod.title:
