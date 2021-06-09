@@ -648,6 +648,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                         shopify.InventoryLevel.set(
                                             location_id, inventory_item_id, product.qty
                                         )
+                                shop_products[0].price = price
                             except Exception:
                                 shop_products[0].delete()
                                 log(
@@ -776,6 +777,7 @@ def change_product_price(limit=None):  # 4
                         shop_product,
                         shop,
                     )
+                    time.sleep(1)
                 updated_product_count += 1
                 if limit is not None and updated_product_count >= limit:
                     break
