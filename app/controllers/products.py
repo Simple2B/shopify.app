@@ -649,6 +649,7 @@ def update_products_vidaxl_to_store(limit=None):  # 2
                                             location_id, inventory_item_id, product.qty
                                         )
                                 shop_products[0].price = price
+                                shop_products[0].save(False)
                             except Exception:
                                 shop_products[0].delete()
                                 log(
