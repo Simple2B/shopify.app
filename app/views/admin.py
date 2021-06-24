@@ -86,7 +86,7 @@ def all_categories():
             .order_by(Product.category_path)
             .all()
         )
-        categories = (r.category_path + "\n" for r in data)
+        categories = (r.category_path + "\n" for r in data if r.category_path)
         stream.writelines(categories)
         mem.write(stream.getvalue().encode("utf-8"))
     mem.seek(0)
