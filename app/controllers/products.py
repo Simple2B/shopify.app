@@ -94,31 +94,25 @@ def download_vidaxl_product_from_xml(xml_url):
             if prod:
                 if vendor != prod.vendor:
                     prod.vendor = vendor
-                    prod.is_changed = True
-                if quantity == 0 and prod.qty > 0 and quantity != prod.qty:
+                if quantity == 0 and prod.qty > 2 and quantity != prod.qty:
                     prod.qty = quantity
                     prod.is_changed = True
-                elif quantity > 0 and prod.qty == 0 and quantity != prod.qty:
+                elif quantity > 2 and prod.qty == 0 and quantity != prod.qty:
                     prod.qty = quantity
                     prod.is_changed = True
                 if title != prod.title:
                     prod.title = title
-                    prod.is_changed = True
                 if category_path != prod.category_path:
                     prod.category_path = category_path
-                    prod.is_changed = True
                 if price != prod.price:
                     prod.price = price
                     prod.is_changed = True
                 if prod.description != description:
                     prod.description = description
-                    prod.is_changed = True
                 if prod.ean != ean:
                     prod.ean = ean
-                    prod.is_changed = True
                 if prod.category_path_ids != path_ids:
                     prod.category_path_ids = path_ids
-                    prod.is_changed = True
 
                 if price == 0.0 and quantity == 0:
                     prod.deleted = True
@@ -162,6 +156,7 @@ def download_vidaxl_product_from_xml(xml_url):
             .all()
         ):
             product.qty = 0
+            product.is_deleted = True
             product.is_changed = True
             product.save()
         if marked_to_delete_number:
