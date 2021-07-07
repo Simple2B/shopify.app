@@ -128,20 +128,21 @@ def download_vidaxl_product_from_xml(xml_url):
                     for image in images:
                         Image(product_id=prod.id, url=image).save(False)
             else:
-                product = Product(
-                    vidaxl_id=vidaxl_id,
-                    sku=sku,
-                    title=title,
-                    category_path=category_path,
-                    price=price,
-                    qty=quantity,
-                    description=description,
-                    ean=ean,
-                    category_path_ids=path_ids,
-                    vendor=vendor,
-                ).save()
-                for image in images:
-                    Image(product_id=product.id, url=image).save(False)
+                if quantity > 3:
+                    product = Product(
+                        vidaxl_id=vidaxl_id,
+                        sku=sku,
+                        title=title,
+                        category_path=category_path,
+                        price=price,
+                        qty=quantity,
+                        description=description,
+                        ean=ean,
+                        category_path_ids=path_ids,
+                        vendor=vendor,
+                    ).save()
+                    for image in images:
+                        Image(product_id=product.id, url=image).save(False)
             if not i % 1000:
                 log(
                     log.DEBUG,
