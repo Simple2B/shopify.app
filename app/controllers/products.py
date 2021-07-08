@@ -97,8 +97,10 @@ def download_vidaxl_product_from_xml(xml_url):
                 if quantity == 0 and prod.qty > 2 and quantity != prod.qty:
                     prod.qty = quantity
                     prod.is_changed = True
+                    prod.deleted = True
                 elif quantity > 2 and prod.qty == 0 and quantity != prod.qty:
                     prod.qty = quantity
+                    prod.deleted = False
                     prod.is_changed = True
                 if title != prod.title:
                     prod.title = title
@@ -140,7 +142,7 @@ def download_vidaxl_product_from_xml(xml_url):
                         ean=ean,
                         category_path_ids=path_ids,
                         vendor=vendor,
-                    ).save()
+                    ).save(False)
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
             if not i % 1000:
@@ -159,7 +161,7 @@ def download_vidaxl_product_from_xml(xml_url):
             product.qty = 0
             product.is_deleted = True
             product.is_changed = True
-            product.save()
+            product.save(False)
         if marked_to_delete_number:
             log(
                 log.INFO,
