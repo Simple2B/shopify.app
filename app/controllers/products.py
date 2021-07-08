@@ -142,7 +142,7 @@ def download_vidaxl_product_from_xml(xml_url):
                         ean=ean,
                         category_path_ids=path_ids,
                         vendor=vendor,
-                    ).save(False)
+                    ).save()
                     for image in images:
                         Image(product_id=product.id, url=image).save(False)
             if not i % 1000:
