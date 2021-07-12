@@ -158,7 +158,6 @@ def download_vidaxl_product_from_xml(xml_url):
             .filter(Product.is_deleted == False)  # noqa E712
             .all()
         ):
-            product.qty = 0
             product.is_deleted = True
             product.is_changed = True
             product.save(False)
