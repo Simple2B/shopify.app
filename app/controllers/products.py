@@ -78,6 +78,8 @@ def download_vidaxl_product_from_xml(xml_url):
             sku = xml_prod.find('SKU').text
             title = xml_prod.find('Title').text
             price = float(xml_prod.find('B2B_price').text)
+            if not xml_prod.find('Stock').text:
+                continue
             quantity = int(xml_prod.find('Stock').text)
             category_path = xml_prod.find('Category').text
             description = xml_prod.find('HTML_description').text
