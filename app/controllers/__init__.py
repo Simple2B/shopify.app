@@ -27,3 +27,4 @@ from .price import get_price
 from .shopify_order_to_vidaxl import parser_shopify_to_vidaxl
 from .order_parser import order_parser
 from .delete_shopify_order import delete_order
+from .get_update_status import get_status

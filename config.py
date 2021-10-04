@@ -56,6 +56,8 @@ class BaseConfig(object):
 
     TAX_COEFFICIENT = os.environ.get("TAX_COEFFICIENT", 1.21)
 
+    BOT_API_TOKEN = os.environ.get("BOT_API_TOKEN")
+
     @staticmethod
     def configure(app):
         # Implement this method to do further configuration on your app.

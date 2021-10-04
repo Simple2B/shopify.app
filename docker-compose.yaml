@@ -26,5 +26,12 @@ services:
       - FLASK_APP=wsgi:app
       - FLASK_DEBUG=0
 
+  bot:
+    build: .
+    restart: always
+    command: bash ./start_bot.sh
+    volumes:
+      - .:/usr/src/app
+
 volumes:
   db_data:
