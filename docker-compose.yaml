@@ -32,6 +32,7 @@ services:
     command: bash ./start_bot.sh
     volumes:
       - .:/usr/src/app
+      - /tmp:/tmp
 
 volumes:
   db_data:
