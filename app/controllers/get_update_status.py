@@ -19,4 +19,6 @@ def get_status():
         for line in file.readlines()[-11:-1]:
             full_line += line
         log(log.INFO, "Status: %s", full_line)
+        if not full_line:
+            full_line = "Log file is empty"
         return full_line
