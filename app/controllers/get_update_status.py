@@ -1,4 +1,5 @@
 from datetime import datetime
+from app.logger import log
 
 
 def get_status():
@@ -17,4 +18,5 @@ def get_status():
         full_line = ""
         for line in file.readlines()[-11:-1]:
             full_line += line
+        log(log.INFO, "Status: %s", full_line)
         return full_line
