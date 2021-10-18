@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: shop_db
     ports:
-      - 127.0.0.1${LOCAL_DB_PORT}:5432
+      - 127.0.0.1:${LOCAL_DB_PORT}:5432
 
   app:
     build: .
