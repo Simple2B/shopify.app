@@ -19,3 +19,4 @@ flake8
 black
 pytest
 pytelegrambotapi
+WTForms==2.3.3
