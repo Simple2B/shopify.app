@@ -8,15 +8,14 @@ MarkupSafe
 python-dotenv
 SQLAlchemy==1.3.23
 Werkzeug
-WTForms
+WTForms==2.3.3
 # requests==2.23.0
 requests
 beautifulsoup4
 shopifyapi
 psycopg2-binary
+pytelegrambotapi
 
 flake8
 black
 pytest
-pytelegrambotapi
-WTForms==2.3.3
