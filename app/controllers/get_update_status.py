@@ -13,7 +13,11 @@ def get_status():
         day = f"0{today.day}"
     else:
         day = today.day
-    path = f"/tmp/update-all-vida-{today.year}-{today.month}-{day}.log"
+    if len(str(today.month)) == 1:
+        month = f"0{today.month}"
+    else:
+        month = today.day
+    path = f"/tmp/update-all-vida-{today.year}-{month}-{day}.log"
     with open(path, "r") as file:
         full_line = ""
         for line in file.readlines()[-11:-1]:
