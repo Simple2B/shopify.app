@@ -80,12 +80,12 @@ class Product(ShopifyBase):
 
     def update_product(self, product_id, data):
         req = requests.put(
-            self.base_url + f"/admin/api/2021-01/products/{product_id}.json", data=data
+            self.base_url + f"/admin/api/2021-10/products/{product_id}.json", data=data
         )
         return req.json()
 
     def delete_product(self, product_id):
         req = requests.delete(
-            self.base_url + f"/admin/api/2021-01/products/{product_id}.json"
+            self.base_url + f"/admin/api/2021-10/products/{product_id}.json"
         )
         return req.json()

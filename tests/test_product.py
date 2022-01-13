@@ -63,7 +63,7 @@ def test_product_count(client):
     from config import BaseConfig as conf
     import requests
 
-    url = f"{conf.SHOPIFY_DOMAIN}/admin/api/2021-01/products/count.json"
+    url = f"{conf.SHOPIFY_DOMAIN}/admin/api/2021-10/products/count.json"
     headers = {
         "User-Agent": "Mozilla/5.0",
         "X-Shopify-Access-Token": conf.SHOPIFY_PRIVATE_APP_PASSWORD,

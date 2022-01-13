@@ -31,6 +31,16 @@ def create_db():
 
 
 @app.cli.command()
+def start_bot():
+    """Start an inform bot"""
+    from app.controllers import Bot
+
+    bot = Bot()
+    bot.add_handlers()
+    bot.start()
+
+
+@app.cli.command()
 @click.confirmation_option(prompt="Drop all database tables?")
 def drop_db():
     """Drop database."""

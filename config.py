@@ -16,7 +16,7 @@ class BaseConfig(object):
     SHOPIFY_SECRET = os.environ.get("SHOPIFY_SECRET", "")
     APP_NAME = os.environ.get("APP_NAME", "Shopify App")
     SHOPIFY_DOMAIN = os.environ.get("SHOPIFY_DOMAIN", "")
-    VERSION_API = os.environ.get("VERSION_API", "2021-01")
+    VERSION_API = os.environ.get("VERSION_API", "2021-10")
     WEBHOOK_APP_UNINSTALL_URL = os.environ.get("WEBHOOK_APP_UNINSTALL_URL", "")
     INSTALL_REDIRECT_URL = os.environ.get("INSTALL_REDIRECT_URL", "")
     ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN", "")
@@ -55,6 +55,8 @@ class BaseConfig(object):
     CATEGORY_SPLITTER = os.environ.get("CATEGORY_SPLITTER", "/")
 
     TAX_COEFFICIENT = os.environ.get("TAX_COEFFICIENT", 1.21)
+
+    BOT_API_TOKEN = os.environ.get("BOT_API_TOKEN")
 
     @staticmethod
     def configure(app):
